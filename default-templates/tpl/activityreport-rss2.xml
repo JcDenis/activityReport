@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet title="XSL formatting" type="text/xsl" href="{{tpl:BlogURL}}feed/rss2/xslt" ?>
+<rss version="2.0"
+  xmlns:dc="http://purl.org/dc/elements/1.1/"
+  xmlns:wfw="http://wellformedweb.org/CommentAPI/"
+  xmlns:content="http://purl.org/rss/1.0/modules/content/"
+  xmlns:atom="http://www.w3.org/2005/Atom">
+<channel>
+  <title>{{tpl:BlogName encode_xml="1"}}{{tpl:SysFeedSubtitle encode_xml="1"}}</title>
+  <link>{{tpl:BlogURL}}</link>
+  <atom:link href="{{tpl:SysSelfURI}}" rel="self" type="application/rss+xml"/>
+  <description>{{tpl:BlogDescription encode_xml="1"}}</description>
+  <language>{{tpl:BlogLanguage}}</language>
+  <pubDate>{{tpl:BlogUpdateDate rfc822="1"}}</pubDate>
+  <copyright>{{tpl:BlogCopyrightNotice encode_xml="1"}}</copyright>
+  <docs>http://blogs.law.harvard.edu/tech/rss</docs>
+  <generator>Dotclear</generator>
+  
+  <tpl:activityReports>
+  
+  <item>
+    <title>{{tpl:activityReportTitle encode_xml="1"}}</title>
+    <guid isPermaLink="false">{{tpl:activityReportFeedID}}</guid>
+    <pubDate>{{tpl:activityReportDate rfc822="1"}}</pubDate>
+    <dc:creator>activityReport module for Dotclear 2</dc:creator>
+    <description>
+	  {{tpl:activityReportContent absolute_urls="1" encode_xml="1"}}
+    </description>
+  </item>
+  </tpl:activityReports>
+  
+</channel>
+</rss>

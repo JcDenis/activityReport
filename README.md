@@ -15,6 +15,9 @@ themes and plugins from Dotclear administration pages.
   * Permissions superadmin or admin
   * Dotclear 2.19 
 
+  * plugin add a table to database
+  * plugin send email
+
 ## USAGE
 
 First install _activityReport_, manualy from a zip package or from 

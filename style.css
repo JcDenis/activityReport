@@ -1,0 +1,10 @@
+#dashboard-items #report dt {
+        font-weight: bold; 
+        margin: 0 0 0.4em 0; 
+}
+#dashboard-items #report dd {
+        font-size: 0.9em; 
+        margin: 0 0 1em 0; }
+#dashboard-items #report dd p {
+        margin: 0.2em 0 0 0;
+}

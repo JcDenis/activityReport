@@ -11,48 +11,42 @@
  * @copyright GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
  */
 
-if (!defined('DC_CONTEXT_ADMIN')){return;}
-
-if (!defined('ACTIVITY_REPORT')){return;}
+if (!defined('DC_CONTEXT_ADMIN')) {
+    return null;
+}
+if (!defined('ACTIVITY_REPORT')) {
+    return null;
+}
 
 # Plugin menu
 $_menu['Plugins']->addItem(
     __('Activity report'),
-    'plugin.php?p=activityReport','index.php?pf=activityReport/icon.png',
-    preg_match('/plugin.php\?p=activityReport(&.*)?$/',
-    $_SERVER['REQUEST_URI']),
+    $core->adminurl->get('admin.plugin.activityReport'),
+    dcPage::getPF('activityReport/icon.png'),
+    preg_match('/' . preg_quote($core->adminurl->get('admin.plugin.activityReport')) . '(&.*)?$/', $_SERVER['REQUEST_URI']),
     $core->auth->check('admin',$core->blog->id)
 );
 
 # Dashboarditems
-if ($core->activityReport->getSetting('dashboardItem'))
-{
-    $core->addBehavior(
-        'adminDashboardHeaders',
-        array('activityReportAdmin','dashboardHeaders')
-    );
-    $core->addBehavior(
-        'adminDashboardItems',
-        array('activityReportAdmin','dashboardItems')
-    );
+if ($core->activityReport->getSetting('dashboardItem')) {
+    $core->addBehavior('adminDashboardHeaders', ['activityReportAdmin', 'dashboardHeaders']);
+    $core->addBehavior('adminDashboardItems', ['activityReportAdmin', 'dashboardItems']);
 }
 
 class activityReportAdmin
 {
-    # Add CSS to dashboardHeaders for items
+    /**
+     *  Add CSS to dashboardHeaders for items
+     */
     public static function dashboardHeaders()
     {
-        return
-        "\n<!-- CSS for activityReport --> \n".
-        "<style type=\"text/css\"> \n".
-        "#dashboard-items #report dt { font-weight: bold; margin: 0 0 0.4em 0; } \n".
-        "#dashboard-items #report dd { font-size: 0.9em; margin: 0 0 1em 0; } \n".
-        "#dashboard-items #report dd p { margin: 0.2em 0 0 0; } \n".
-        "</style> \n";
+        return dcPage::jsLoad('index.php?pf=activityReport/style.css');
     }
 
-    # Add report to dashboardItems
-    public static function dashboardItems($core, $__dashboard_items)
+    /**
+     *  Add report to dashboardItems
+     */
+    public static function dashboardItems(dcCore $core, $__dashboard_items)
     {
         $r = $core->activityReport->getSetting('requests');
         $g = $core->activityReport->getGroups();
@@ -64,30 +58,29 @@ class activityReportAdmin
 
         $res = '';
         $rs = $core->activityReport->getLogs($p);
-        if (!$rs->isEmpty())
-        {
-            while($rs->fetch())
-            {
+        if (!$rs->isEmpty()) {
+            while($rs->fetch()) {
                 $group = $rs->activity_group;
 
-                if (!isset($g[$group])) continue;
+                if (!isset($g[$group])) {
+                    continue;
+                }
 
                 $res .= 
-                '<dd><p title="'.__($g[$group]['title']).'"><strong>'.
-                __($g[$group]['actions'][$rs->activity_action]['title']).
-                '</p></strong><em>'.
+                '<dd><p title="' . __($g[$group]['title']) . '"><strong>' .
+                __($g[$group]['actions'][$rs->activity_action]['title']) .
+                '</p></strong><em>' .
                 vsprintf(
                     __($g[$group]['actions'][$rs->activity_action]['msg']),
                     $core->activityReport->decode($rs->activity_logs)
-                ).            
+                ) .
                 '</em></dd>';
             }
         }
-        if (!empty($res))
-        {
+        if (!empty($res)) {
             $__dashboard_items[1][] = 
-                '<h3>'.__('Activity report').'</h3>'.
-                '<dl id="report">'.$res.'</dl>';
+                '<h3>' . __('Activity report') . '</h3>' .
+                '<dl id="report">' . $res . '</dl>';
         }
     }
 }

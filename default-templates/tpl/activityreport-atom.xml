@@ -3,7 +3,7 @@
   xmlns:dc="http://purl.org/dc/elements/1.1/"
   xmlns:wfw="http://wellformedweb.org/CommentAPI/"
   xml:lang="{{tpl:BlogLanguage}}">
-  
+
   <title type="html">{{tpl:BlogName encode_xml="1"}}{{tpl:SysFeedSubtitle encode_xml="1"}}</title>
   <subtitle type="html">{{tpl:BlogDescription encode_xml="1"}}</subtitle>
   <link href="{{tpl:SysSelfURI}}" rel="self" type="application/atom+xml"/>
@@ -15,7 +15,7 @@
   </author>
   <id>{{tpl:BlogFeedID}}</id>
   <generator uri="http://www.dotclear.net/">Dotclear</generator>
-  
+
   <tpl:activityReports>
 
   <entry>

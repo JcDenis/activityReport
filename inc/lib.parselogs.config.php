@@ -1,14 +1,15 @@
 <?php
-# -- BEGIN LICENSE BLOCK ----------------------------------
-# This file is part of activityReport, a plugin for Dotclear 2.
-# 
-# Copyright (c) 2009-2010 JC Denis and contributors
-# jcdenis@gdwd.com
-# 
-# Licensed under the GPL version 2.0 license.
-# A copy of this license is available in LICENSE file or at
-# http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
-# -- END LICENSE BLOCK ------------------------------------
+/**
+ * @brief activityReport, a plugin for Dotclear 2
+ * 
+ * @package Dotclear
+ * @subpackage Plugin
+ * 
+ * @author Jean-Christian Denis and contributors
+ * 
+ * @copyright Jean-Christian Denis
+ * @copyright GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
+ */
 
 $format = array(
 
@@ -67,4 +68,3 @@ $format = array(
 "%PERIOD%\n-----------------------------------------------------------\n%TEXT%"
 
 ));
-?>

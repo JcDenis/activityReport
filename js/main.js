@@ -12,7 +12,7 @@
 $(function(){
 	/* tools */
 	dotclear.jcTools = new jcToolsBox();
-	
+
 	/* setting blog */
 	var bForm=$('#setting-blog-form');
 	if ($(bForm).attr('id')!=undefined){

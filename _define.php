@@ -1,24 +1,32 @@
 <?php
-# -- BEGIN LICENSE BLOCK ----------------------------------
-# This file is part of activityReport, a plugin for Dotclear 2.
-# 
-# Copyright (c) 2009-2010 JC Denis and contributors
-# jcdenis@gdwd.com
-# 
-# Licensed under the GPL version 2.0 license.
-# A copy of this license is available in LICENSE file or at
-# http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
-# -- END LICENSE BLOCK ------------------------------------
+/**
+ * @brief activityReport, a plugin for Dotclear 2
+ * 
+ * @package Dotclear
+ * @subpackage Plugin
+ * 
+ * @author Jean-Christian Denis and contributors
+ * 
+ * @copyright Jean-Christian Denis
+ * @copyright GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
+ */
 
-if (!defined('DC_RC_PATH')){return;}
- 
+if (!defined('DC_RC_PATH')) {
+    return null;
+}
+
 $this->registerModule(
-	/* Name */			"Activity report",
-	/* Description*/		"Receive your blog activity by email, feed, or on dashboard",
-	/* Author */			"JC Denis",
-	/* Version */			'1.0.1',
-	/* Permissions */		'admin',
-	/* Priority */			-1000000 
+    'Activity report',
+    'Receive your blog activity by email, feed, or on dashboard',
+    'Jean-Christian Denis and contributors',
+    '1.0.1',
+    [
+        'requires' => [['core', '2.19']],
+        'permissions' => 'admin',
+        'priority' => -1000000,
+        'type' => 'plugin',
+        'support' => 'https://github.com/JcDenis/activityReport',
+        'details' => 'http://plugins.dotaddict.org/dc2/details/activityReport',
+        'repository' => 'https://raw.githubusercontent.com/JcDenis/activityReport/master/dcstore.xml'
+    ]
 );
-	/* date */		#20100608
-?>

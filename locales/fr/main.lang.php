@@ -260,5 +260,3 @@ $GLOBALS['__l10n']['Super settings'] = 'Super paramètres';
 
 #index.php:58
 $GLOBALS['__l10n']['Super logs'] = 'Super enregistrements';
-
-?>

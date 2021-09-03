@@ -74,7 +74,7 @@ if ($logs->isEmpty()) {
             $core->auth->getInfo('user_tz')
         );
         $msg = vsprintf(__($action['msg']), $report->decode($logs->activity_logs));
-        
+
         echo '
         <tr class="line' . $off . '">
         <td class="nowrap">' . __($action['title']) . '</td>

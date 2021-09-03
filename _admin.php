@@ -82,8 +82,15 @@ class activityReportAdmin
             '<div id="activity-report-logs" class="box medium">' .
             '<h3>' . __('Activity report') . '</h3>' .
             '<dl id="reports">' . implode('', $lines) . '</dl>' .
-            '<p><a href="'.$core->adminurl->get('admin.plugin.activityReport') .'">' . 
-            __('View all logs') . '</a></p>' .
+            '<p class="modules"><a class="module-details" href="'.
+            $core->adminurl->get('admin.plugin.activityReport') .'">' . 
+            __('View all logs') . '</a> - <a class="module-config" href="'.
+            $core->adminurl->get('admin.plugins', [
+                'module' => 'activityReport', 
+                'conf' => 1, 
+                'redir' => $core->adminurl->get('admin.home').'#activity-report-logs'
+            ]) .'">' . 
+            __('Configure plugin') . '</a></p>' .
             '</div>'
         ]);
     }

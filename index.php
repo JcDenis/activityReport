@@ -43,11 +43,9 @@ if (!activityReport::hasMailer()) {
 
     echo '<p class="error">' . __('This server has no mail function, activityReport not send email report.') . '</p>';
 }
-activityReportLib::settingTab($core, __('Settings'));
 activityReportLib::logTab($core, __('Logs'));
 
 if ($core->auth->isSuperAdmin()) {
-    activityReportLib::settingTab($core, __('Super settings'), true);
     activityReportLib::logTab($core, __('Super logs'), true);
 }
 echo '</body></html>';

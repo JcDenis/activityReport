@@ -19,7 +19,7 @@ $this->registerModule(
     'Activity report',
     'Receive your blog activity by email, feed, or on dashboard',
     'Jean-Christian Denis and contributors',
-    '1.0.1',
+    '1.1',
     [
         'requires' => [['core', '2.19']],
         'permissions' => 'admin',

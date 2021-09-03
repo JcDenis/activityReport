@@ -1,8 +1,15 @@
-1.1 - dev
-- [ ] fix Dotclear 2.19 compatibility
-- [ ] fix pages design
-- [ ] clean up code
-- [ ] update license
+1.1.1 - dev
+- [ ] fix and add actitivy
+
+1.1 - 2021.09.03
+- fix Dotclear 2.19 compatibility
+- fix pages design
+- fix dashboard design
+- move dashboard settings to user pref
+- move settings to plugin config
+- clean up code
+- update translation
+- update license
 
 1.0.1 - 2010.06.08
  -Fixed (again) simultaneous report

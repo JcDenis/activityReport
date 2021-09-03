@@ -19,6 +19,10 @@ $report =& $core->activityReport;
 $super = $core->auth->isSuperAdmin() && !empty($_REQUEST['super']);
 $redir = empty($_REQUEST['redir']) ? $list->getURL() . '#plugins' : $_REQUEST['redir'];
 
+if ($super) {
+    $report->setGlobal();
+}
+
 $combo_interval = [
     __('every hour') => 3600,
     __('every 2 hours') => 7200,

@@ -20,18 +20,20 @@ $__autoload['activityReport'] =  $d . 'class.activity.report.php';
 $__autoload['activityReportBehaviors'] = $d . 'class.activity.report.behaviors.php';
 
 try {
-    $core->activityReport = new activityReport($core);
+    if (!defined('ACTIVITY_REPORT')) {
+        $core->activityReport = new activityReport($core);
 
-    $core->url->register(
-        'activityReport',
-        'reports',
-        '^reports/((atom|rss2)/(.+))$',
-        ['activityReportPublicUrl', 'feed']
-    );
+        $core->url->register(
+            'activityReport',
+            'reports',
+            '^reports/((atom|rss2)/(.+))$',
+            ['activityReportPublicUrl', 'feed']
+        );
 
-    define('ACTIVITY_REPORT', true);
+        define('ACTIVITY_REPORT', true);
 
-    activityReportBehaviors::registerBehaviors($core);
+        activityReportBehaviors::registerBehaviors($core);
+    }
 } catch (Exception $e) {
     //throw new Exception('Failed to launch activityReport');
 }

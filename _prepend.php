@@ -18,7 +18,6 @@ if (!defined('DC_RC_PATH')) {
 $d = dirname(__FILE__) . '/inc/';
 $__autoload['activityReport'] =  $d . 'class.activity.report.php';
 $__autoload['activityReportBehaviors'] = $d . 'class.activity.report.behaviors.php';
-$__autoload['activityReportLib'] = $d . 'lib.activity.report.index.php';
 
 try {
     $core->activityReport = new activityReport($core);

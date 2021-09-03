@@ -21,31 +21,72 @@ if (!defined('ACTIVITY_REPORT')) {
 
 dcPage::check('admin');
 
-require_once dirname(__FILE__) . '/inc/lib.activity.report.index.php';
+$report =& $core->activityReport;
+$super = $core->auth->isSuperAdmin() && !empty($_REQUEST['super']);
 
-$tab = $_REQUEST['tab'] ?? 'blog_settings';
-$section = $_REQUEST['section'] ?? '';
-
-echo '
-<html><head><title>'. __('Activity report') . '</title>' .
-dcPage::jsLoad('js/_posts_list.js') .
-dcPage::jsToolBar() .
-dcPage::jsPageTabs($tab) .
-dcPage::jsLoad('index.php?pf=activityReport/js/main.js') .
-'<script type="text/javascript">'."\n//<![CDATA[\n" .
-dcPage::jsVar('jcToolsBox.prototype.text_wait',__('Please wait')) .
-dcPage::jsVar('jcToolsBox.prototype.section',$section) .
-"\n//]]>\n</script>\n" . '
-</head><body>
-<h2>' . html::escapeHTML($core->blog->name) . ' &rsaquo; ' . __('Activity report') . '</h2>';
-
-if (!activityReport::hasMailer()) {
-
-    echo '<p class="error">' . __('This server has no mail function, activityReport not send email report.') . '</p>';
+if ($super) {
+    $report->setGlobal();
 }
-activityReportLib::logTab($core, __('Logs'));
 
-if ($core->auth->isSuperAdmin()) {
-    activityReportLib::logTab($core, __('Super logs'), true);
+$logs = $report->getLogs([]);
+
+if ($super) {
+    $breadcrumb = [
+         __('Current blog') => $core->adminurl->get('admin.plugin.activityReport', ['super' => 0]),
+         '<span class="page-title">' . __('All blogs') . '</span>' => ''
+    ];
+} else {
+    $breadcrumb = ['<span class="page-title">' . __('Current blog') . '</span>' => ''];
+    if ($core->auth->isSuperAdmin()) {
+        $breadcrumb[__('All blogs')] = $core->adminurl->get('admin.plugin.activityReport', ['super' => 1]);
+    }
 }
+
+echo '<html><head><title>' . __('Activity report') . '</title></head><body>' .
+dcPage::breadcrumb(array_merge([__('Activity report') => '', __('Logs') => ''], $breadcrumb),['hl' => false]) .
+dcPage::notices();
+
+if ($logs->isEmpty()) {
+        echo '<p>'.__('No log').'</p>';
+} else {
+    echo '
+    <div class="table-outer"><table><thead>
+    <tr>
+    <th>' . __('Action') . '</th>
+    <th>' . __('Message') . '</th>
+    <th>' . __('Date') . '</th>';
+    if ($super) {
+        echo '<th>' . __('Blog') .'</th>';
+    }
+    echo '</tr></thead><tbody>';
+
+    while($logs->fetch()) {
+        $action = $report->getGroups($logs->activity_group, $logs->activity_action);
+
+        if (empty($action)) {
+            continue;
+        }
+
+        $off = $super && $logs->activity_blog_status == 1 ? ' offline' : '';
+        $date = dt::str(
+            $core->blog->settings->system->date_format . ', ' . $core->blog->settings->system->time_format,
+            strtotime($logs->activity_dt),
+            $core->auth->getInfo('user_tz')
+        );
+        $msg = vsprintf(__($action['msg']), $report->decode($logs->activity_logs));
+        
+        echo '
+        <tr class="line' . $off . '">
+        <td class="nowrap">' . __($action['title']) . '</td>
+        <td class="maximal">' . $msg . '</td>
+        <td class="nowrap">' . $date . '</td>';
+        if ($super) {
+            echo '<td class="nowrap">' . $logs->blog_id . '</td>';
+        }
+        echo '</tr>';
+    }
+    echo '</tbody></table></div>';
+}
+$report->unsetGlobal();
+
 echo '</body></html>';

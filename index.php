@@ -23,10 +23,11 @@ dcPage::check('admin');
 
 require_once dirname(__FILE__) . '/inc/lib.activity.report.index.php';
 
-$tab = isset($_REQUEST['tab']) ? $_REQUEST['tab'] : 'blog_settings';
+$tab = $_REQUEST['tab'] ?? 'blog_settings';
+$section = $_REQUEST['section'] ?? '';
 
 echo '
-<html><head><title><?php echo __('Activity report'); ?></title>' .
+<html><head><title>'. __('Activity report') . '</title>' .
 dcPage::jsLoad('js/_posts_list.js') .
 dcPage::jsToolBar() .
 dcPage::jsPageTabs($tab) .
@@ -42,11 +43,11 @@ if (!activityReport::hasMailer()) {
 
     echo '<p class="error">' . __('This server has no mail function, activityReport not send email report.') . '</p>';
 }
-activityReportLib::settingTab($core,__('Settings'));
-activityReportLib::logTab($core,__('Logs'));
+activityReportLib::settingTab($core, __('Settings'));
+activityReportLib::logTab($core, __('Logs'));
 
 if ($core->auth->isSuperAdmin()) {
     activityReportLib::settingTab($core, __('Super settings'), true);
     activityReportLib::logTab($core, __('Super logs'), true);
 }
-echo '</html>';
+echo '</body></html>';

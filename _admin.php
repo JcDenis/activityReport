@@ -29,8 +29,11 @@ $_menu['Plugins']->addItem(
     $core->auth->check('admin',$core->blog->id)
 );
 
-$core->addBehavior('adminDashboardOptionsForm', ['activityReportAdmin', 'adminDashboardOptionsForm']);
-$core->addBehavior('adminAfterDashboardOptionsUpdate', ['activityReportAdmin', 'adminAfterDashboardOptionsUpdate']);
+if ($core->activityReport->getSetting('active')) {
+    $core->addBehavior('adminDashboardContents', ['activityReportAdmin', 'adminDashboardContents']);
+    $core->addBehavior('adminDashboardOptionsForm', ['activityReportAdmin', 'adminDashboardOptionsForm']);
+    $core->addBehavior('adminAfterDashboardOptionsUpdate', ['activityReportAdmin', 'adminAfterDashboardOptionsUpdate']);
+}
 
 class activityReportAdmin
 {

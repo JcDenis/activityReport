@@ -51,7 +51,6 @@ $combo_format = [
 if (!empty($_POST['save'])) {
     try {
         $report->setSetting('active', !empty($_POST['active']));
-        $report->setSetting('dashboardItem', !empty($_POST['dashboardItem']));
         if (in_array($_POST['interval'], $combo_interval)) {
             $report->setSetting('interval', (integer) $_POST['interval']);
         }
@@ -114,20 +113,14 @@ if (activityReport::hasMailer()) {
 echo '
 <div class="fieldset two-cols" id="settings"><h4>' . __('Settings') . '</h4>
 <div class="col">
+
 <p><label class="classic" for="active">' .
 form::checkbox('active', '1', $report->getSetting('active')).' '.
 ($super ? 
     __('Enable super administrator report') :
     __('Enable report on this blog')
-) . '</label></p>';
+) . '</label></p>
 
-if (!$super) {
-    echo 
-    '<p><label class="classic" for="dashboardItem">' .
-    form::checkbox('dashboardItem', 1, $report->getSetting('dashboardItem')).' '.
-    __('Add activity report on dashboard items') . '</label></p>';
-}
-echo '
 <p><label for="obselete">' . __('Automatic cleaning of old logs:') . '</label>' .
 form::combo('obsolete', $combo_obselete, $report->getSetting('obsolete')) . '</p>
 

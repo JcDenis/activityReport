@@ -92,7 +92,6 @@ class activityReport
         $settings = [
             'active' => false,
             'obsolete' => 2419200,
-            'dashboardItem' => false,
             'interval' => 86400,
             'lastreport' => 0,
             'mailinglist' => [],

@@ -18,69 +18,120 @@ if (!defined('ACTIVITY_REPORT')) {
     return null;
 }
 
-# Plugin menu
 $_menu['Plugins']->addItem(
     __('Activity report'),
     $core->adminurl->get('admin.plugin.activityReport'),
     dcPage::getPF('activityReport/icon.png'),
-    preg_match('/' . preg_quote($core->adminurl->get('admin.plugin.activityReport')) . '(&.*)?$/', $_SERVER['REQUEST_URI']),
+    preg_match(
+        '/' . preg_quote($core->adminurl->get('admin.plugin.activityReport')) . '(&.*)?$/', 
+        $_SERVER['REQUEST_URI']
+    ),
     $core->auth->check('admin',$core->blog->id)
 );
 
-# Dashboarditems
-if ($core->activityReport->getSetting('dashboardItem')) {
-    $core->addBehavior('adminDashboardHeaders', ['activityReportAdmin', 'dashboardHeaders']);
-    $core->addBehavior('adminDashboardItems', ['activityReportAdmin', 'dashboardItems']);
-}
+$core->addBehavior('adminDashboardOptionsForm', ['activityReportAdmin', 'adminDashboardOptionsForm']);
+$core->addBehavior('adminAfterDashboardOptionsUpdate', ['activityReportAdmin', 'adminAfterDashboardOptionsUpdate']);
 
 class activityReportAdmin
 {
-    /**
-     *  Add CSS to dashboardHeaders for items
-     */
-    public static function dashboardHeaders()
+    public static function adminDashboardContents(dcCore $core, $items)
     {
-        return dcPage::jsLoad('index.php?pf=activityReport/style.css');
+        $core->auth->user_prefs->addWorkspace('activityReport');
+        $limit = abs((integer) $core->auth->user_prefs->activityReport->dashboard_item);
+        if (!$limit) {
+            return null;
+        }
+        $p = [
+            'limit' => $limit,
+            'order' => 'activity_dt DESC',
+            'sql' => $core->activityReport->requests2params($core->activityReport->getSetting('requests'))
+        ];
+        $lines = [];
+        $rs = $core->activityReport->getLogs($p);
+        if ($rs->isEmpty()) {
+            return null;
+        }
+        $groups = $core->activityReport->getGroups();
+        while($rs->fetch()) {
+            $group = $rs->activity_group;
+
+            if (!isset($groups[$group])) {
+                continue;
+            }
+            $lines[] = 
+            '<dt title="' . __($groups[$group]['title']) . '">' .
+            '<strong>' . __($groups[$group]['actions'][$rs->activity_action]['title']) . '</strong>' .
+            '<br />' . dt::str(
+                $core->blog->settings->system->date_format . ', ' . $core->blog->settings->system->time_format,
+                strtotime($rs->activity_dt),
+                $core->auth->getInfo('user_tz')
+            ) . '<dt>' .
+            '<dd><p>' .
+            '<em>' .vsprintf(
+                __($groups[$group]['actions'][$rs->activity_action]['msg']),
+                $core->activityReport->decode($rs->activity_logs)
+            ) . '</em></p></dd>';
+        }
+        if (empty($lines)) {
+            return null;
+        }
+        $items[] = new ArrayObject([
+            '<div id="activity-report-logs" class="box medium">' .
+            '<h3>' . __('Activity report') . '</h3>' .
+            '<dl id="reports">' . implode('', $lines) . '</dl>' .
+            '<p><a href="'.$core->adminurl->get('admin.plugin.activityReport') .'">' . 
+            __('View all logs') . '</a></p>' .
+            '</div>'
+        ]);
     }
 
-    /**
-     *  Add report to dashboardItems
-     */
-    public static function dashboardItems(dcCore $core, $__dashboard_items)
+    public static function adminDashboardOptionsForm(dcCore $core)
     {
-        $r = $core->activityReport->getSetting('requests');
-        $g = $core->activityReport->getGroups();
+        $core->auth->user_prefs->addWorkspace('activityReport');
 
-        $p = array();
-        $p['limit'] = 20;
-        $p['order'] = 'activity_dt DESC';
-        $p['sql'] = $core->activityReport->requests2params($r);
+        echo
+        '<div class="fieldset">' .
+        '<h4>' . __('Activity report') . '</h4>' .
+        '<p><label for="activityReport_dashboard_item">' . 
+        __('Number of activities to show on dashboard:') . '</label>' .
+        form::combo(
+            'activityReport_dashboard_item', 
+            self::comboList(), 
+            self::comboList($core->auth->user_prefs->activityReport->dashboard_item)
+        ) . '</p>' .
+        '</div>';
+    }
 
-        $res = '';
-        $rs = $core->activityReport->getLogs($p);
-        if (!$rs->isEmpty()) {
-            while($rs->fetch()) {
-                $group = $rs->activity_group;
+    public static function adminAfterDashboardOptionsUpdate($user_id = null)
+    {
+        global $core;
 
-                if (!isset($g[$group])) {
-                    continue;
-                }
-
-                $res .= 
-                '<dd><p title="' . __($g[$group]['title']) . '"><strong>' .
-                __($g[$group]['actions'][$rs->activity_action]['title']) .
-                '</p></strong><em>' .
-                vsprintf(
-                    __($g[$group]['actions'][$rs->activity_action]['msg']),
-                    $core->activityReport->decode($rs->activity_logs)
-                ) .
-                '</em></dd>';
-            }
+        if (is_null($user_id)) {
+            return;
         }
-        if (!empty($res)) {
-            $__dashboard_items[1][] = 
-                '<h3>' . __('Activity report') . '</h3>' .
-                '<dl id="report">' . $res . '</dl>';
+
+        $core->auth->user_prefs->addWorkspace('activityReport');
+        $core->auth->user_prefs->activityReport->put(
+            'dashboard_item', 
+            self::comboList(@$_POST['activityReport_dashboard_item']), 
+            'integer'
+        );
+    }
+
+    private static function comboList($q = true)
+    {
+        $l = [
+            __('Do not show activity report') => 0,
+            5 => 5,
+            10 => 10,
+            15 => 15,
+            20 => 20,
+            50 => 50,
+            100 => 100
+        ];
+        if (true === $q) {
+            return $l;
         }
+        return in_array($q, $l) ? $l[$q] : 0;
     }
 }

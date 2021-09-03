@@ -19,202 +19,206 @@ if (!defined('ACTIVITY_REPORT')) {
     return null;
 }
 
-// ActivityReport plugin 
-$core->activityReport->addGroup('activityReport', __('ActivityReport messages'));
-
-$core->activityReport->addAction(
-    'activityReport',
-    'message',
-    __('Special messages'),
-    __('%s'),
-    'messageActivityReport',
-    ['activityReportBehaviors', 'messageActivityReport']
-);
-
-// Blog 
-$core->activityReport->addGroup('blog', __('Actions on blog'));
-
-// Not use as it is global : BEHAVIOR adminAfterBlogCreate in admin/blog.php
-
-// from BEHAVIOR adminAfterBlogUpdate in admin/blog_pref.php
-$core->activityReport->addAction(
-    'blog',
-    'update',
-    __('updating blog'),
-    __('Blog was updated by "%s"'),
-    'adminAfterBlogUpdate',
-    ['activityReportBehaviors', 'blogUpdate']
-);
-
-// from BEHAVIOR publicHeadContent in template
-$core->activityReport->addAction(
-    'blog',
-    'p404',
-    __('404 error'),
-    __('New 404 error page at "%s"'),
-    'publicHeadContent',
-    ['activityReportBehaviors', 'blogP404']
-);
-
-// Post 
-$core->activityReport->addGroup('post', __('Actions on posts'));
-
-// from BEHAVIOR coreAfterPostCreate in inc/core/class.dc.blog.php (DC 2.2)
-// duplicate adminAfterPostCreate in admin/post.php
-// duplicate adminAfterPostCreate in admin/services.php
-$core->activityReport->addAction(
-    'post',
-    'create',
-    __('post creation'),
-    __('A new post called "%s" was created by "%s" at %s'),
-    'adminAfterPostCreate',
-    ['activityReportBehaviors', 'postCreate']
-);
-
-// Plugin contribute
-// from BEHAVIOR publicAfterPostCreate in plugins/contribute/_public.php
-$core->activityReport->addAction(
-    'post',
-    'create',
-    __('post creation'),
-    __('A new post called "%s" was created by "%s" at %s'),
-    'publicAfterPostCreate',
-    ['activityReportBehaviors', 'postCreate']
-);
-
-// from BEHAVIOR coreAfterPostUpdate in inc/core/class.dc.blog.php (DC2.2)
-// duplicate adminAfterPostUpdate in admin/post.php
-$core->activityReport->addAction(
-    'post',
-    'update',
-    __('updating post'),
-    __('Post called "%s" has been updated by "%s" at %s'),
-    'adminAfterPostUpdate',
-    ['activityReportBehaviors', 'postUpdate']
-);
-
-// from BEHAVIOR adminBeforePostDelete in admin/posts_actions.php
-// from BEHAVIOR adminBeforePostDelete in admin/post.php
-$core->activityReport->addAction(
-    'post',
-    'delete',
-    __('post deletion'),
-    __('Post called "%s" has been deleted by "%s"'),
-    'adminBeforePostDelete',
-    ['activityReportBehaviors', 'postDelete']
-);
-
-// Wrong attempt on passworded enrty
-// from BEHAVIOR urlHandlerServeDocument in inc/public/lib.urlhandlers.php
-$core->activityReport->addAction(
-    'post',
-    'protection',
-    __('Post protection'),
-    __('An attempt failed on a passworded post with password "%s" at "%s"'),
-    'urlHandlerServeDocument',
-    ['activityReportBehaviors', 'postPasswordAttempt']
-);
-
-// Comment
-$core->activityReport->addGroup('comment',__('Actions on comments'));
-
-// from BEHAVIOR coreAfterCommentCreate in inc/core/class.dc.blog.php
-// duplicate adminAfterCommentCreate in admin/comment.php
-// duplicate publicAfterCommentCreate in inc/public/lib.urlhandlers.php
-$core->activityReport->addAction(
-    'comment',
-    'create',
-    __('comment creation'),
-    __('A new comment was created by "%s" on post "%s" at %s'),
-    'coreAfterCommentCreate',
-    ['activityReportBehaviors', 'commentCreate']
-);
-
-// from BEHAVIOR coreAfterCommentUpdate in inc/core/class.dc.blog.php
-// duplicate adminAfterCommentUpdate in admin/comment.php
-$core->activityReport->addAction(
-    'comment',
-    'update',
-    __('updating comment'),
-    __('Comment has been updated by "%s" at %s'),
-    'coreAfterCommentUpdate',
-    ['activityReportBehaviors', 'commentUpdate']
-);
-
-// Missing coreBeforeCommentDelete in inc/core/class.dc.blog.php 
-// Missing adminBeforeCommentDelete in admin/comment.php
-
-// from BEHAVIOR coreAfterCommentCreate in inc/core/class.dc.blog.php
-// duplicate publicAfterTrackbackCreate in inc/core/class.dc.trackback.php
-$core->activityReport->addAction(
-    'comment',
-    'trackback',
-    __('trackback creation'),
-    __('A new trackback to "%" at "%s" was created on post "%s" at %s'),
-    'coreAfterCommentCreate',
-    ['activityReportBehaviors', 'trackbackCreate']
-);
-
-// Category 
-$core->activityReport->addGroup('category', __('Actions on categories'));
-
-// from BEHAVIOR adminAfterCategoryCreate in admin/category.php
-$core->activityReport->addAction(
-    'category',
-    'create',
-    __('category creation'),
-    __('A new category called "%s" was created by "%s" at %s'),
-    'adminAfterCategoryCreate',
-    ['activityReportBehaviors', 'categoryCreate']
-);
-
-// from BEHAVIOR adminAfterCategoryUpdate in admin/category.php
-$core->activityReport->addAction(
-    'category',
-    'update',
-    __('updating category'),
-    __('Category called "%s" has been updated by "%s" at %s'),
-    'adminAfterCategoryUpdate',
-    ['activityReportBehaviors', 'categoryUpdate']
-);
-
-// Missing adminBeforeCategoryDelete in admin/category.php
-
-// User 
-$core->activityReport->addGroup('user', __('Actions on users'));
-
-// from BEHAVIOR adminAfterUserCreate in admin/user.php
-$core->activityReport->addAction(
-    'user',
-    'create',
-    __('user creation'),
-    __('A new user named "%s" was created by "%s"'),
-    'adminAfterUserCreate',
-    ['activityReportBehaviors', 'userCreate']
-);
-
-// from BEHAVIOR adminAfterUserUpdated in admin/user.php
-$core->activityReport->addAction(
-    'user',
-    'update',
-    __('updating user'),
-    __('User named "%s" has been updated by "%s"'),
-    'adminAfterUserUpdate',
-    ['activityReportBehaviors', 'userUpdate']
-);
-
-// from BEHAVIOR adminBeforeUserDelete in admin/users.php
-$core->activityReport->addAction(
-    'user',
-    'delete',
-    __('user deletion'),
-    __('User named "%s" has been deleted by "%"'),
-    'adminBeforeUserDelete',
-    ['activityReportBehaviors', 'userDelete']
-);
-
 class activityReportBehaviors
 {
+
+    public static function registerBehaviors($core)
+    {
+        // ActivityReport plugin 
+        $core->activityReport->addGroup('activityReport', __('ActivityReport messages'));
+
+        $core->activityReport->addAction(
+            'activityReport',
+            'message',
+            __('Special messages'),
+            __('%s'),
+            'messageActivityReport',
+            ['activityReportBehaviors', 'messageActivityReport']
+        );
+
+        // Blog 
+        $core->activityReport->addGroup('blog', __('Actions on blog'));
+
+        // Not use as it is global : BEHAVIOR adminAfterBlogCreate in admin/blog.php
+
+        // from BEHAVIOR adminAfterBlogUpdate in admin/blog_pref.php
+        $core->activityReport->addAction(
+            'blog',
+            'update',
+            __('updating blog'),
+            __('Blog was updated by "%s"'),
+            'adminAfterBlogUpdate',
+            ['activityReportBehaviors', 'blogUpdate']
+        );
+
+        // from BEHAVIOR publicHeadContent in template
+        $core->activityReport->addAction(
+            'blog',
+            'p404',
+            __('404 error'),
+            __('New 404 error page at "%s"'),
+            'publicHeadContent',
+            ['activityReportBehaviors', 'blogP404']
+        );
+
+        // Post 
+        $core->activityReport->addGroup('post', __('Actions on posts'));
+
+        // from BEHAVIOR coreAfterPostCreate in inc/core/class.dc.blog.php (DC 2.2)
+        // duplicate adminAfterPostCreate in admin/post.php
+        // duplicate adminAfterPostCreate in admin/services.php
+        $core->activityReport->addAction(
+            'post',
+            'create',
+            __('post creation'),
+            __('A new post called "%s" was created by "%s" at %s'),
+            'adminAfterPostCreate',
+            ['activityReportBehaviors', 'postCreate']
+        );
+
+        // Plugin contribute
+        // from BEHAVIOR publicAfterPostCreate in plugins/contribute/_public.php
+        $core->activityReport->addAction(
+            'post',
+            'create',
+            __('post creation'),
+            __('A new post called "%s" was created by "%s" at %s'),
+            'publicAfterPostCreate',
+            ['activityReportBehaviors', 'postCreate']
+        );
+
+        // from BEHAVIOR coreAfterPostUpdate in inc/core/class.dc.blog.php (DC2.2)
+        // duplicate adminAfterPostUpdate in admin/post.php
+        $core->activityReport->addAction(
+            'post',
+            'update',
+            __('updating post'),
+            __('Post called "%s" has been updated by "%s" at %s'),
+            'adminAfterPostUpdate',
+            ['activityReportBehaviors', 'postUpdate']
+        );
+
+        // from BEHAVIOR adminBeforePostDelete in admin/posts_actions.php
+        // from BEHAVIOR adminBeforePostDelete in admin/post.php
+        $core->activityReport->addAction(
+            'post',
+            'delete',
+            __('post deletion'),
+            __('Post called "%s" has been deleted by "%s"'),
+            'adminBeforePostDelete',
+            ['activityReportBehaviors', 'postDelete']
+        );
+
+        // Wrong attempt on passworded enrty
+        // from BEHAVIOR urlHandlerServeDocument in inc/public/lib.urlhandlers.php
+        $core->activityReport->addAction(
+            'post',
+            'protection',
+            __('Post protection'),
+            __('An attempt failed on a passworded post with password "%s" at "%s"'),
+            'urlHandlerServeDocument',
+            ['activityReportBehaviors', 'postPasswordAttempt']
+        );
+
+        // Comment
+        $core->activityReport->addGroup('comment',__('Actions on comments'));
+
+        // from BEHAVIOR coreAfterCommentCreate in inc/core/class.dc.blog.php
+        // duplicate adminAfterCommentCreate in admin/comment.php
+        // duplicate publicAfterCommentCreate in inc/public/lib.urlhandlers.php
+        $core->activityReport->addAction(
+            'comment',
+            'create',
+            __('comment creation'),
+            __('A new comment was created by "%s" on post "%s" at %s'),
+            'coreAfterCommentCreate',
+            ['activityReportBehaviors', 'commentCreate']
+        );
+
+        // from BEHAVIOR coreAfterCommentUpdate in inc/core/class.dc.blog.php
+        // duplicate adminAfterCommentUpdate in admin/comment.php
+        $core->activityReport->addAction(
+            'comment',
+            'update',
+            __('updating comment'),
+            __('Comment has been updated by "%s" at %s'),
+            'coreAfterCommentUpdate',
+            ['activityReportBehaviors', 'commentUpdate']
+        );
+
+        // Missing coreBeforeCommentDelete in inc/core/class.dc.blog.php 
+        // Missing adminBeforeCommentDelete in admin/comment.php
+
+        // from BEHAVIOR coreAfterCommentCreate in inc/core/class.dc.blog.php
+        // duplicate publicAfterTrackbackCreate in inc/core/class.dc.trackback.php
+        $core->activityReport->addAction(
+            'comment',
+            'trackback',
+            __('trackback creation'),
+            __('A new trackback to "%" at "%s" was created on post "%s" at %s'),
+            'coreAfterCommentCreate',
+            ['activityReportBehaviors', 'trackbackCreate']
+        );
+
+        // Category 
+        $core->activityReport->addGroup('category', __('Actions on categories'));
+
+        // from BEHAVIOR adminAfterCategoryCreate in admin/category.php
+        $core->activityReport->addAction(
+            'category',
+            'create',
+            __('category creation'),
+            __('A new category called "%s" was created by "%s" at %s'),
+            'adminAfterCategoryCreate',
+            ['activityReportBehaviors', 'categoryCreate']
+        );
+
+        // from BEHAVIOR adminAfterCategoryUpdate in admin/category.php
+        $core->activityReport->addAction(
+            'category',
+            'update',
+            __('updating category'),
+            __('Category called "%s" has been updated by "%s" at %s'),
+            'adminAfterCategoryUpdate',
+            ['activityReportBehaviors', 'categoryUpdate']
+        );
+
+        // Missing adminBeforeCategoryDelete in admin/category.php
+
+        // User 
+        $core->activityReport->addGroup('user', __('Actions on users'));
+
+        // from BEHAVIOR adminAfterUserCreate in admin/user.php
+        $core->activityReport->addAction(
+            'user',
+            'create',
+            __('user creation'),
+            __('A new user named "%s" was created by "%s"'),
+            'adminAfterUserCreate',
+            ['activityReportBehaviors', 'userCreate']
+        );
+
+        // from BEHAVIOR adminAfterUserUpdated in admin/user.php
+        $core->activityReport->addAction(
+            'user',
+            'update',
+            __('updating user'),
+            __('User named "%s" has been updated by "%s"'),
+            'adminAfterUserUpdate',
+            ['activityReportBehaviors', 'userUpdate']
+        );
+
+        // from BEHAVIOR adminBeforeUserDelete in admin/users.php
+        $core->activityReport->addAction(
+            'user',
+            'delete',
+            __('user deletion'),
+            __('User named "%s" has been deleted by "%"'),
+            'adminBeforeUserDelete',
+            ['activityReportBehaviors', 'userDelete']
+        );
+    }
+
     public static function messageActivityReport($message)
     {
         global $core;

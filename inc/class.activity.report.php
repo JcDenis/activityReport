@@ -18,8 +18,6 @@ class activityReport
     public $core;
     public $con;
 
-    public $mailer = 'noreply.dotclear.activityreport@jcdenis.com';
-
     private $ns = 'activityReport';
     private $_global = 0;
     private $blog = null;
@@ -670,9 +668,9 @@ class activityReport
         return true;
     }
 
-    private function sendReport($recipients, $msg, $mailformat =' ')
+    private function sendReport($recipients, $message, $mailformat =' ')
     {
-        if (!is_array($recipients) || empty($msg) || !text::isEmail($this->mailer)) {
+        if (!is_array($recipients) || empty($message)) {
             return false;
         }
         $mailformat = $mailformat == 'html' ? 'html'  : 'plain';
@@ -694,32 +692,30 @@ class activityReport
 
         # Sending mails
         try {
-            $headers = [
-                'From: ' . mail::B64Header(__('Activity report module')) . ' <' . $this->mailer . '>',
-                'Reply-To: <' . $this->mailer . '>',
-                'Content-Type: text/' . $mailformat . '; charset=UTF-8;',
-                'MIME-Version: 1.0',
-                'X-Originating-IP: ' . http::realIP(),
-                'X-Mailer: Dotclear',
-                'X-Blog-Id: ' . mail::B64Header($this->core->blog->id),
-                'X-Blog-Name: ' . mail::B64Header($this->core->blog->name),
-                'X-Blog-Url: ' . mail::B64Header($this->core->blog->url)
-            ];
+            $subject = mb_encode_mimeheader(
+                ($this->_global ? '[' . $this->core->blog->name . '] ' : '') . __('Blog activity report'), 
+                'UTF-8', 'B'
+            );
 
-            $subject = $this->_global ?
-                mail::B64Header(__('Blog activity report')) :
-                mail::B64Header('[' . $this->core->blog->name . '] ' . __('Blog activity report'));
+            $headers = [];
+            $headers[] = 'From: ' . (defined('DC_ADMIN_MAILFROM') && DC_ADMIN_MAILFROM ? DC_ADMIN_MAILFROM : 'dotclear@local');
+            $headers[] = 'Content-Type: text/' . $mailformat .'; charset=UTF-8;';
+            //$headers[] = 'MIME-Version: 1.0';
+            //$headers[] = 'X-Originating-IP: ' . mb_encode_mimeheader(http::realIP(), 'UTF-8', 'B');
+            //$headers[] = 'X-Mailer: Dotclear';
+            //$headers[] = 'X-Blog-Id: ' . mb_encode_mimeheader($this->core->blog->id), 'UTF-8', 'B');
+            //$headers[] = 'X-Blog-Name: ' . mb_encode_mimeheader($this->core->blog->name), 'UTF-8', 'B');
+            //$headers[] = 'X-Blog-Url: ' . mb_encode_mimeheader($this->core->blog->url), 'UTF-8', 'B');
 
             $done = true;
             foreach ($recipients as $email) {
-                if (true !== mail::sendMail($email, $subject, $msg, $headers)) {
+                if (true !== mail::sendMail($email, $subject, $message, $headers)) {
                     $done = false;
                 }
             }
-        } catch (Exception $e) {
+        } catch (Exception $e) {var_dump($e);
             $done = false;
         }
-
         return $done;
     }
 

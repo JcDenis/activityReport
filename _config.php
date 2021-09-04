@@ -63,15 +63,23 @@ if (!empty($_POST['save'])) {
         $report->setSetting('requests', isset($_POST['requests']) ? $_POST['requests'] : []);
         $report->setSetting('blogs', isset($_POST['blogs']) ? $_POST['blogs'] : []);
 
-        if (!empty($_POST['force_report'])) {
+        if (!empty($_POST['send_report_now'])) {
             $core->activityReport->needReport(true);
+
+            dcPage::addSuccessNotice(
+                __('Report successfully sent.')
+            );
         }
-        if (!empty($_POST['force_delete'])) {
+        if (!empty($_POST['delete_report_now'])) {
             $core->activityReport->deleteLogs();
+
+            dcPage::addSuccessNotice(
+                __('Logs successfully deleted.')
+            );
         }
 
         dcPage::addSuccessNotice(
-            __('Configuration has been successfully updated.')
+            __('Configuration successfully updated.')
         );
         $core->adminurl->redirect('admin.plugins', ['module' => 'activityReport', 'conf' => 1, 'super' => $super]);
     } catch (Exception $e) {
@@ -91,7 +99,7 @@ if (!$last_report_ts) {
     );
     $next_report = dt::str(
         $core->blog->settings->system->date_format . ', ' . $core->blog->settings->system->time_format, 
-        (integer) $report->getSetting('interval') + $next_report_ts, 
+        (integer) $report->getSetting('interval') + $last_report_ts, 
         $core->auth->getInfo('user_tz')
     );
 }
@@ -211,5 +219,20 @@ foreach($groups as $group_id => $group) {
     echo '</div>';
 }
 echo '</div>';
+
+if (1) {
+    echo '
+    <div class="fieldset" id="settings"><h4>' . __('Special') . '</h4>
+
+    <p><label class="classic" for="send_report_now">' .
+    form::checkbox('send_report_now', '1', false).' '.
+    __('Send report now') . '</label></p>
+
+    <p><label class="classic" for="delete_report_now">' .
+    form::checkbox('delete_report_now', '1', false).' '.
+    __('Delete all logs now') . '</label></p>
+
+    </div>';
+}
 
 $report->unsetGlobal();

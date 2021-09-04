@@ -104,7 +104,7 @@ if ($core->auth->isSuperAdmin()) {
         sprintf(__('Configure activity report for %s'), $super ? __('current blog') : _('all blogs'))
     );
 }
-if (activityReport::hasMailer()) {
+if (!activityReport::hasMailer()) {
     echo '<p class="message">' .
         __('This server has no mail function, activityReport does not send email report.') .
         '</p>';

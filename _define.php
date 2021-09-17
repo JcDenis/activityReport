@@ -22,7 +22,7 @@ $this->registerModule(
     '1.1.1',
     [
         'requires' => [['core', '2.19']],
-        'permissions' => 'admin',
+        'permissions' => 'usage,contentadmin,admin',
         'priority' => -1000000,
         'type' => 'plugin',
         'support' => 'https://github.com/JcDenis/activityReport',

@@ -719,7 +719,7 @@ class activityReport
                 }
             }
         } catch (Exception $e) {
-            var_dump($e);
+            //var_dump($e);
             $done = false;
         }
 

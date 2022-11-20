@@ -18,7 +18,7 @@ $this->registerModule(
     'Activity report',
     'Receive your blog activity by email, feed, or on dashboard',
     'Jean-Christian Denis and contributors',
-    '2.0-dev',
+    '2.0',
     [
         'requires'    => [['core', '2.24']],
         'permissions' => dcCore::app()->auth->makePermissions([

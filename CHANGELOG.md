@@ -2,8 +2,8 @@ todo:
 - [ ] use sql statment
 - [ ] fix and add actitivy
 
-2.0 - 2022.11.12
-- switch to DC 2.24
+2.0 - 2022.11.20
+- fix compatibility with Dotclear 2.24 (required)
 - use new constant ACTIVTY_REPORT_V2 to not break old install
 
 1.1 - 2021.09.03

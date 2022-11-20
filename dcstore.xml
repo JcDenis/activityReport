@@ -1,11 +1,13 @@
+<?xml version="1.0"?>
 <modules xmlns:da="http://dotaddict.org/da/">
-<module id="activityReport">
-<name>Rapport d'activité</name>
-<version>1.1</version>
-<author>Jean-Christian Denis and contributors</author>
-<desc>Receive your blog activity by email, feed, or on dashboard</desc>
-<file>https://github.com/JcDenis/activityReport/releases/download/v1.1/plugin-activityReport.zip</file>
-<da:details>http://plugins.dotaddict.org/dc2/details/activityReport</da:details>
-<da:support>https://github.com/JcDenis/activityReport</da:support>
-</module>
+  <module id="activityReport">
+    <name>Activity report</name>
+    <version>2.0</version>
+    <author>Jean-Christian Denis and contributors</author>
+    <desc>Receive your blog activity by email, feed, or on dashboard</desc>
+    <file>https://github.com/JcDenis/activityReport/releases/download/v2.0/plugin-activityReport.zip</file>
+    <da:dcmin>2.24</da:dcmin>
+    <da:details>http://plugins.dotaddict.org/dc2/details/activityReport</da:details>
+    <da:support>https://github.com/JcDenis/activityReport</da:support>
+  </module>
 </modules>

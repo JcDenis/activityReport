@@ -562,7 +562,7 @@ class activityReport
                 throw new Exception("Can't open file");
             }
             // lock file
-            if (!flock($fp, LOCK_EX)) {
+            if (!flock($fp, LOCK_EX | LOCK_NB)) {
                 throw new Exception("Can't lock file");
             }
             if ($this->_global) {
@@ -585,7 +585,7 @@ class activityReport
         if ($this->_global) {
             @fclose($this->lock_global);
             $this->lock_global = null;
-        } else {
+        } elseif ($this->lock_blog) {
             @fclose($this->lock_blog);
             $this->lock_blog = null;
         }
@@ -666,7 +666,6 @@ class activityReport
             $this->unlockUpdate();
         } catch (Exception $e) {
             $this->unlockUpdate();
-            //throw $e;
         }
 
         return true;
@@ -719,7 +718,6 @@ class activityReport
                 }
             }
         } catch (Exception $e) {
-            //var_dump($e);
             $done = false;
         }
 

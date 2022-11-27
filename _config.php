@@ -103,11 +103,13 @@ if (!$last_report_ts) {
 }
 $emails = implode(';', dcCore::app()->activityReport->getSetting('mailinglist'));
 
+echo '<h4>' . ($super ? __('All blogs') : __('Current blog')) . '</h4>';
+
 if (dcCore::app()->auth->isSuperAdmin()) {
     echo sprintf(
         '<p class="modules right"><a class="module-config" href="%s">%s</a><br class="clear"/></p>',
         dcCore::app()->adminurl->get('admin.plugins', ['module' => 'activityReport', 'conf' => 1, 'super' => !$super]),
-        sprintf(__('Configure activity report for %s'), $super ? __('current blog') : _('all blogs'))
+        sprintf(__('Configure activity report for %s'), $super ? __('current blog') : __('all blogs'))
     );
 }
 if (!activityReport::hasMailer()) {

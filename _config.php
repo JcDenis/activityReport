@@ -194,6 +194,8 @@ if ($super) {
         $i++;
     }
     echo '</div>';
+} else {
+    echo form::hidden('blogs[0]', dcCore::app()->blog->id);
 }
 echo '
 <div class="fieldset one-box" id="setting_report"><h4>' . __('Report') . '</h4>

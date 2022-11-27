@@ -121,7 +121,7 @@ class activityReport
             }
         }
         # Force blog
-        $this->settings[0]['blogs'] = [1 => $this->blog];
+        $this->settings[0]['blogs'] = [0 => $this->blog];
     }
 
     public function getSetting($n)
@@ -563,7 +563,8 @@ class activityReport
             }
             // lock file
             if (!flock($fp, LOCK_EX | LOCK_NB)) {
-                throw new Exception("Can't lock file");
+                //throw new Exception("Can't lock file");
+                return false;
             }
             if ($this->_global) {
                 $this->lock_global = $fp;

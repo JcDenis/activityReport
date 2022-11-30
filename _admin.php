@@ -25,7 +25,9 @@ dcCore::app()->menu[dcAdmin::MENU_PLUGINS]->addItem(
         '/' . preg_quote(dcCore::app()->adminurl->get('admin.plugin.activityReport')) . '(&.*)?$/',
         $_SERVER['REQUEST_URI']
     ),
-    dcCore::app()->auth->check(dcAuth::PERMISSION_ADMIN, dcCore::app()->blog->id)
+    dcCore::app()->auth->check(dcCore::app()->auth->makePermissions([
+        dcAuth::PERMISSION_ADMIN,
+    ]), dcCore::app()->blog->id)
 );
 
 if (dcCore::app()->activityReport->getSetting('active')) {

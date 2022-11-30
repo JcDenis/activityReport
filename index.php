@@ -18,7 +18,9 @@ if (!defined('ACTIVITY_REPORT_V2')) {
     return null;
 }
 
-dcPage::check(dcAuth::PERMISSION_ADMIN);
+dcPage::check(dcCore::app()->auth->makePermissions([
+    dcAuth::PERMISSION_ADMIN,
+]));
 
 $super = dcCore::app()->auth->isSuperAdmin() && !empty($_REQUEST['super']);
 

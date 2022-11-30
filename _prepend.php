@@ -14,8 +14,10 @@ if (!defined('DC_RC_PATH')) {
     return null;
 }
 
-Clearbricks::lib()->autoload(['activityReport' => __DIR__ . '/inc/class.activity.report.php']);
-Clearbricks::lib()->autoload(['activityReportBehaviors' => __DIR__ . '/inc/class.activity.report.behaviors.php']);
+Clearbricks::lib()->autoload([
+    'activityReport'          => __DIR__ . '/inc/class.activity.report.php',
+    'activityReportBehaviors' => __DIR__ . '/inc/class.activity.report.behaviors.php',
+]);
 
 try {
     if (!defined('ACTIVITY_REPORT_V2')) {

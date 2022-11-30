@@ -28,9 +28,9 @@ class activityReport
 
     public function __construct($ns = 'activityReport')
     {
-        $this->con   = dcCore::app()->con;
-        $this->blog  = dcCore::app()->con->escape(dcCore::app()->blog->id);
-        $this->ns    = dcCore::app()->con->escape($ns);
+        $this->con  = dcCore::app()->con;
+        $this->blog = dcCore::app()->con->escape(dcCore::app()->blog->id);
+        $this->ns   = dcCore::app()->con->escape($ns);
 
         $this->getSettings();
 

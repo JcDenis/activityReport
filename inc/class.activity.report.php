@@ -21,7 +21,6 @@ class activityReport
     private $ns          = 'activityReport';
     private $_global     = 0;
     private $blog        = null;
-    private $table       = '';
     private $groups      = [];
     private $settings    = [];
     private $lock_blog   = null;
@@ -30,7 +29,6 @@ class activityReport
     public function __construct($ns = 'activityReport')
     {
         $this->con   = dcCore::app()->con;
-        $this->table = dcCore::app()->prefix . 'activity';
         $this->blog  = dcCore::app()->con->escape(dcCore::app()->blog->id);
         $this->ns    = dcCore::app()->con->escape($ns);
 
@@ -104,7 +102,7 @@ class activityReport
 
         $rs = $this->con->select(
             'SELECT setting_id, setting_value, blog_id ' .
-            'FROM ' . $this->table . '_setting ' .
+            'FROM ' . dcCore::app()->prefix . initActivityReport::SETTING_TABLE_NAME . ' ' .
             "WHERE setting_type='" . $this->ns . "' " .
             "AND (blog_id='" . $this->blog . "' OR blog_id IS NULL) " .
             'ORDER BY setting_id DESC '
@@ -137,8 +135,8 @@ class activityReport
 
         $c = $this->delSetting($n);
 
-        $cur = $this->con->openCursor($this->table . '_setting');
-        $this->con->writeLock($this->table . '_setting');
+        $cur = $this->con->openCursor(dcCore::app()->prefix . initActivityReport::SETTING_TABLE_NAME);
+        $this->con->writeLock(dcCore::app()->prefix . initActivityReport::SETTING_TABLE_NAME);
 
         $cur->blog_id       = $this->_global ? null : $this->blog;
         $cur->setting_id    = $this->con->escape($n);
@@ -156,7 +154,7 @@ class activityReport
     private function delSetting($n)
     {
         return $this->con->execute(
-            'DELETE FROM ' . $this->table . '_setting ' .
+            'DELETE FROM ' . dcCore::app()->prefix . initActivityReport::SETTING_TABLE_NAME . ' ' .
             'WHERE blog_id' . ($this->_global ? ' IS NULL' : "='" . $this->blog . "'") . ' ' .
             "AND setting_id='" . $this->con->escape($n) . "' " .
             "AND setting_type='" . $this->ns . "' "
@@ -192,8 +190,8 @@ class activityReport
             'E.activity_blog_status, E.activity_super_status ';
         }
 
-        $r .= 'FROM ' . $this->table . ' E ' .
-        'LEFT JOIN ' . dcCore::app()->prefix . 'blog B on E.blog_id=B.blog_id ';
+        $r .= 'FROM ' . dcCore::app()->prefix . initActivityReport::ACTIVITY_TABLE_NAME . ' E ' .
+        'LEFT JOIN ' . dcCore::app()->prefix . dcBlog::BLOG_TABLE_NAME . ' B on E.blog_id=B.blog_id ';
 
         if (!empty($p['from'])) {
             $r .= $p['from'] . ' ';
@@ -278,8 +276,8 @@ class activityReport
     public function addLog($group, $action, $logs)
     {
         try {
-            $cur = $this->con->openCursor($this->table);
-            $this->con->writeLock($this->table);
+            $cur = $this->con->openCursor(dcCore::app()->prefix . initActivityReport::ACTIVITY_TABLE_NAME);
+            $this->con->writeLock(dcCore::app()->prefix . initActivityReport::ACTIVITY_TABLE_NAME);
 
             $cur->activity_id     = $this->getNextId();
             $cur->activity_type   = $this->ns;
@@ -430,7 +428,7 @@ class activityReport
         // Get blogs and logs count
         $rs = $this->con->select(
             'SELECT blog_id ' .
-            'FROM ' . $this->table . ' ' .
+            'FROM ' . dcCore::app()->prefix . initActivityReport::ACTIVITY_TABLE_NAME . ' ' .
             "WHERE activity_type='" . $this->ns . "' " .
             'GROUP BY blog_id '
         );
@@ -445,7 +443,7 @@ class activityReport
             $obs_global = dt::str('%Y-%m-%d %H:%M:%S', $ts - (int) $this->settings[1]['obsolete']);
 
             $this->con->execute(
-                'DELETE FROM ' . $this->table . ' ' .
+                'DELETE FROM ' . dcCore::app()->prefix . initActivityReport::ACTIVITY_TABLE_NAME . ' ' .
                 "WHERE activity_type='" . $this->ns . "' " .
                 "AND (activity_dt < TIMESTAMP '" . $obs_blog . "' " .
                 "OR activity_dt < TIMESTAMP '" . $obs_global . "') " .
@@ -454,8 +452,8 @@ class activityReport
 
             if ($this->con->changes()) {
                 try {
-                    $cur = $this->con->openCursor($this->table);
-                    $this->con->writeLock($this->table);
+                    $cur = $this->con->openCursor(dcCore::app()->prefix . initActivityReport::ACTIVITY_TABLE_NAME);
+                    $this->con->writeLock(dcCore::app()->prefix . initActivityReport::ACTIVITY_TABLE_NAME);
 
                     $cur->activity_id     = $this->getNextId();
                     $cur->activity_type   = $this->ns;
@@ -478,7 +476,7 @@ class activityReport
     private function cleanLogs()
     {
         $this->con->execute(
-            'DELETE FROM ' . $this->table . ' ' .
+            'DELETE FROM ' . dcCore::app()->prefix . initActivityReport::ACTIVITY_TABLE_NAME . ' ' .
             "WHERE activity_type='" . $this->ns . "' " .
             'AND activity_blog_status = 1 ' .
             'AND activity_super_status = 1 '
@@ -492,14 +490,14 @@ class activityReport
         }
 
         return $this->con->execute(
-            'DELETE FROM ' . $this->table . ' ' .
+            'DELETE FROM ' . dcCore::app()->prefix . initActivityReport::ACTIVITY_TABLE_NAME . ' ' .
             "WHERE activity_type='" . $this->ns . "' "
         );
     }
 
     private function updateStatus($from_date_ts, $to_date_ts)
     {
-        $r = 'UPDATE ' . $this->table . ' ';
+        $r = 'UPDATE ' . dcCore::app()->prefix . initActivityReport::ACTIVITY_TABLE_NAME . ' ';
 
         if ($this->_global) {
             $r .= 'SET activity_super_status = 1 WHERE blog_id IS NOT NULL ';
@@ -516,7 +514,7 @@ class activityReport
     public function getNextId()
     {
         return $this->con->select(
-            'SELECT MAX(activity_id) FROM ' . $this->table
+            'SELECT MAX(activity_id) FROM ' . dcCore::app()->prefix . initActivityReport::ACTIVITY_TABLE_NAME
         )->f(0) + 1;
     }
 
@@ -747,7 +745,7 @@ class activityReport
         $pwd = $pwd['hex'];
 
         $strReq = 'SELECT user_id, user_pwd ' .
-                'FROM ' . dcCore::app()->prefix . 'user ' .
+                'FROM ' . dcCore::app()->prefix . dcAuth::USER_TABLE_NAME . ' ' .
                 "WHERE user_id = '" . dcCore::app()->con->escape($user_id) . "' ";
 
         $rs = dcCore::app()->con->select($strReq);

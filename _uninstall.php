@@ -20,7 +20,7 @@ $this->addUserAction(
     /* action */
     'delete',
     /* ns */
-    'activity',
+    initActivityReport::ACTIVITY_TABLE_NAME,
     /* description */
     sprintf(__('delete %s table'), '"activity"')
 );
@@ -31,7 +31,7 @@ $this->addUserAction(
     /* action */
     'delete',
     /* ns */
-    'activity_setting',
+    initActivityReport::SETTING_TABLE_NAME,
     /* description */
     sprintf(__('delete %s table'), '"activity_setting"')
 );

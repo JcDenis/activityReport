@@ -23,7 +23,7 @@ if (version_compare($old_version, $new_version, '>=')) {
 
 try {
     $s = new dbStruct(dcCore::app()->con, dcCore::app()->prefix);
-    $s->activity
+    $s->{initActivityReport::ACTIVITY_TABLE_NAME}
         ->activity_id('bigint', 0, false)
         ->activity_type('varchar', 32, false, "'activityReport'")
         ->blog_id('varchar', 32, true)
@@ -41,7 +41,7 @@ try {
         ->index('idx_activity_blog_status', 'btree', 'activity_blog_status')
         ->index('idx_activity_super_status', 'btree', 'activity_super_status');
 
-    $s->activity_setting
+    $s->{initActivityReport::SETTING_TABLE_NAME}
         ->setting_id('varchar', 64, false)
         ->blog_id('varchar', 32, true)
         ->setting_type('varchar', 32, false)

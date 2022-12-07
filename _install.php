@@ -14,10 +14,11 @@ if (!defined('DC_CONTEXT_ADMIN')) {
     return null;
 }
 
-$new_version = dcCore::app()->plugins->moduleInfo('activityReport', 'version');
-$old_version = dcCore::app()->getVersion('activityReport');
-
-if (version_compare($old_version, $new_version, '>=')) {
+if (version_compare(
+    dcCore::app()->getVersion('activityReport'), 
+    dcCore::app()->plugins->moduleInfo('activityReport', 'version'), 
+    '>='
+)) {
     return null;
 }
 
@@ -53,8 +54,6 @@ try {
 
     $si      = new dbStruct(dcCore::app()->con, dcCore::app()->prefix);
     $changes = $si->synchronize($s);
-
-    dcCore::app()->setVersion('activityReport', $new_version);
 
     return true;
 } catch (Exception $e) {

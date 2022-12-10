@@ -14,10 +14,9 @@ if (!defined('DC_CONTEXT_ADMIN')) {
     return null;
 }
 
-if (version_compare(
-    dcCore::app()->getVersion('activityReport'), 
-    dcCore::app()->plugins->moduleInfo('activityReport', 'version'), 
-    '>='
+if (!dcCore::app()->newVersion(
+    basename(__DIR__), 
+    dcCore::app()->plugins->moduleInfo(basename(__DIR__), 'version')
 )) {
     return null;
 }

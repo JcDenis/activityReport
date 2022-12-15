@@ -32,13 +32,13 @@ $logs = dcCore::app()->activityReport->getLogs([]);
 
 if ($super) {
     $breadcrumb = [
-        __('Current blog')                                        => dcCore::app()->adminurl->get('admin.plugin.activityReport', ['super' => 0]),
+        __('Current blog')                                        => dcCore::app()->adminurl->get('admin.plugin.' . basename(__DIR__), ['super' => 0]),
         '<span class="page-title">' . __('All blogs') . '</span>' => '',
     ];
 } else {
     $breadcrumb = ['<span class="page-title">' . __('Current blog') . '</span>' => ''];
     if (dcCore::app()->auth->isSuperAdmin()) {
-        $breadcrumb[__('All blogs')] = dcCore::app()->adminurl->get('admin.plugin.activityReport', ['super' => 1]);
+        $breadcrumb[__('All blogs')] = dcCore::app()->adminurl->get('admin.plugin.' . basename(__DIR__), ['super' => 1]);
     }
 }
 

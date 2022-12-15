@@ -79,7 +79,7 @@ if (!empty($_POST['save'])) {
         dcAdminNotices::addSuccessNotice(
             __('Configuration successfully updated.')
         );
-        dcCore::app()->adminurl->redirect('admin.plugins', ['module' => 'activityReport', 'conf' => 1, 'super' => $super]);
+        dcCore::app()->adminurl->redirect('admin.plugins', ['module' => basename(__DIR__), 'conf' => 1, 'super' => $super]);
     } catch (Exception $e) {
         dcCore::app()->error->add($e->getMessage());
     }
@@ -108,7 +108,7 @@ echo '<h4>' . ($super ? __('All blogs') : __('Current blog')) . '</h4>';
 if (dcCore::app()->auth->isSuperAdmin()) {
     echo sprintf(
         '<p class="modules right"><a class="module-config" href="%s">%s</a><br class="clear"/></p>',
-        dcCore::app()->adminurl->get('admin.plugins', ['module' => 'activityReport', 'conf' => 1, 'super' => !$super]),
+        dcCore::app()->adminurl->get('admin.plugins', ['module' => basename(__DIR__), 'conf' => 1, 'super' => !$super]),
         sprintf(__('Configure activity report for %s'), $super ? __('current blog') : __('all blogs'))
     );
 }
@@ -141,13 +141,13 @@ form::hidden(['super'], $super);
 
 if (!$super) {
     echo
-    '<p><img alt="' . __('RSS feed') . '" src="' . dcPage::getPF('activityReport/inc/img/feed.png') . '" />' .
+    '<p><img alt="' . __('RSS feed') . '" src="' . dcPage::getPF(basename(__DIR__) . '/inc/img/feed.png') . '" />' .
     '<a title="' . __('RSS feed') . '" href="' .
-    dcCore::app()->blog->url . dcCore::app()->url->getBase('activityReport') . '/rss2/' . dcCore::app()->activityReport->getUserCode() . '">' .
+    dcCore::app()->blog->url . dcCore::app()->url->getBase(basename(__DIR__)) . '/rss2/' . dcCore::app()->activityReport->getUserCode() . '">' .
     __('Rss2 feed for activity on this blog') . '</a><br />' .
-    '<img alt="' . __('Atom feed') . '" src="' . dcPage::getPF('activityReport/inc/img/feed.png') . '" />' .
+    '<img alt="' . __('Atom feed') . '" src="' . dcPage::getPF(basename(__DIR__) . '/inc/img/feed.png') . '" />' .
     '<a title="' . __('Atom feed') . '" href="' .
-    dcCore::app()->blog->url . dcCore::app()->url->getBase('activityReport') . '/atom/' . dcCore::app()->activityReport->getUserCode() . '">' .
+    dcCore::app()->blog->url . dcCore::app()->url->getBase(basename(__DIR__)) . '/atom/' . dcCore::app()->activityReport->getUserCode() . '">' .
     __('Atom feed for activity on this blog') . '</a></p>';
 }
 echo '

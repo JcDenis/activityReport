@@ -18,4 +18,5 @@ class initActivityReport
 {
     public const ACTIVITY_TABLE_NAME = 'activity';
     public const SETTING_TABLE_NAME  = 'activity_setting';
+    public const CACHE_DIR_NAME      = 'activityreport';
 }

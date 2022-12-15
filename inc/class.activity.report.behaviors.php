@@ -23,10 +23,10 @@ class activityReportBehaviors
     public static function registerBehaviors()
     {
         // ActivityReport plugin
-        dcCore::app()->activityReport->addGroup('activityReport', __('ActivityReport messages'));
+        dcCore::app()->activityReport->addGroup(basename(dirname(__DIR__)), __('ActivityReport messages'));
 
         dcCore::app()->activityReport->addAction(
-            'activityReport',
+            basename(dirname(__DIR__)),
             'message',
             __('Special messages'),
             __('%s'),
@@ -220,7 +220,7 @@ class activityReportBehaviors
     public static function messageActivityReport($message)
     {
         $logs = [$message];
-        dcCore::app()->activityReport->addLog('activityReport', 'message', $logs);
+        dcCore::app()->activityReport->addLog(basename(dirname(__DIR__)), 'message', $logs);
     }
 
     public static function blogUpdate($cur, $blog_id)

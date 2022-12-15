@@ -18,7 +18,7 @@ class activityReport
 {
     public $con;
 
-    private $ns          = 'activityReport';
+    private $ns          = null;
     private $_global     = 0;
     private $blog        = null;
     private $groups      = [];
@@ -26,11 +26,11 @@ class activityReport
     private $lock_blog   = null;
     private $lock_global = null;
 
-    public function __construct($ns = 'activityReport')
+    public function __construct($ns = null)
     {
         $this->con  = dcCore::app()->con;
         $this->blog = dcCore::app()->con->escape(dcCore::app()->blog->id);
-        $this->ns   = dcCore::app()->con->escape($ns);
+        $this->ns   = dcCore::app()->con->escape($ns ?? basename(dirname(__DIR__)));
 
         $this->getSettings();
 
@@ -535,7 +535,7 @@ class activityReport
             $cached_file = sprintf(
                 '%s/%s/%s/%s/%s.txt',
                 DC_TPL_CACHE,
-                'activityreport',
+                initActivityReport::CACHE_DIR_NAME,
                 substr($f_md5, 0, 2),
                 substr($f_md5, 2, 2),
                 $f_md5

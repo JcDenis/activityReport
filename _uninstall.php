@@ -42,7 +42,7 @@ $this->addUserAction(
     /* action */
     'delete',
     /* ns */
-    'activityReport',
+    basename(__DIR__),
     /* description */
     __('delete plugin files')
 );
@@ -53,7 +53,7 @@ $this->addUserAction(
     /* action */
     'delete',
     /* ns */
-    'activityReport',
+    basename(__DIR__),
     /* description */
     __('delete the version number')
 );
@@ -64,9 +64,9 @@ $this->addDirectAction(
     /* action */
     'delete',
     /* ns */
-    'activityReport',
+    basename(__DIR__),
     /* description */
-    sprintf(__('delete %s version number'), 'activityReport')
+    sprintf(__('delete %s version number'), basename(__DIR__))
 );
 
 $this->addDirectAction(
@@ -75,7 +75,7 @@ $this->addDirectAction(
     /* action */
     'delete',
     /* ns */
-    'activityReport',
+    basename(__DIR__),
     /* description */
-    sprintf(__('delete %s plugin files'), 'activityReport')
+    sprintf(__('delete %s plugin files'), basename(__DIR__))
 );

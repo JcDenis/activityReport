@@ -24,7 +24,7 @@ try {
         dcCore::app()->__set('activityReport', new activityReport());
 
         dcCore::app()->url->register(
-            'activityReport',
+            basename(__DIR__),
             'reports',
             '^reports/((atom|rss2)/(.+))$',
             ['activityReportPublicUrl', 'feed']

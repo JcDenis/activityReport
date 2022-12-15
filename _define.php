@@ -28,8 +28,8 @@ $this->registerModule(
         ]),
         'priority'   => -1000000,
         'type'       => 'plugin',
-        'support'    => 'https://github.com/JcDenis/activityReport',
-        'details'    => 'http://plugins.dotaddict.org/dc2/details/activityReport',
-        'repository' => 'https://raw.githubusercontent.com/JcDenis/activityReport/master/dcstore.xml',
+        'support'    => 'https://github.com/JcDenis/' . basename(__DIR__),
+        'details'    => 'http://plugins.dotaddict.org/dc2/details/' . basename(__DIR__),
+        'repository' => 'https://raw.githubusercontent.com/JcDenis/' . basename(__DIR__) . '/master/dcstore.xml',
     ]
 );

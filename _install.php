@@ -25,7 +25,7 @@ try {
     $s = new dbStruct(dcCore::app()->con, dcCore::app()->prefix);
     $s->{initActivityReport::ACTIVITY_TABLE_NAME}
         ->activity_id('bigint', 0, false)
-        ->activity_type('varchar', 32, false, "'activityReport'")
+        ->activity_type('varchar', 32, false, "'" . basename(__DIR__) . "'")
         ->blog_id('varchar', 32, true)
         ->activity_group('varchar', 32, false)
         ->activity_action('varchar', 32, false)

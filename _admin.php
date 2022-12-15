@@ -19,10 +19,10 @@ if (!defined('ACTIVITY_REPORT_V2')) {
 
 dcCore::app()->menu[dcAdmin::MENU_PLUGINS]->addItem(
     __('Activity report'),
-    dcCore::app()->adminurl->get('admin.plugin.activityReport'),
-    dcPage::getPF('activityReport/icon.png'),
+    dcCore::app()->adminurl->get('admin.plugin.' . basename(__DIR__)),
+    dcPage::getPF(basename(__DIR__) . '/icon.png'),
     preg_match(
-        '/' . preg_quote(dcCore::app()->adminurl->get('admin.plugin.activityReport')) . '(&.*)?$/',
+        '/' . preg_quote(dcCore::app()->adminurl->get('admin.plugin.' . basename(__DIR__))) . '(&.*)?$/',
         $_SERVER['REQUEST_URI']
     ),
     dcCore::app()->auth->check(dcCore::app()->auth->makePermissions([
@@ -40,8 +40,8 @@ class activityReportAdmin
 {
     public static function adminDashboardContents($items)
     {
-        dcCore::app()->auth->user_prefs->addWorkspace('activityReport');
-        $limit = abs((int) dcCore::app()->auth->user_prefs->activityReport->dashboard_item);
+        dcCore::app()->auth->user_prefs->addWorkspace(basename(__DIR__));
+        $limit = abs((int) dcCore::app()->auth->user_prefs->__get(basename(__DIR__))->dashboard_item);
         if (!$limit) {
             return null;
         }
@@ -83,10 +83,10 @@ class activityReportAdmin
             '<h3>' . __('Activity report') . '</h3>' .
             '<dl id="reports">' . implode('', $lines) . '</dl>' .
             '<p class="modules"><a class="module-details" href="' .
-            dcCore::app()->adminurl->get('admin.plugin.activityReport') . '">' .
+            dcCore::app()->adminurl->get('admin.plugin.' . basename(__DIR__)) . '">' .
             __('View all logs') . '</a> - <a class="module-config" href="' .
             dcCore::app()->adminurl->get('admin.plugins', [
-                'module' => 'activityReport',
+                'module' => basename(__DIR__),
                 'conf'   => 1,
                 'redir'  => dcCore::app()->adminurl->get('admin.home') . '#activity-report-logs',
             ]) . '">' .
@@ -97,7 +97,7 @@ class activityReportAdmin
 
     public static function adminDashboardOptionsForm()
     {
-        dcCore::app()->auth->user_prefs->addWorkspace('activityReport');
+        dcCore::app()->auth->user_prefs->addWorkspace(basename(__DIR__));
 
         echo
         '<div class="fieldset">' .
@@ -107,7 +107,7 @@ class activityReportAdmin
         form::combo(
             'activityReport_dashboard_item',
             self::comboList(),
-            self::comboList(dcCore::app()->auth->user_prefs->activityReport->dashboard_item)
+            self::comboList(dcCore::app()->auth->user_prefs->__get(basename(__DIR__))->dashboard_item)
         ) . '</p>' .
         '</div>';
     }
@@ -118,8 +118,8 @@ class activityReportAdmin
             return;
         }
 
-        dcCore::app()->auth->user_prefs->addWorkspace('activityReport');
-        dcCore::app()->auth->user_prefs->activityReport->put(
+        dcCore::app()->auth->user_prefs->addWorkspace(basename(__DIR__));
+        dcCore::app()->auth->user_prefs->__get(basename(__DIR__))->put(
             'dashboard_item',
             self::comboList(@$_POST['activityReport_dashboard_item']),
             'integer'

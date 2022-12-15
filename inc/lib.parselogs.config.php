@@ -40,7 +40,7 @@ $format = [
             '</style>' .
             '</head><body>' .
             '<div class="info">%PERIOD%</div><div class="content">%TEXT%</div>' .
-            '<div class="foot"><p>Powered by <a href="http://dotclear.jcdenis.com/go/activityReport">activityReport</a></p></div>' .
+            '<div class="foot"><p>Powered by <a href="https://github.com/JcDenis/activityReport">activityReport</a></p></div>' .
             '</body></html>',
     ],
     'plain' => [

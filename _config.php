@@ -103,7 +103,7 @@ if (!$last_report_ts) {
 }
 $emails = implode(';', dcCore::app()->activityReport->getSetting('mailinglist'));
 
-echo '<h4>' . ($super ? __('All blogs') : __('Current blog')) . '</h4>';
+echo '<p class="warn">' . ($super ? __('All blogs') : __('Current blog')) . '</p>';
 
 if (dcCore::app()->auth->isSuperAdmin()) {
     echo sprintf(

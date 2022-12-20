@@ -96,7 +96,6 @@ class activityReportBehaviors
             ['activityReportBehaviors', 'postUpdate']
         );
 
-        // from BEHAVIOR adminBeforePostDelete in admin/posts_actions.php
         // from BEHAVIOR adminBeforePostDelete in admin/post.php
         dcCore::app()->activityReport->addAction(
             'post',

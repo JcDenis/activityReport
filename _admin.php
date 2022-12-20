@@ -31,14 +31,14 @@ dcCore::app()->menu[dcAdmin::MENU_PLUGINS]->addItem(
 );
 
 if (dcCore::app()->activityReport->getSetting('active')) {
-    dcCore::app()->addBehavior('adminDashboardContentsV2', ['activityReportAdmin', 'adminDashboardContents']);
-    dcCore::app()->addBehavior('adminDashboardOptionsFormV2', ['activityReportAdmin', 'adminDashboardOptionsForm']);
+    dcCore::app()->addBehavior('adminDashboardContentsV2', ['activityReportAdmin', 'adminDashboardContentsV2']);
+    dcCore::app()->addBehavior('adminDashboardOptionsFormV2', ['activityReportAdmin', 'adminDashboardOptionsFormV2']);
     dcCore::app()->addBehavior('adminAfterDashboardOptionsUpdate', ['activityReportAdmin', 'adminAfterDashboardOptionsUpdate']);
 }
 
 class activityReportAdmin
 {
-    public static function adminDashboardContents($items)
+    public static function adminDashboardContentsV2($items)
     {
         dcCore::app()->auth->user_prefs->addWorkspace(basename(__DIR__));
         $limit = abs((int) dcCore::app()->auth->user_prefs->__get(basename(__DIR__))->dashboard_item);
@@ -95,7 +95,7 @@ class activityReportAdmin
         ]);
     }
 
-    public static function adminDashboardOptionsForm()
+    public static function adminDashboardOptionsFormV2()
     {
         dcCore::app()->auth->user_prefs->addWorkspace(basename(__DIR__));
 

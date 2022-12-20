@@ -11,7 +11,7 @@
  * @copyright GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
  */
 $format = [
-    'html' => [
+    'html'  => [
         'blog_title'   => '<h2><a href="%URL%">%TEXT%</a></h2>',
         'blog_open'    => '',
         'blog_close'   => '',

@@ -18,7 +18,7 @@ $this->registerModule(
     'Activity report',
     'Receive your blog activity by email, feed, or on dashboard',
     'Jean-Christian Denis and contributors',
-    '2.0',
+    '2.1',
     [
         'requires'    => [['core', '2.24']],
         'permissions' => dcCore::app()->auth->makePermissions([
@@ -26,10 +26,10 @@ $this->registerModule(
             dcAuth::PERMISSION_CONTENT_ADMIN,
             dcAuth::PERMISSION_ADMIN,
         ]),
-        'priority'   => -1000000,
-        'type'       => 'plugin',
-        'support'    => 'https://github.com/JcDenis/' . basename(__DIR__),
-        'details'    => 'http://plugins.dotaddict.org/dc2/details/' . basename(__DIR__),
-        'repository' => 'https://raw.githubusercontent.com/JcDenis/' . basename(__DIR__) . '/master/dcstore.xml',
+        'priority'    => -1000000,
+        'type'        => 'plugin',
+        'support'     => 'https://github.com/JcDenis/' . basename(__DIR__),
+        'details'     => 'http://plugins.dotaddict.org/dc2/details/' . basename(__DIR__),
+        'repository'  => 'https://raw.githubusercontent.com/JcDenis/' . basename(__DIR__) . '/master/dcstore.xml',
     ]
 );

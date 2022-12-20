@@ -2,6 +2,16 @@ todo:
 - [ ] use sql statment
 - [ ] fix and add actitivy
 
+2.1 - 2022.12.20
+- use abstract plugin name
+- fix install
+- fix permissions
+- fix tables names
+- fix autoload
+- fix translation
+- fix force report
+- fix freeze on lock fail
+
 2.0 - 2022.11.20
 - fix compatibility with Dotclear 2.24 (required)
 - use new constant ACTIVTY_REPORT_V2 to not break old install

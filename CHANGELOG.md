@@ -1,6 +1,19 @@
 todo:
 - [ ] use sql statment
 - [ ] fix and add actitivy
+check formats
+
+3.0
+- require Dotclear 2.26
+- require php 8.1
+- use new SVG icon
+- use namespace
+- use Dotclear filter and list
+- remove superadmin report
+- remove settings db table
+- change activity table structure
+- reset settings and activities.
+- various fix
 
 2.1 - 2022.12.20
 - use abstract plugin name

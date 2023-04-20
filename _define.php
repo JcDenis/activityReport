@@ -15,21 +15,21 @@ if (!defined('DC_RC_PATH')) {
 }
 
 $this->registerModule(
-    'Activity report',
-    'Receive your blog activity by email, feed, or on dashboard',
+    'Activity log',
+    'Log and receive your blog activity by email, feed, or on dashboard',
     'Jean-Christian Denis and contributors',
-    '2.1',
+    '3.0',
     [
-        'requires'    => [['core', '2.24']],
+        'requires'    => [['core', '2.26']],
         'permissions' => dcCore::app()->auth->makePermissions([
             dcAuth::PERMISSION_USAGE,
             dcAuth::PERMISSION_CONTENT_ADMIN,
             dcAuth::PERMISSION_ADMIN,
         ]),
-        'priority'    => -1000000,
-        'type'        => 'plugin',
-        'support'     => 'https://github.com/JcDenis/' . basename(__DIR__),
-        'details'     => 'http://plugins.dotaddict.org/dc2/details/' . basename(__DIR__),
-        'repository'  => 'https://raw.githubusercontent.com/JcDenis/' . basename(__DIR__) . '/master/dcstore.xml',
+        'priority'   => 2,
+        'type'       => 'plugin',
+        'support'    => 'https://github.com/JcDenis/' . basename(__DIR__),
+        'details'    => 'http://plugins.dotaddict.org/dc2/details/' . basename(__DIR__),
+        'repository' => 'https://raw.githubusercontent.com/JcDenis/' . basename(__DIR__) . '/master/dcstore.xml',
     ]
 );

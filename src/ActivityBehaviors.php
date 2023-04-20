@@ -192,21 +192,21 @@ class ActivityBehaviors
         $user->add(new Action(
             'preference',
             __('updating user preference'),
-            __('User named "%s" preference has been updated by "%s"'),
+            __('"%s" user preference has been updated'),
             'adminAfterUserProfileUpdate',
             [self::class, 'userPreference']
         ));
         $user->add(new Action(
             'preference',
             __('updating user preference'),
-            __('User named "%s" preference has been updated by "%s"'),
+            __('"%s" user preference has been updated'),
             'adminAfterUserOptionsUpdate',
             [self::class, 'userPreference']
         ));
         $user->add(new Action(
             'preference',
             __('updating user preference'),
-            __('User named "%s" preference has been updated by "%s"'),
+            __('"%s" user preference has been updated'),
             'adminAfterDashboardOptionsUpdate',
             [self::class, 'userPreference']
         ));
@@ -448,15 +448,18 @@ class ActivityBehaviors
 
     public static function userPreference(cursor $cur, string $user_id): void
     {
+        $user = dcCore::app()->getUser($user_id);
+        if ($user->isEmpty()) {
+            return;
+        }
         $user_cn = dcUtils::getUserCN(
-            $cur->getField('user_id'),
-            $cur->getField('user_name'),
-            $cur->getField('user_firstname'),
-            $cur->getField('user_displayname')
+            $user->f('user_id'),
+            $user->f('user_name'),
+            $user->f('user_firstname'),
+            $user->f('user_displayname')
         );
         $logs = [
             (string) $user_cn,
-            (string) dcCore::app()->auth?->getInfo('user_cn'),
         ];
         ActivityReport::instance()->addLog('user', 'preference', $logs);
     }

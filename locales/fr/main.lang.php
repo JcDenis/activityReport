@@ -45,6 +45,8 @@ L10n::$locales['user creation']                                                 
 L10n::$locales['A new user named "%s" was created by "%s"']                                    = 'Un nouvel utilisateur a été ajouté par "%s"';
 L10n::$locales['updating user']                                                                = 'Mise à jour d\'utilisateur';
 L10n::$locales['User named "%s" has been updated by "%s"']                                     = 'L\'utilisateur "%s" a été mis à jour par "%s"';
+L10n::$locales['updating user preference']                                                     = 'Mise à jour de préférence';
+L10n::$locales['User named "%s" preference has been updated by "%s"']                          = 'L\'utilisateur "%s" a mis à jour les préférences de "%s"';
 L10n::$locales['user deletion']                                                                = 'Suppression d\'utilisateur';
 L10n::$locales['User named "%s" has been deleted by "%"']                                      = 'L\'utilisateur nommé "%s" a été supprimé par "%s"';
 L10n::$locales['HTML']                                                                         = 'HTML';

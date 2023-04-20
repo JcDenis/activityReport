@@ -1,6 +1,6 @@
 # Language: Français
 # Module: activityReport - 3.0
-# Date: 2023-04-20 12:20:14
+# Date: 2023-04-20 12:38:46
 # Author: , contact@jcdenis.fr
 # Translated with translater 2023.03.19
 
@@ -9,7 +9,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Project-Id-Version: activityReport 3.0\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-04-20T12:20:14+00:00\n"
+"PO-Revision-Date: 2023-04-20T12:38:46+00:00\n"
 "Last-Translator: Jean-Christian Denis\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -151,6 +151,14 @@ msgstr "Mise à jour d'utilisateur"
 #: src/ActivityBehaviors.php:186
 msgid "User named \"%s\" has been updated by \"%s\""
 msgstr "L'utilisateur \"%s\" a été mis à jour par \"%s\""
+
+#: src/ActivityBehaviors.php:194
+msgid "updating user preference"
+msgstr "Mise à jour de préférence"
+
+#: src/ActivityBehaviors.php:195
+msgid "User named \"%s\" preference has been updated by \"%s\""
+msgstr "L'utilisateur \"%s\" a mis à jour les préférences de \"%s\""
 
 #: src/ActivityBehaviors.php:217
 msgid "user deletion"

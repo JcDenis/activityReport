@@ -104,7 +104,7 @@ class ActivityReport
      */
     public function getLogs(ArrayObject $params = null, bool $count_only = false, ?SelectStatement $ext_sql = null): ?dcRecord
     {
-        if (null === $params) {
+        if (is_null($params)) {
             $params = new ArrayObject();
         }
 
@@ -598,7 +598,7 @@ class ActivityReport
                 ]);
 
                 $logs = $this->getLogs($params);
-                if ($logs !== null && !$logs->isEmpty()) {
+                if (!is_null($logs) && !$logs->isEmpty()) {
                     // Datas to readable text
                     $content = $this->parseLogs($logs);
                     if (!empty($content)) {

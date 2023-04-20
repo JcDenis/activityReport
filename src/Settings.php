@@ -51,7 +51,7 @@ class Settings
      */
     public function __construct()
     {
-        if (dcCore::app()->blog === null) {
+        if (is_null(dcCore::app()->blog)) {
             throw new Exception('Blog is not set');
         }
 

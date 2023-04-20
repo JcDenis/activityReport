@@ -38,7 +38,7 @@ class Action
         ?callable $function
     ) {
         // fake action has no behavior
-        if (null !== $function) {
+        if (!is_null($function)) {
             dcCore::app()->addBehavior($behavior, $function);
         }
     }

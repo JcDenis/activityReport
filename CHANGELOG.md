@@ -1,8 +1,3 @@
-todo:
-- [ ] use sql statment
-- [ ] fix and add actitivy
-check formats
-
 3.0
 - require Dotclear 2.26
 - require php 8.1

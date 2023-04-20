@@ -10,30 +10,58 @@
  * @copyright Jean-Christian Denis
  * @copyright GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
  */
-if (!defined('DC_RC_PATH')) {
-    return null;
-}
+declare(strict_types=1);
 
-Clearbricks::lib()->autoload([
-    'activityReport'          => __DIR__ . '/inc/class.activity.report.php',
-    'activityReportBehaviors' => __DIR__ . '/inc/class.activity.report.behaviors.php',
-]);
+namespace Dotclear\Plugin\activityReport;
 
-try {
-    if (!defined('ACTIVITY_REPORT_V2')) {
-        dcCore::app()->__set('activityReport', new activityReport());
+use dcCore;
+use dcNsProcess;
+use Exception;
 
-        dcCore::app()->url->register(
-            basename(__DIR__),
-            'reports',
-            '^reports/((atom|rss2)/(.+))$',
-            ['activityReportPublicUrl', 'feed']
-        );
+/**
+ * Prepend process.
+ */
+class Prepend extends dcNsProcess
+{
+    public static function init(): bool
+    {
+        static::$init = defined('DC_RC_PATH')
+            && My::phpCompliant()
+            && My::isInstalled();
 
-        define('ACTIVITY_REPORT_V2', true);
-
-        activityReportBehaviors::registerBehaviors();
+        return static::$init;
     }
-} catch (Exception $e) {
-    //throw new Exception('Failed to launch activityReport');
+
+    public static function process(): bool
+    {
+        if (!static::$init) {
+            return false;
+        }
+
+        if (defined('ACTIVITY_REPORT')) {
+            return true;
+        }
+
+        try {
+            // launch once activity report stuff
+            ActivityReport::instance();
+
+            // regirster activity feed URL
+            dcCore::app()->url->register(
+                My::id(),
+                'reports',
+                '^reports/((atom|rss2)/(.+))$',
+                [UrlHandler::class, 'feed']
+            );
+
+            // declare report open
+            define('ACTIVITY_REPORT', My::COMPATIBILITY_VERSION);
+
+            // register predefined activities scan
+            ActivityBehaviors::register();
+        } catch (Exception $e) {
+        }
+
+        return true;
+    }
 }

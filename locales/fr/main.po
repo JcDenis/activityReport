@@ -1,270 +1,398 @@
+# Language: Français
+# Module: activityReport - 3.0
+# Date: 2023-04-20 12:20:14
+# Author: , contact@jcdenis.fr
+# Translated with translater 2023.03.19
+
 msgid ""
 msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
-"Project-Id-Version: activityReport 2.0\n"
+"Project-Id-Version: activityReport 3.0\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-11-27T21:29:52+00:00\n"
-"Last-Translator: Jean-Crhistian Denis\n"
+"PO-Revision-Date: 2023-04-20T12:20:14+00:00\n"
+"Last-Translator: Jean-Christian Denis\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-msgid "Activity report"
-msgstr "Rapport d'activité"
-
-msgid "View all logs"
-msgstr "Voir tous les logs"
-
-msgid "Number of activities to show on dashboard:"
-msgstr "Nombre d'activités à afficher sur le tableau de bord :"
-
-msgid "Do not show activity report"
-msgstr "Ne pas afficher le rapport d'activité"
-
-msgid "every hour"
-msgstr "toutes les heures"
-
-msgid "every 2 hours"
-msgstr "toutes les 2 heures"
-
-msgid "2 times by day"
-msgstr "2 fois par jour"
-
-msgid "every day"
-msgstr "tous les jours"
-
-msgid "every 2 days"
-msgstr "tous les 2 jours"
-
-msgid "every week"
-msgstr "toutes les semaines"
-
-msgid "every 2 weeks"
-msgstr "toutes les 2 semaines"
-
-msgid "every 4 weeks"
-msgstr "toutes les 4 semaines"
-
-msgid "Plain text"
-msgstr "Texte brut"
-
-msgid "HTML"
-msgstr "HTML"
-
-msgid "Report successfully sent."
-msgstr "Rapport envoyé avec succès."
-
-msgid "Logs successfully deleted."
-msgstr "Logs effacés avec succès."
-
-msgid "never"
-msgstr "jamais"
-
-msgid "on new activity"
-msgstr "lors d'une nouvelle activité"
-
-msgid "Configure activity report for %s"
-msgstr "Configurer le rapport d'activité pour %s"
-
-msgid "current blog"
-msgstr "le blog courant"
-
-msgid "all blogs"
-msgstr "tous les blogs"
-
-msgid "This server has no mail function, activityReport does not send email report."
-msgstr "Ce server n'a pas de fonction d'envoie de mail, le rapport ne sera pas envoyer."
-
-msgid "Enable super administrator report"
-msgstr "Autoriser le rapport de super administrateur"
-
-msgid "Enable report on this blog"
-msgstr "Autoriser le rapport sur ce blog"
-
-msgid "Automatic cleaning of old logs:"
-msgstr "Nettoyage automatique des anciennes activités:"
-
-msgid "Use Dotclear date formaters. ex: %B %d at %H:%M"
-msgstr "Utiliser le formatage des dates de Dotclear. ex: %d %B à %H:%M"
-
-msgid "RSS feed"
-msgstr "Flux RSS"
-
-msgid "Rss2 feed for activity on this blog"
-msgstr "Flux Rss2 pour l'activité de ce blog"
-
-msgid "Atom feed"
-msgstr "Flux Atom"
-
-msgid "Atom feed for activity on this blog"
-msgstr "Flux Atom pour l'activité de ce blog"
-
-msgid "Send report:"
-msgstr "Rapport envoyé :"
-
-msgid "Recipients:"
-msgstr "Destinataires :"
-
-msgid "Separate multiple email addresses with a semicolon \";\""
-msgstr "Séparer les adresses email par un point-virgule \";\""
-
-msgid "Report format:"
-msgstr "Format du rapport :"
-
-msgid "Last report by email:"
-msgstr "Dernier rapport par email :"
-
-msgid "Next report by email:"
-msgstr "Prochain rapport par email :"
-
-msgid "Select blogs to add to report"
-msgstr "Sélectionner les blogs à ajouter au rapport"
-
-msgid "Report"
-msgstr "Rapport"
-
-msgid "Select actions by activity type to add to report"
-msgstr "Sélectionner les actions par type d'activité à ajouter au rapport"
-
-msgid "Send report now"
-msgstr "Envoyer un rapport maintenant"
-
-msgid "Delete all logs now"
-msgstr "Effacer tous les logs maintenant"
-
+#: src/ActivityBehaviors.php:32
 msgid "ActivityReport messages"
 msgstr "Messages de l'extension"
 
-msgid "Special messages"
-msgstr "Messages spéciaux"
-
-msgid "%s"
-msgstr "%s"
-
+#: src/ActivityBehaviors.php:33
 msgid "Actions on blog"
 msgstr "Actions sur le blog"
 
-msgid "updating blog"
-msgstr "Mise à jour du blog"
-
-msgid "Blog was updated by \"%s\""
-msgstr "Blog mis à jour par \"%s\""
-
-msgid "404 error"
-msgstr "Erreur 404"
-
-msgid "New 404 error page at \"%s\""
-msgstr "Nouvelle erreur 404 à l'adresse \"%s\""
-
+#: src/ActivityBehaviors.php:34
 msgid "Actions on posts"
 msgstr "Actions sur les billets"
 
-msgid "post creation"
-msgstr "Création de billet"
-
-msgid "A new post called \"%s\" was created by \"%s\" at %s"
-msgstr "Un nouveau billet nommé \"%s\" a été créé par \"%s\" à l'adresse \"%s\""
-
-msgid "updating post"
-msgstr "Mise à jour de billet"
-
-msgid "Post called \"%s\" has been updated by \"%s\" at %s"
-msgstr "Le billet nommé \"%s\" a été mis à jour par \"%s\" à l'adresse \"%s\""
-
-msgid "post deletion"
-msgstr "Suppression de billet"
-
-msgid "Post called \"%s\" has been deleted by \"%s\""
-msgstr "Le billet nommé \"%s\" a été supprimé par \"%s\""
-
-msgid "Post protection"
-msgstr "Protection des billets"
-
-msgid "An attempt failed on a passworded post with password \"%s\" at \"%s\""
-msgstr "Une tentative a échoué sur un billet protégé par mot de passe avec l'essai \"%s\" à l'adresse \"%s\""
-
+#: src/ActivityBehaviors.php:35
 msgid "Actions on comments"
 msgstr "Actions sur les commentaires"
 
-msgid "comment creation"
-msgstr "Création de commentaire"
-
-msgid "A new comment was created by \"%s\" on post \"%s\" at %s"
-msgstr "Un nouveau commentaire a été créé par \"%s\" sur le billet \"%s\""
-
-msgid "updating comment"
-msgstr "Mise à jour de commentaire"
-
-msgid "Comment has been updated by \"%s\" at %s"
-msgstr "Un commentaire a été mise à jour par \"%s\" à l'adresse \"%s\""
-
-msgid "trackback creation"
-msgstr "Création de trackback"
-
-msgid "A new trackback to \"%\" at \"%s\" was created on post \"%s\" at %s"
-msgstr "Un nouveau rétrolien vers \"%s\" a été créé sur le billet \"%s\" à l'adresse \"%s\""
-
+#: src/ActivityBehaviors.php:36
 msgid "Actions on categories"
 msgstr "Actions sur les catégories"
 
-msgid "category creation"
-msgstr "Création de catégorie"
-
-msgid "A new category called \"%s\" was created by \"%s\" at %s"
-msgstr "Un nouvelle catégorie nommée \"%s\" a été créé par \"%s\" à l'adresse \"%s\""
-
-msgid "updating category"
-msgstr "Mise à jour de catégorie"
-
-msgid "Category called \"%s\" has been updated by \"%s\" at %s"
-msgstr "La catégorie nommée \"%s\" a été mise à jour par \"%s\" à l'adresse \"%s\""
-
+#: src/ActivityBehaviors.php:37
 msgid "Actions on users"
 msgstr "Actions sur les utilisateurs"
 
+#: src/ActivityBehaviors.php:43
+msgid "Special messages"
+msgstr "Messages spéciaux"
+
+#: src/ActivityBehaviors.php:44
+msgid "%s"
+msgstr "%s"
+
+#: src/ActivityBehaviors.php:54
+msgid "updating blog"
+msgstr "Mise à jour du blog"
+
+#: src/ActivityBehaviors.php:55
+msgid "Blog was updated by \"%s\""
+msgstr "Blog mis à jour par \"%s\""
+
+#: src/ActivityBehaviors.php:63
+msgid "404 error"
+msgstr "Erreur 404"
+
+#: src/ActivityBehaviors.php:64
+msgid "New 404 error page at \"%s\""
+msgstr "Nouvelle erreur 404 à l'adresse \"%s\""
+
+#: src/ActivityBehaviors.php:74
+msgid "post creation"
+msgstr "Création de billet"
+
+#: src/ActivityBehaviors.php:75
+msgid "A new post called \"%s\" was created by \"%s\" at %s"
+msgstr "Un nouveau billet nommé \"%s\" a été créé par \"%s\" à l'adresse \"%s\""
+
+#: src/ActivityBehaviors.php:94
+msgid "updating post"
+msgstr "Mise à jour de billet"
+
+#: src/ActivityBehaviors.php:95
+msgid "Post called \"%s\" has been updated by \"%s\" at %s"
+msgstr "Le billet nommé \"%s\" a été mis à jour par \"%s\" à l'adresse \"%s\""
+
+#: src/ActivityBehaviors.php:103
+msgid "post deletion"
+msgstr "Suppression de billet"
+
+#: src/ActivityBehaviors.php:104
+msgid "Post called \"%s\" has been deleted by \"%s\""
+msgstr "Le billet nommé \"%s\" a été supprimé par \"%s\""
+
+#: src/ActivityBehaviors.php:113
+msgid "Post protection"
+msgstr "Protection des billets"
+
+#: src/ActivityBehaviors.php:114
+msgid "An attempt failed on a passworded post with password \"%s\" at \"%s\""
+msgstr "Une tentative a échoué sur un billet protégé par mot de passe avec l'essai \"%s\" à l'adresse \"%s\""
+
+#: src/ActivityBehaviors.php:124
+msgid "comment creation"
+msgstr "Création de commentaire"
+
+#: src/ActivityBehaviors.php:125
+msgid "A new comment was created by \"%s\" on post \"%s\" at %s"
+msgstr "Un nouveau commentaire a été créé par \"%s\" sur le billet \"%s\""
+
+#: src/ActivityBehaviors.php:134
+msgid "updating comment"
+msgstr "Mise à jour de commentaire"
+
+#: src/ActivityBehaviors.php:135
+msgid "Comment has been updated by \"%s\" at %s"
+msgstr "Un commentaire a été mise à jour par \"%s\" à l'adresse \"%s\""
+
+#: src/ActivityBehaviors.php:147
+msgid "trackback creation"
+msgstr "Création de trackback"
+
+#: src/ActivityBehaviors.php:148
+msgid "A new trackback to \"%\" at \"%s\" was created on post \"%s\" at %s"
+msgstr "Un nouveau rétrolien vers \"%s\" a été créé sur le billet \"%s\" à l'adresse \"%s\""
+
+#: src/ActivityBehaviors.php:156
+msgid "category creation"
+msgstr "Création de catégorie"
+
+#: src/ActivityBehaviors.php:157
+msgid "A new category called \"%s\" was created by \"%s\" at %s"
+msgstr "Un nouvelle catégorie nommée \"%s\" a été créé par \"%s\" à l'adresse \"%s\""
+
+#: src/ActivityBehaviors.php:165
+msgid "updating category"
+msgstr "Mise à jour de catégorie"
+
+#: src/ActivityBehaviors.php:166
+msgid "Category called \"%s\" has been updated by \"%s\" at %s"
+msgstr "La catégorie nommée \"%s\" a été mise à jour par \"%s\" à l'adresse \"%s\""
+
+#: src/ActivityBehaviors.php:176
 msgid "user creation"
 msgstr "Création d'utilisateur"
 
+#: src/ActivityBehaviors.php:177
 msgid "A new user named \"%s\" was created by \"%s\""
 msgstr "Un nouvel utilisateur a été ajouté par \"%s\""
 
+#: src/ActivityBehaviors.php:185
 msgid "updating user"
 msgstr "Mise à jour d'utilisateur"
 
+#: src/ActivityBehaviors.php:186
 msgid "User named \"%s\" has been updated by \"%s\""
 msgstr "L'utilisateur \"%s\" a été mis à jour par \"%s\""
 
+#: src/ActivityBehaviors.php:217
 msgid "user deletion"
 msgstr "Suppression d'utilisateur"
 
+#: src/ActivityBehaviors.php:218
 msgid "User named \"%s\" has been deleted by \"%\""
 msgstr "L'utilisateur nommé \"%s\" a été supprimé par \"%s\""
 
+#: src/ActivityBehaviors.php:235
+msgid "HTML"
+msgstr "HTML"
+
+#: src/ActivityBehaviors.php:248
+#: src/ActivityReport.php:341
+msgid "Activity report"
+msgstr "Rapport d'activité"
+
+#: src/ActivityReport.php:331
 msgid "An error occured when parsing report."
 msgstr "Une erreur est survenue lors de la compilation du rapport."
 
+#: src/ActivityReport.php:347
 msgid "You received a message from your blog's activity report module."
 msgstr "Vous recevez un message du module de rapport d'activité de votre blog."
 
+#: src/ActivityReport.php:356
 msgid "Period from %s to %s"
 msgstr "Période du %s au %s"
 
+#: src/ActivityReport.php:404
 msgid "Activity report deletes some old logs."
 msgstr "L'extension a automatiquement effacé des anciennes activités."
 
-msgid "Blog activity report"
-msgstr "Rapport d'activité du blog"
+#: src/ActivityReport.php:661
+msgid "Blog \"%s\" activity report"
+msgstr "Rapport d'activité du blog \"%s\""
 
-msgid "Logs"
-msgstr "Enregistrements"
+#: src/Backend.php:126
+msgid "View all logs"
+msgstr "Voir tous les logs"
 
+#: src/Backend.php:142
+msgid "Number of activities to show on dashboard:"
+msgstr "Nombre d'activités à afficher sur le tableau de bord :"
+
+#: src/Backend.php:144
+msgid "Do not show activity report"
+msgstr "Ne pas afficher le rapport d'activité"
+
+#: src/Backend.php:170
+#: src/ManageList.php:48
+msgid "Group"
+msgstr "Groupe"
+
+#: src/Backend.php:177
+msgid "logs per page"
+msgstr "enregistrements par page"
+
+#: src/Combo.php:45
+msgid "every hour"
+msgstr "toutes les heures"
+
+#: src/Combo.php:46
+msgid "every 2 hours"
+msgstr "toutes les 2 heures"
+
+#: src/Combo.php:47
+msgid "2 times by day"
+msgstr "2 fois par jour"
+
+#: src/Combo.php:48
+msgid "every day"
+msgstr "tous les jours"
+
+#: src/Combo.php:49
+msgid "every 2 days"
+msgstr "tous les 2 jours"
+
+#: src/Combo.php:50
+msgid "every week"
+msgstr "toutes les semaines"
+
+#: src/Combo.php:68
+msgid "every 2 weeks"
+msgstr "toutes les 2 semaines"
+
+#: src/Combo.php:69
+msgid "every 4 weeks"
+msgstr "toutes les 4 semaines"
+
+#: src/Config.php:85
+msgid "Report successfully sent."
+msgstr "Rapport envoyé avec succès."
+
+#: src/Config.php:92
+msgid "Logs successfully deleted."
+msgstr "Logs effacés avec succès."
+
+#: src/Config.php:116
+msgid "never"
+msgstr "jamais"
+
+#: src/Config.php:117
+msgid "on new activity"
+msgstr "lors d'une nouvelle activité"
+
+#: src/Config.php:133
+msgid "This server has no mail function, activityReport does not send email report."
+msgstr "Ce server n'a pas de fonction d'envoie de mail, le rapport ne sera pas envoyer."
+
+#: src/Config.php:140
+msgid "Mail report"
+msgstr "Rapport par email"
+
+#: src/Config.php:142
+msgid "Send report:"
+msgstr "Rapport envoyé :"
+
+#: src/Config.php:146
+msgid "Recipients:"
+msgstr "Destinataires :"
+
+#: src/Config.php:149
+msgid "Separate multiple email addresses with a semicolon \";\""
+msgstr "Séparer les adresses email par un point-virgule \";\""
+
+#: src/Config.php:150
+msgid "Leave it empty to disable mail report."
+msgstr "Laisser vide pour désactiver le rapport par email."
+
+#: src/Config.php:155
+msgid "Use Dotclear date formaters. ex: %B %d at %H:%M"
+msgstr "Utiliser le formatage des dates de Dotclear. ex: %d %B à %H:%M"
+
+#: src/Config.php:157
+msgid "Report format:"
+msgstr "Format du rapport :"
+
+#: src/Config.php:162
+msgid "Last report by email:"
+msgstr "Dernier rapport par email :"
+
+#: src/Config.php:163
+msgid "Next report by email:"
+msgstr "Prochain rapport par email :"
+
+#: src/Config.php:167
+msgid "Feeds"
+msgstr "Flux"
+
+#: src/Config.php:170
+msgid "Enable activity feed"
+msgstr "Activer le flux d'activités"
+
+#: src/Config.php:174
+msgid "RSS feed"
+msgstr "Flux RSS"
+
+#: src/Config.php:177
+msgid "Rss2 activities feed"
+msgstr "Flux RSS2 d'activités"
+
+#: src/Config.php:178
+msgid "Atom feed"
+msgstr "Flux Atom"
+
+#: src/Config.php:181
+msgid "Atom activities feed"
+msgstr "Flux Atom d'activités"
+
+#: src/Config.php:188
+msgid "Activities"
+msgstr "Activités"
+
+#: src/Config.php:189
+msgid "Select actions by activity type to add to report"
+msgstr "Sélectionner les actions par type d'activité à ajouter au rapport"
+
+#: src/Config.php:214
+msgid "Automatic cleaning of old logs:"
+msgstr "Nettoyage automatique des anciennes activités:"
+
+#: src/Config.php:219
+msgid "Send report now"
+msgstr "Envoyer un rapport maintenant"
+
+#: src/Config.php:223
+msgid "Delete all logs now"
+msgstr "Effacer tous les logs maintenant"
+
+#: src/Format.php:68
+msgid "Plain text"
+msgstr "Texte brut"
+
+#: src/Manage.php:58
+msgid "Logs successfully deleted"
+msgstr "Enregistrements effacés avec succès"
+
+#: src/Manage.php:91
+msgid "Are you sure you want to delete logs?"
+msgstr "Êtes-vous sure de vouloir effacer les enregistrements ?"
+
+#: src/Manage.php:114
+msgid "Delete all aticivity logs"
+msgstr "Effacer tous les enregistrements d'activités"
+
+#: src/Manage.php:115
+msgid "Delete all allready reported logs"
+msgstr "Effacer les enregistrements d'activités déjà envoyé par email"
+
+#: src/ManageList.php:33
+msgid "No log matches the filter"
+msgstr "Aucun enregistrement ne correspond au filtre"
+
+#: src/ManageList.php:35
 msgid "No log"
 msgstr "Pas d'enregistrement"
 
+#: src/ManageList.php:43
+msgid "List of %s logs matching the filter."
+msgstr "Liste des %s logs correspondants au filtre."
+
+#: src/ManageList.php:44
+msgid "List of %s logs."
+msgstr "Listes des %s enregistrements"
+
+#: src/ManageList.php:50
 msgid "Message"
 msgstr "Message"
 
-msgid "Activity report module"
-msgstr "Module de rapport d'activité"
+#: src/ManageList.php:79
+msgid "undefined"
+msgstr "inconnu"
+
+#: src/ManageList.php:85
+msgid "reported"
+msgstr "envoyé"
+
+msgid "Activity log"
+msgstr "Journal d'activité"
+
+msgid "Log and receive your blog activity by email, feed, or on dashboard"
+msgstr "Enregistrer et recevoir l'activité de votre blog par mail, flux ou sur le tableau de bord"
 

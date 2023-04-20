@@ -10,287 +10,257 @@
  * @copyright Jean-Christian Denis
  * @copyright GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
  */
-if (!defined('DC_RC_PATH')) {
-    return;
-}
+declare(strict_types=1);
 
-class activityReport
+namespace Dotclear\Plugin\activityReport;
+
+use ArrayObject;
+use dcAuth;
+use dcBlog;
+use dcCore;
+use dcRecord;
+use Dotclear\Database\Statement\{
+    DeleteStatement,
+    JoinStatement,
+    SelectStatement,
+    UpdateStatement
+};
+use Dotclear\Helper\Crypt;
+use Dotclear\Helper\Date;
+use Dotclear\Helper\File\{
+    Files,
+    Path
+};
+use Dotclear\Helper\Network\Mail\Mail;
+use Dotclear\Helper\Text;
+use Exception;
+
+/**
+ * Activity report main class.
+ */
+class ActivityReport
 {
-    public $con;
+    /** @var    int     activity marked as pending mail report */
+    public const STATUS_PENDING = 0;
 
-    private $ns          = null;
-    private $_global     = 0;
-    private $blog        = null;
-    private $groups      = [];
-    private $settings    = [];
-    private $lock_blog   = null;
-    private $lock_global = null;
+    /** @var    int     activity marked as reported by mail */
+    public const STATUS_REPORTED = 1;
 
-    public function __construct($ns = null)
+    /** @var    string  $type   Activity report type (by default activityReport) */
+    public readonly string $type;
+
+    /** @var    Settings    $settings   Activity report settings for current blog */
+    public readonly Settings $settings;
+
+    /** @var    Groups  $groups     Groups of actions */
+    public readonly Groups $groups;
+
+    /** @var    Formats  $formats   Export available formats */
+    public readonly Formats $formats;
+
+    /** @var    ActivityReport  $instance   ActivityReport instance */
+    private static $instance;
+
+    private $lock = null;
+
+    /**
+     * Constructor sets activity main type.
+     *
+     * @param   string  $type   The activity report type
+     */
+    public function __construct(string $type = null)
     {
-        $this->con  = dcCore::app()->con;
-        $this->blog = dcCore::app()->con->escape(dcCore::app()->blog->id);
-        $this->ns   = dcCore::app()->con->escape($ns ?? basename(dirname(__DIR__)));
-
-        $this->getSettings();
+        $this->type     = $type ?? My::id();
+        $this->settings = new Settings();
+        $this->groups   = new Groups();
+        $this->formats  = new Formats();
 
         # Check if some logs are too olds
         $this->obsoleteLogs();
     }
 
-    public function setGlobal()
+    /**
+     * Get singleton instance.
+     *
+     * @return  ActivityReport  ActivityReport instance
+     */
+    public static function instance(): ActivityReport
     {
-        $this->_global = 1;
-    }
-
-    public function unsetGlobal()
-    {
-        $this->_global = 0;
-    }
-
-    public function getGroups($group = null, $action = null)
-    {
-        if ($action !== null) {
-            return $this->groups[$group]['actions'][$action] ?? null;
-        } elseif ($group !== null) {
-            return $this->groups[$group] ?? null;
+        if (!is_a(self::$instance, ActivityReport::class)) {
+            self::$instance = new ActivityReport();
         }
 
-        return $this->groups;
+        return self::$instance;
     }
 
-    public function addGroup($group, $title)
+    /**
+     * Get logs record.
+     *
+     * @param   null|ArrayObject        $params         The query params
+     * @param   bool                    $count_only     Count only
+     * @param   null|SelectStatement    $ext_sql        The sql select statement
+     *
+     * @return null|dcRecord    The logs record
+     */
+    public function getLogs(ArrayObject $params = null, bool $count_only = false, ?SelectStatement $ext_sql = null): ?dcRecord
     {
-        $this->groups[$group] = [
-            'title'   => $title,
-            'actions' => [],
-        ];
-
-        return true;
-    }
-
-    public function addAction($group, $action, $title, $msg, $behavior, $function)
-    {
-        if (!isset($this->groups[$group])) {
-            return false;
+        if (null === $params) {
+            $params = new ArrayObject();
         }
 
-        $this->groups[$group]['actions'][$action] = [
-            'title' => $title,
-            'msg'   => $msg,
-        ];
-        dcCore::app()->addBehavior($behavior, $function);
+        $sql = $ext_sql ? clone $ext_sql : new SelectStatement();
 
-        return true;
-    }
-
-    private function getSettings()
-    {
-        $settings = [
-            'active'      => false,
-            'obsolete'    => 2419200,
-            'interval'    => 86400,
-            'lastreport'  => 0,
-            'mailinglist' => [],
-            'mailformat'  => 'plain',
-            'dateformat'  => '%Y-%m-%d %H:%M:%S',
-            'requests'    => [],
-            'blogs'       => [],
-        ];
-
-        $this->settings[0] = $this->settings[1] = $settings;
-
-        $rs = $this->con->select(
-            'SELECT setting_id, setting_value, blog_id ' .
-            'FROM ' . dcCore::app()->prefix . initActivityReport::SETTING_TABLE_NAME . ' ' .
-            "WHERE setting_type='" . $this->ns . "' " .
-            "AND (blog_id='" . $this->blog . "' OR blog_id IS NULL) " .
-            'ORDER BY setting_id DESC '
-        );
-
-        while ($rs->fetch()) {
-            $k = $rs->f('setting_id');
-            $v = $rs->f('setting_value');
-            $b = $rs->f('blog_id');
-            $g = $b === null ? 1 : 0;
-
-            if (isset($settings[$k])) {
-                $this->settings[$g][$k] = self::decode($v);
-            }
-        }
-        # Force blog
-        $this->settings[0]['blogs'] = [0 => $this->blog];
-    }
-
-    public function getSetting($n)
-    {
-        return $this->settings[$this->_global][$n] ?? null;
-    }
-
-    public function setSetting($n, $v)
-    {
-        if (!isset($this->settings[$this->_global][$n])) {
-            return null;
-        }
-
-        $c = $this->delSetting($n);
-
-        $cur = $this->con->openCursor(dcCore::app()->prefix . initActivityReport::SETTING_TABLE_NAME);
-        $this->con->writeLock(dcCore::app()->prefix . initActivityReport::SETTING_TABLE_NAME);
-
-        $cur->blog_id       = $this->_global ? null : $this->blog;
-        $cur->setting_id    = $this->con->escape($n);
-        $cur->setting_type  = $this->ns;
-        $cur->setting_value = (string) self::encode($v);
-
-        $cur->insert();
-        $this->con->unlock();
-
-        $this->settings[$this->_global][$n] = $v;
-
-        return true;
-    }
-
-    private function delSetting($n)
-    {
-        return $this->con->execute(
-            'DELETE FROM ' . dcCore::app()->prefix . initActivityReport::SETTING_TABLE_NAME . ' ' .
-            'WHERE blog_id' . ($this->_global ? ' IS NULL' : "='" . $this->blog . "'") . ' ' .
-            "AND setting_id='" . $this->con->escape($n) . "' " .
-            "AND setting_type='" . $this->ns . "' "
-        );
-    }
-
-    // Action params to put in params['sql']
-    public static function requests2params($requests)
-    {
-        $r = [];
-        foreach ($requests as $group => $actions) {
-            foreach ($actions as $action => $is) {
-                $r[] = "activity_group='" . $group . "' AND activity_action='" . $action . "' ";
-            }
-        }
-
-        return empty($r) ? '' : 'AND (' . implode('OR ', $r) . ') ';
-    }
-
-    public function getLogs($p, $count_only = false)
-    {
         if ($count_only) {
-            $r = 'SELECT count(E.activity_id) ';
+            $sql->column($sql->count($sql->unique('E.activity_id')));
         } else {
-            $content_r = empty($p['no_content']) ? 'activity_logs, ' : '';
-
-            if (!empty($p['columns']) && is_array($p['columns'])) {
-                $content_r .= implode(', ', $p['columns']) . ', ';
+            if (empty($params['no_content'])) {
+                $sql->columns([
+                    'activity_logs',
+                ]);
             }
+            if (!empty($params['columns']) && is_array($params['columns'])) {
+                $sql->columns($params['columns']);
+            }
+            $sql->columns([
+                'E.activity_id',
+                'E.blog_id',
+                'B.blog_url',
+                'B.blog_name',
+                'E.activity_group',
+                'E.activity_action',
+                'E.activity_dt',
+                'E.activity_status',
+            ]);
+        }
+        $sql
+            ->from($sql->as(dcCore::app()->prefix . My::ACTIVITY_TABLE_NAME, 'E'), false, true)
+            ->join(
+                (new JoinStatement())
+                    ->left()
+                    ->from($sql->as(dcCore::app()->prefix . dcBlog::BLOG_TABLE_NAME, 'B'))
+                    ->on('E.blog_id = B.blog_id')
+                    ->statement()
+            );
 
-            $r = 'SELECT E.activity_id, E.blog_id, B.blog_url, B.blog_name, ' . $content_r .
-            'E.activity_group, E.activity_action, E.activity_dt, ' .
-            'E.activity_blog_status, E.activity_super_status ';
+        if (!empty($params['join'])) {
+            $sql->join($params['join']);
         }
 
-        $r .= 'FROM ' . dcCore::app()->prefix . initActivityReport::ACTIVITY_TABLE_NAME . ' E ' .
-        'LEFT JOIN ' . dcCore::app()->prefix . dcBlog::BLOG_TABLE_NAME . ' B on E.blog_id=B.blog_id ';
-
-        if (!empty($p['from'])) {
-            $r .= $p['from'] . ' ';
+        if (!empty($params['from'])) {
+            $sql->from($params['from']);
         }
 
-        if ($this->_global) {
-            $r .= 'WHERE E.activity_super_status = 0 ';
+        if (!empty($params['where'])) {
+            //nope
+        }
+
+        if (!empty($params['activity_type'])) {
+            $sql->where('E.activity_type = ' . $sql->quote($params['activity_type']));
         } else {
-            $r .= 'WHERE E.activity_blog_status = 0 ';
+            $sql->where('E.activity_type = ' . $sql->quote($this->type));
         }
 
-        if (!empty($p['activity_type'])) {
-            $r .= "AND E.activity_type = '" . $this->con->escape($p['activity_type']) . "' ";
+        if (!empty($params['blog_id'])) {
+            if (!is_array($params['blog_id'])) {
+                $params['blog_id'] = [$params['blog_id']];
+            }
+            $sql->and('E.blog_id' . $sql->in($params['blog_id']));
+        } elseif (is_null($params['blog_id'])) {
+            $sql->and('E.blog_id IS NOT NULL');
         } else {
-            $r .= "AND E.activity_type = '" . $this->ns . "' ";
+            $sql->and('E.blog_id = ' . $sql->quote((string) dcCore::app()->blog?->id));
         }
 
-        if (!empty($p['blog_id'])) {
-            if (is_array($p['blog_id'])) {
-                $r .= 'AND E.blog_id' . $this->con->in($p['blog_id']);
-            } else {
-                $r .= "AND E.blog_id = '" . $this->con->escape($p['blog_id']) . "' ";
+        if (isset($params['activity_status'])) {
+            $sql->and('E.activity_status = ' . ((int) $params['activity_tatus']) . ' ');
+        }
+        //$sql->and('E.activity_status = ' . self::STATUS_PENDING);
+
+        if (isset($params['activity_group'])) {
+            if (!is_array($params['activity_group'])) {
+                $params['activity_group'] = [$params['activity_group']];
             }
-        } elseif ($this->_global) {
-            $r .= 'AND E.blog_id IS NOT NULL ';
-        } else {
-            $r .= "AND E.blog_id='" . $this->blog . "' ";
+            $sql->and('E.activity_group' . $sql->in($params['activity_group']));
         }
 
-        if (isset($p['activity_group'])) {
-            if (is_array($p['activity_group']) && !empty($p['activity_group'])) {
-                $r .= 'AND E.activity_group ' . $this->con->in($p['activity_group']);
-            } elseif ($p['activity_group'] != '') {
-                $r .= "AND E.activity_group = '" . $this->con->escape($p['activity_group']) . "' ";
+        if (isset($params['activity_action'])) {
+            if (!is_array($params['activity_action'])) {
+                $params['activity_action'] = [$params['activity_action']];
+            }
+            $sql->and('E.activity_action' . $sql->in($params['activity_action']));
+        }
+
+        if (isset($params['from_date_ts'])) {
+            $sql->and("E.activity_dt >= TIMESTAMP '" . date('Y-m-d H:i:s', $params['from_date_ts']) . "' ");
+        }
+        if (isset($params['to_date_ts'])) {
+            $sql->and("E.activity_dt < TIMESTAMP '" . date('Y-m-d H:i:s', $params['to_date_ts']) . "' ");
+        }
+
+        if (!empty($params['requests'])) {
+            $or = [];
+            foreach ($this->settings->requests as $group => $actions) {
+                if (empty($actions)) {
+                    continue;
+                }
+                foreach ($actions as $action => $is) {
+                    $or[] = $sql->andGroup(['activity_group = ' . $sql->quote($group), 'activity_action = ' . $sql->quote($action)]);
+                }
+            }
+            if (empty($or)) {
+                $sql->and($sql->orGroup($or));
             }
         }
 
-        if (isset($p['activity_action'])) {
-            if (is_array($p['activity_action']) && !empty($p['activity_action'])) {
-                $r .= 'AND E.activity_action ' . $this->con->in($p['activity_action']);
-            } elseif ($p['activity_action'] != '') {
-                $r .= "AND E.activity_action = '" . $this->con->escape($p['activity_action']) . "' ";
-            }
-        }
-
-        if (isset($p['activity_blog_status'])) {
-            $r .= 'AND E.activity_blog_status = ' . ((int) $p['activity_blog_status']) . ' ';
-        }
-
-        if (isset($p['activity_super_status'])) {
-            $r .= 'AND E.activity_super_status = ' . ((int) $p['activity_super_status']) . ' ';
-        }
-
-        if (isset($p['from_date_ts'])) {
-            $dt = date('Y-m-d H:i:s', $p['from_date_ts']);
-            $r .= "AND E.activity_dt >= TIMESTAMP '" . $dt . "' ";
-        }
-        if (isset($p['to_date_ts'])) {
-            $dt = date('Y-m-d H:i:s', $p['to_date_ts']);
-            $r .= "AND E.activity_dt < TIMESTAMP '" . $dt . "' ";
-        }
-
-        if (!empty($p['sql'])) {
-            $r .= $p['sql'] . ' ';
+        if (!empty($params['sql'])) {
+            $sql->sql($params['sql']);
         }
 
         if (!$count_only) {
-            if (!empty($p['order'])) {
-                $r .= 'ORDER BY ' . $this->con->escape($p['order']) . ' ';
+            if (!empty($params['order'])) {
+                $sql->order($sql->escape($params['order']));
             } else {
-                $r .= 'ORDER BY E.activity_dt DESC ';
+                $sql->order('E.activity_dt DESC');
             }
         }
 
-        if (!$count_only && !empty($p['limit'])) {
-            $r .= $this->con->limit($p['limit']);
+        if (!$count_only && !empty($params['limit'])) {
+            $sql->limit($params['limit']);
         }
+        $rs = $sql->select();
 
-        return $this->con->select($r);
+        return $sql->select();
     }
 
-    public function addLog($group, $action, $logs)
+    /**
+     * Add a log.
+     *
+     * @param   string  $group      The group
+     * @param   string  $action     The action
+     * @param   array   $logs       The logs values
+     */
+    public function addLog(string $group, string $action, array $logs): void
     {
         try {
-            $cur = $this->con->openCursor(dcCore::app()->prefix . initActivityReport::ACTIVITY_TABLE_NAME);
-            $this->con->writeLock(dcCore::app()->prefix . initActivityReport::ACTIVITY_TABLE_NAME);
+            $cur = dcCore::app()->con->openCursor(dcCore::app()->prefix . My::ACTIVITY_TABLE_NAME);
+            dcCore::app()->con->writeLock(dcCore::app()->prefix . My::ACTIVITY_TABLE_NAME);
 
-            $cur->activity_id     = $this->getNextId();
-            $cur->activity_type   = $this->ns;
-            $cur->blog_id         = $this->blog;
-            $cur->activity_group  = $this->con->escape((string) $group);
-            $cur->activity_action = $this->con->escape((string) $action);
-            $cur->activity_logs   = self::encode($logs);
-            $cur->activity_dt     = date('Y-m-d H:i:s');
+            $cur->setField('activity_id', $this->getNextId());
+            $cur->setField('activity_type', $this->type);
+            $cur->setField('blog_id', (string) dcCore::app()->blog?->id);
+            $cur->setField('activity_group', $group);
+            $cur->setField('activity_action', $action);
+            $cur->setField('activity_logs', json_encode($logs));
+            $cur->setField('activity_dt', date('Y-m-d H:i:s'));
+            $cur->setField('activity_status', self::STATUS_PENDING);
 
             $cur->insert();
-            $this->con->unlock();
+            dcCore::app()->con->unlock();
+
+            # --BEHAVIOR-- coreAfterCategoryCreate -- ActivityReport, cursor
+            dcCore::app()->callBehavior('activityReportAfteAddLog', $this, $cur);
         } catch (Exception $e) {
-            $this->con->unlock();
+            dcCore::app()->con->unlock();
             dcCore::app()->error->add($e->getMessage());
         }
 
@@ -298,77 +268,50 @@ class activityReport
         $this->needReport();
     }
 
-    private function parseLogs($rs)
+    /**
+     * Parse logs using a format.
+     *
+     * @param   dcRecord    $rs     The logs record
+     *
+     * @return  string  The parsed logs
+     */
+    private function parseLogs(dcRecord $rs): string
     {
-        if ($rs->isEmpty()) {
-            return '';
-        }
-
-        // @todo move this in function
-        include __DIR__ . '/lib.parselogs.config.php';
-
-        $from = time();
-        $to   = 0;
-        $res  = $blog = $group = '';
-        $tz   = $this->_global ? 'UTC' : dcCore::app()->blog->settings->system->blog_timezone;
-
-        $dt = $this->settings[$this->_global]['dateformat'];
-        $dt = empty($dt) ? '%Y-%m-%d %H:%M:%S' : $dt;
-
-        $tpl = $this->settings[$this->_global]['mailformat'];
-        $tpl = $tpl == 'html' ? $format['html'] : $format['plain'];
-
-        $blog_open = $group_open = false;
+        $from       = time();
+        $to         = 0;
+        $res        = $blog = $group = '';
+        $tz         = dcCore::app()->blog?->settings->get('system')->get('blog_timezone');
+        $dt         = empty($this->settings->dateformat) ? '%Y-%m-%d %H:%M:%S' : $this->settings->dateformat;
+        $format     = $this->formats->get($this->formats->has($this->settings->mailformat) ? $this->settings->mailformat : 'plain');
+        $group_open = false;
 
         while ($rs->fetch()) {
-            // blog
-            if ($rs->blog_id != $blog && $this->_global) {
-                if ($group_open) {
-                    $res .= $tpl['group_close'];
-                    $group_open = false;
-                }
-                if ($blog_open) {
-                    $res .= $tpl['blog_close'];
-                }
-
-                $blog  = $rs->blog_id;
-                $group = '';
-
-                $res .= str_replace(
-                    ['%TEXT%', '%URL%'],
-                    [$rs->blog_name . ' (' . $rs->blog_id . ')', $rs->blog_url],
-                    $tpl['blog_title']
-                ) . $tpl['blog_open'];
-
-                $blog_open = true;
-            }
-
-            if (isset($this->groups[$rs->activity_group])) {
+            if ($this->groups->has($rs->f('activity_group')) && $this->groups->get($rs->f('activity_group'))->has($rs->f('activity_action'))) {
                 // Type
-                if ($rs->activity_group != $group) {
+                if ($rs->f('activity_group') != $group) {
                     if ($group_open) {
-                        $res .= $tpl['group_close'];
+                        $res .= $format->group_close;
                     }
 
-                    $group = $rs->activity_group;
+                    $group = $rs->f('activity_group');
 
                     $res .= str_replace(
                         '%TEXT%',
-                        __($this->groups[$group]['title']),
-                        $tpl['group_title']
-                    ) . $tpl['group_open'];
+                        __($this->groups->get($group)->title),
+                        $format->group_title
+                    ) . $format->group_open;
 
                     $group_open = true;
                 }
 
                 // Action
-                $time = strtotime($rs->activity_dt);
-                $data = self::decode($rs->activity_logs);
+                $time = strtotime($rs->f('activity_dt'));
+                $data = json_decode($rs->f('activity_logs'), true);
 
                 $res .= str_replace(
                     ['%TIME%', '%TEXT%'],
-                    [dt::str($dt, $time, $tz), vsprintf(__($this->groups[$group]['actions'][$rs->activity_action]['msg']), $data)],
-                    $tpl['action']
+                    [Date::str($dt, (int) $time, $tz), vsprintf(__($this->groups->get($group)->get($rs->f('activity_action'))->message), $data)],
+                    $format->action
                 );
 
                 # Period
@@ -382,13 +325,10 @@ class activityReport
         }
 
         if ($group_open) {
-            $res .= $tpl['group_close'];
-        }
-        if ($blog_open) {
-            $res .= $tpl['blog_close'];
+            $res .= $format->group_close;
         }
         if ($to == 0) {
-            $res .= str_replace('%TEXT%', __('An error occured when parsing report.'), $tpl['error']);
+            $res .= str_replace('%TEXT%', __('An error occured when parsing report.'), $format->error);
         }
 
         // Top of msg
@@ -399,127 +339,143 @@ class activityReport
         $period = str_replace(
             '%TEXT%',
             __('Activity report'),
-            $tpl['period_title']
-        ) . $tpl['period_open'];
+            $format->period_title
+        ) . $format->period_open;
 
         $period .= str_replace(
             '%TEXT%',
             __("You received a message from your blog's activity report module."),
-            $tpl['info']
+            $format->info
         );
-        if (!$this->_global) {
-            $period .= str_replace('%TEXT%', $rs->blog_name, $tpl['info']);
-            $period .= str_replace('%TEXT%', $rs->blog_url, $tpl['info']);
-        }
+
+        $period .= str_replace('%TEXT%', $rs->f('blog_name'), $format->info);
+        $period .= str_replace('%TEXT%', $rs->f('blog_url'), $format->info);
+
         $period .= str_replace(
             '%TEXT%',
-            sprintf(__('Period from %s to %s'), dt::str($dt, $from, $tz), dt::str($dt, $to, $tz)),
-            $tpl['info']
+            sprintf(__('Period from %s to %s'), Date::str($dt, (int) $from, $tz), Date::str($dt, (int) $to, $tz)),
+            $format->info
         );
-        $period .= $tpl['period_close'];
+        $period .= $format->period_close;
 
-        $res = str_replace(['%PERIOD%', '%TEXT%'], [$period, $res], $tpl['page']);
+        $res = str_replace(['%PERIOD%', '%TEXT%'], [$period, $res], $format->page);
 
         return $res;
     }
 
-    private function obsoleteLogs()
+    /**
+     * Delete obsolete logs.
+     */
+    private function obsoleteLogs(): void
     {
         // Get blogs and logs count
-        $rs = $this->con->select(
-            'SELECT blog_id ' .
-            'FROM ' . dcCore::app()->prefix . initActivityReport::ACTIVITY_TABLE_NAME . ' ' .
-            "WHERE activity_type='" . $this->ns . "' " .
-            'GROUP BY blog_id '
-        );
+        $sql = new SelectStatement();
+        $sql->from(dcCore::app()->prefix . My::ACTIVITY_TABLE_NAME)
+            ->where('activity_type =' . $sql->quote($this->type))
+            ->group('blog_id');
 
-        if ($rs->isEmpty()) {
-            return null;
+        $rs = $sql->select();
+
+        if (!$rs || $rs->isEmpty()) {
+            return;
         }
 
         while ($rs->fetch()) {
-            $ts         = time();
-            $obs_blog   = dt::str('%Y-%m-%d %H:%M:%S', $ts - (int) $this->settings[0]['obsolete']);
-            $obs_global = dt::str('%Y-%m-%d %H:%M:%S', $ts - (int) $this->settings[1]['obsolete']);
+            $ts  = time();
+            $obs = Date::str('%Y-%m-%d %H:%M:%S', $ts - (int) $this->settings->obsolete);
 
-            $this->con->execute(
-                'DELETE FROM ' . dcCore::app()->prefix . initActivityReport::ACTIVITY_TABLE_NAME . ' ' .
-                "WHERE activity_type='" . $this->ns . "' " .
-                "AND (activity_dt < TIMESTAMP '" . $obs_blog . "' " .
-                "OR activity_dt < TIMESTAMP '" . $obs_global . "') " .
-                "AND blog_id = '" . $this->con->escape($rs->blog_id) . "' "
-            );
+            $sql = new DeleteStatement();
+            $sql->from(dcCore::app()->prefix . My::ACTIVITY_TABLE_NAME)
+                ->where('activity_type =' . $sql->quote($this->type))
+                ->and('activity_dt < TIMESTAMP ' . $sql->quote($obs))
+                ->and('blog_id = ' . $sql->quote($rs->f('blog_id')))
+                ->delete();
 
-            if ($this->con->changes()) {
+            if (dcCore::app()->con->changes()) {
                 try {
-                    $cur = $this->con->openCursor(dcCore::app()->prefix . initActivityReport::ACTIVITY_TABLE_NAME);
-                    $this->con->writeLock(dcCore::app()->prefix . initActivityReport::ACTIVITY_TABLE_NAME);
+                    $cur = dcCore::app()->con->openCursor(dcCore::app()->prefix . My::ACTIVITY_TABLE_NAME);
+                    dcCore::app()->con->writeLock(dcCore::app()->prefix . My::ACTIVITY_TABLE_NAME);
 
-                    $cur->activity_id     = $this->getNextId();
-                    $cur->activity_type   = $this->ns;
-                    $cur->blog_id         = $rs->blog_id;
-                    $cur->activity_group  = 'activityReport';
-                    $cur->activity_action = 'message';
-                    $cur->activity_logs   = self::encode(__('Activity report deletes some old logs.'));
-                    $cur->activity_dt     = date('Y-m-d H:i:s');
+                    $cur->setField('activity_id', $this->getNextId());
+                    $cur->setField('activity_type', $this->type);
+                    $cur->setField('blog_id', $rs->f('blog_id'));
+                    $cur->setField('activity_group', My::id());
+                    $cur->setField('activity_action', 'message');
+                    $cur->setField('activity_logs', json_encode([__('Activity report deletes some old logs.')]));
+                    $cur->setField('activity_dt', date('Y-m-d H:i:s'));
+                    $cur->setField('activity_status', self::STATUS_PENDING);
 
                     $cur->insert();
-                    $this->con->unlock();
+                    dcCore::app()->con->unlock();
                 } catch (Exception $e) {
-                    $this->con->unlock();
+                    dcCore::app()->con->unlock();
                     dcCore::app()->error->add($e->getMessage());
                 }
             }
         }
     }
 
-    private function cleanLogs()
+    /**
+     * Delete logs.
+     *
+     * @param   bool    $only_reported  Delete only allready reported logs
+     *
+     * @return  bool    Action done
+     */
+    public function deleteLogs(bool $only_reported = false): bool
     {
-        $this->con->execute(
-            'DELETE FROM ' . dcCore::app()->prefix . initActivityReport::ACTIVITY_TABLE_NAME . ' ' .
-            "WHERE activity_type='" . $this->ns . "' " .
-            'AND activity_blog_status = 1 ' .
-            'AND activity_super_status = 1 '
-        );
-    }
+        $sql = new DeleteStatement();
 
-    public function deleteLogs()
-    {
-        if (!dcCore::app()->auth->isSuperAdmin()) {
-            return null;
+        if ($only_reported) {
+            $sql->and('activity_status = ' . self::STATUS_REPORTED);
         }
 
-        return $this->con->execute(
-            'DELETE FROM ' . dcCore::app()->prefix . initActivityReport::ACTIVITY_TABLE_NAME . ' ' .
-            "WHERE activity_type='" . $this->ns . "' "
-        );
+        return $sql->from(dcCore::app()->prefix . My::ACTIVITY_TABLE_NAME)
+            ->where('activity_type = ' . $sql->quote($this->type))
+            ->delete();
     }
 
-    private function updateStatus($from_date_ts, $to_date_ts)
+    /**
+     * Update logs status according to time interval.
+     *
+     * @param   int     $from_date_ts   The start time
+     * @param   int     $to_date_ts     The end time
+     */
+    private function updateStatus(int $from_date_ts, int $to_date_ts): void
     {
-        $r = 'UPDATE ' . dcCore::app()->prefix . initActivityReport::ACTIVITY_TABLE_NAME . ' ';
-
-        if ($this->_global) {
-            $r .= 'SET activity_super_status = 1 WHERE blog_id IS NOT NULL ';
-        } else {
-            $r .= "SET activity_blog_status = 1 WHERE blog_id = '" . $this->blog . "' ";
-        }
-        $r .= "AND activity_type = '" . $this->ns . "' " .
-            "AND activity_dt >= TIMESTAMP '" . date('Y-m-d H:i:s', $from_date_ts) . "' " .
-            "AND activity_dt < TIMESTAMP '" . date('Y-m-d H:i:s', $to_date_ts) . "' ";
-
-        $this->con->execute($r);
+        $sql = new UpdateStatement();
+        $sql->from(dcCore::app()->prefix . My::ACTIVITY_TABLE_NAME)
+            ->column('activity_status')
+            ->set((string) self::STATUS_REPORTED)
+            ->where('blog_id = ' . $sql->quote((string) dcCore::app()->blog?->id))
+            ->and('activity_type =' . $sql->quote($this->type))
+            ->and('activity_dt >= TIMESTAMP ' . $sql->quote(date('Y-m-d H:i:s', $from_date_ts)))
+            ->and('activity_dt < TIMESTAMP ' . $sql->quote(date('Y-m-d H:i:s', $to_date_ts)))
+            ->update();
     }
 
-    public function getNextId()
+    /**
+     * Get next activity ID.
+     *
+     * @return  int     The next id
+     */
+    public function getNextId(): int
     {
-        return $this->con->select(
-            'SELECT MAX(activity_id) FROM ' . dcCore::app()->prefix . initActivityReport::ACTIVITY_TABLE_NAME
-        )->f(0) + 1;
+        $sql = new SelectStatement();
+        $sql->from(dcCore::app()->prefix . My::ACTIVITY_TABLE_NAME)
+            ->column($sql->max('activity_id'));
+
+        return (int) $sql->select()?->f(0) + 1;
     }
 
-    # Lock a file to see if an update is ongoing
-    public function lockUpdate()
+    /**
+     * Lock update.
+     *
+     * Lock a file to see if an update is ongoing.
+     *
+     * @return  bool    The lock success
+     */
+    public function lockUpdate(): bool
     {
         try {
             # Need flock function
@@ -531,20 +487,20 @@ class activityReport
                 throw new Exception("Can't write in cache fodler");
             }
             # Set file path
-            $f_md5       = $this->_global ? md5(DC_MASTER_KEY) : md5($this->blog);
+            $f_md5       = md5((string) dcCore::app()->blog?->id);
             $cached_file = sprintf(
                 '%s/%s/%s/%s/%s.txt',
                 DC_TPL_CACHE,
-                initActivityReport::CACHE_DIR_NAME,
+                My::CACHE_DIR_NAME,
                 substr($f_md5, 0, 2),
                 substr($f_md5, 2, 2),
                 $f_md5
             );
             # Real path
-            $cached_file = path::real($cached_file, false);
+            $cached_file = (string) Path::real($cached_file, false);
             // make dir
             if (!is_dir(dirname($cached_file))) {
-                files::makeDir(dirname($cached_file), true);
+                Files::makeDir(dirname($cached_file), true);
             }
             //ake file
             if (!file_exists($cached_file)) {
@@ -564,38 +520,45 @@ class activityReport
                 //throw new Exception("Can't lock file");
                 return false;
             }
-            if ($this->_global) {
-                $this->lock_global = $fp;
-            } else {
-                $this->lock_blog = $fp;
-            }
+
+            $this->lock = $fp;
 
             return true;
         } catch (Exception $e) {
             // what ?
             throw $e;
         }
-
-        return false;
     }
 
-    public function unlockUpdate()
+    /**
+     * Unlock update.
+     */
+    public function unlockUpdate(): void
     {
-        if ($this->_global) {
-            @fclose($this->lock_global);
-            $this->lock_global = null;
-        } elseif ($this->lock_blog) {
-            @fclose($this->lock_blog);
-            $this->lock_blog = null;
+        if ($this->lock) {
+            @fclose($this->lock);
+            $this->lock = null;
         }
     }
 
-    public static function hasMailer()
+    /**
+     * Check if doctclear has maisl fonction.
+     *
+     * @return  bool    has mailer
+     */
+    public static function hasMailer(): bool
     {
         return function_exists('mail') || function_exists('_mail');
     }
 
-    public function needReport($force = false)
+    /**
+     * Check if blog need report to be sent and send it.
+     *
+     * @param   bool    $force  Force to send report
+     *
+     * @return  bool    The success
+     */
+    public function needReport(bool $force = false): bool
     {
         try {
             // Check if server has mail function
@@ -609,33 +572,33 @@ class activityReport
             $send = false;
             $now  = time();
 
-            $active      = (bool) $this->settings[$this->_global]['active'];
-            $mailinglist = $this->settings[$this->_global]['mailinglist'];
-            $mailformat  = $this->settings[$this->_global]['mailformat'];
-            $requests    = $this->settings[$this->_global]['requests'];
-            $lastreport  = (int) $this->settings[$this->_global]['lastreport'];
-            $interval    = (int) $this->settings[$this->_global]['interval'];
-            $blogs       = $this->settings[$this->_global]['blogs'];
+            $mailinglist = $this->settings->mailinglist;
+            $mailformat  = $this->settings->mailformat;
+            $requests    = $this->settings->requests;
+            $lastreport  = $this->settings->lastreport;
+            $interval    = $this->settings->interval;
 
             if ($force) {
                 $lastreport = 0;
             }
 
             // Check if report is needed
-            if ($active && !empty($mailinglist) && !empty($requests) && !empty($blogs)
-                        && ($lastreport + $interval) < $now
+            if (!empty($mailinglist)
+                && !empty($requests)
+                && ($lastreport + $interval) < $now
             ) {
                 // Get datas
-                $params = [
-                    'from_date_ts' => $lastreport,
-                    'to_date_ts'   => $now,
-                    'blog_id'      => $blogs,
-                    'sql'          => self::requests2params($requests),
-                    'order'        => 'blog_id ASC, activity_group ASC, activity_action ASC, activity_dt ASC ',
-                ];
+                $params = new ArrayObject([
+                    'from_date_ts'    => $lastreport,
+                    'to_date_ts'      => $now,
+                    'blog_id'         => dcCore::app()->blog?->id,
+                    'activity_status' => self::STATUS_PENDING,
+                    'requests'        => true,
+                    'order'           => 'activity_group ASC, activity_action ASC, activity_dt ASC ',
+                ]);
 
                 $logs = $this->getLogs($params);
-                if (!$logs->isEmpty()) {
+                if ($logs !== null && !$logs->isEmpty()) {
                     // Datas to readable text
                     $content = $this->parseLogs($logs);
                     if (!empty($content)) {
@@ -645,23 +608,14 @@ class activityReport
                 }
 
                 // Update db
-                if ($send || $this->_global) { // if global : delete all blog logs even if not selected
-                    $this->updateStatus($lastreport, $now);
-                    $this->cleanLogs();
-                    $this->setSetting('lastreport', $now);
-                }
-            }
-
-            // If this is on a blog, we need to test superAdmin report
-            if (!$this->_global) {
-                $this->_global = true;
-                $this->needReport();
-                $this->_global = false;
-
                 if ($send) {
+                    $this->updateStatus($lastreport, $now);
+                    $this->settings->set('lastreport', $now);
+
                     dcCore::app()->callBehavior('messageActivityReport', 'Activity report has been successfully send by mail.');
                 }
             }
+
             $this->unlockUpdate();
         } catch (Exception $e) {
             $this->unlockUpdate();
@@ -670,7 +624,16 @@ class activityReport
         return true;
     }
 
-    private function sendReport($recipients, $message, $mailformat = ' ')
+    /**
+     * Send a report.
+     *
+     * @param   array   $recipients     The recipients
+     * @param   string  $message        The message
+     * @param   string  $mailformat     The mail content format
+     *
+     * @return  bool    The sent success
+     */
+    private function sendReport(array $recipients, string $message, string $mailformat = 'plain'): bool
     {
         if (!is_array($recipients) || empty($message)) {
             return false;
@@ -681,7 +644,7 @@ class activityReport
         $rc2 = [];
         foreach ($recipients as $v) {
             $v = trim($v);
-            if (!empty($v) && text::isEmail($v)) {
+            if (!empty($v) && Text::isEmail($v)) {
                 $rc2[] = $v;
             }
         }
@@ -695,13 +658,13 @@ class activityReport
         # Sending mails
         try {
             $subject = mb_encode_mimeheader(
-                ($this->_global ? '[' . dcCore::app()->blog->name . '] ' : '') . __('Blog activity report'),
+                sprintf(__('Blog "%s" activity report'), dcCore::app()->blog?->name),
                 'UTF-8',
                 'B'
             );
 
             $headers   = [];
-            $headers[] = 'From: ' . (defined('DC_ADMIN_MAILFROM') && DC_ADMIN_MAILFROM ? DC_ADMIN_MAILFROM : 'dotclear@local');
+            $headers[] = 'From: ' . (defined('DC_ADMIN_MAILFROM') && str_contains(DC_ADMIN_MAILFROM, '@') ? DC_ADMIN_MAILFROM : 'dotclear@local');
             $headers[] = 'Content-Type: text/' . $mailformat . '; charset=UTF-8;';
             //$headers[] = 'MIME-Version: 1.0';
             //$headers[] = 'X-Originating-IP: ' . mb_encode_mimeheader(http::realIP(), 'UTF-8', 'B');
@@ -712,7 +675,7 @@ class activityReport
 
             $done = true;
             foreach ($recipients as $email) {
-                if (true !== mail::sendMail($email, $subject, $message, $headers)) {
+                if (true !== Mail::sendMail($email, $subject, $message, $headers)) {
                     $done = false;
                 }
             }
@@ -723,51 +686,54 @@ class activityReport
         return $done;
     }
 
-    public function getUserCode()
+    /**
+     * Generate current user code for public feed.
+     *
+     * @return  string The code
+     */
+    public function getUserCode(): string
     {
-        $code = pack('a32', dcCore::app()->auth->userID()) .
-        pack('H*', crypt::hmac(DC_MASTER_KEY, dcCore::app()->auth->getInfo('user_pwd')));
+        $code = pack('a32', (string) dcCore::app()->auth?->userID()) .
+            pack('H*', Crypt::hmac(DC_MASTER_KEY, (string) dcCore::app()->auth?->getInfo('user_pwd')));
 
         return bin2hex($code);
     }
 
-    public function checkUserCode($code)
+    /**
+     * Check user code from URL.
+     *
+     * @param   string  $code   The code
+     *
+     * @return  string|false    The user ID or false
+     */
+    public function checkUserCode(string $code): string|false
     {
         $code = pack('H*', $code);
 
         $user_id = trim(@pack('a32', substr($code, 0, 32)));
         $pwd     = @unpack('H40hex', substr($code, 32, 40));
 
-        if ($user_id === false || $pwd === false) {
+        if (empty($user_id) || $pwd === false) {
             return false;
         }
 
         $pwd = $pwd['hex'];
 
-        $strReq = 'SELECT user_id, user_pwd ' .
-                'FROM ' . dcCore::app()->prefix . dcAuth::USER_TABLE_NAME . ' ' .
-                "WHERE user_id = '" . dcCore::app()->con->escape($user_id) . "' ";
+        $sql = new SelectStatement();
+        $sql->from(dcCore::app()->prefix . dcAuth::USER_TABLE_NAME)
+            ->columns(['user_id', 'user_pwd'])
+            ->where('user_id =' . $sql->quote($user_id));
 
-        $rs = dcCore::app()->con->select($strReq);
+        $rs = $sql->select();
 
-        if ($rs->isEmpty()) {
+        if (!$rs || $rs->isEmpty()) {
             return false;
         }
 
-        if (crypt::hmac(DC_MASTER_KEY, $rs->user_pwd) != $pwd) {
+        if (Crypt::hmac(DC_MASTER_KEY, $rs->f('user_pwd')) != $pwd) {
             return false;
         }
 
-        return $rs->user_id;
-    }
-
-    public static function encode($a)
-    {
-        return @base64_encode(@serialize($a));
-    }
-
-    public static function decode($a)
-    {
-        return @unserialize(@base64_decode($a));
+        return $rs->f('user_id');
     }
 }

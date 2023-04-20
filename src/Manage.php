@@ -10,83 +10,114 @@
  * @copyright Jean-Christian Denis
  * @copyright GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
  */
-if (!defined('DC_CONTEXT_ADMIN')) {
-    return null;
-}
+declare(strict_types=1);
 
-if (!defined('ACTIVITY_REPORT_V2')) {
-    return null;
-}
+namespace Dotclear\Plugin\activityReport;
 
-dcPage::check(dcCore::app()->auth->makePermissions([
-    dcAuth::PERMISSION_ADMIN,
-]));
+use ArrayObject;
+use adminGenericFilter;
+use dcAuth;
+use dcCore;
+use dcNsProcess;
+use dcPage;
+use Dotclear\Helper\Html\Form\{
+    Form,
+    Hidden,
+    Para,
+    Submit,
+    Text
+};
+use Exception;
 
-$super = dcCore::app()->auth->isSuperAdmin() && !empty($_REQUEST['super']);
+/**
+ * Manage process (admin logs list).
+ */
+class Manage extends dcNsProcess
+{
+    public static function init(): bool
+    {
+        static::$init = defined('DC_CONTEXT_ADMIN')
+            && defined('ACTIVITY_REPORT')
+            && My::phpCompliant()
+            && dcCore::app()->auth?->check(dcCore::app()->auth->makePermissions([
+                dcAuth::PERMISSION_ADMIN,
+            ]), dcCore::app()->blog?->id);
 
-if ($super) {
-    dcCore::app()->activityReport->setGlobal();
-}
-
-$logs = dcCore::app()->activityReport->getLogs([]);
-
-if ($super) {
-    $breadcrumb = [
-        __('Current blog')                                        => dcCore::app()->adminurl->get('admin.plugin.' . basename(__DIR__), ['super' => 0]),
-        '<span class="page-title">' . __('All blogs') . '</span>' => '',
-    ];
-} else {
-    $breadcrumb = ['<span class="page-title">' . __('Current blog') . '</span>' => ''];
-    if (dcCore::app()->auth->isSuperAdmin()) {
-        $breadcrumb[__('All blogs')] = dcCore::app()->adminurl->get('admin.plugin.' . basename(__DIR__), ['super' => 1]);
+        return static::$init;
     }
-}
 
-echo '<html><head><title>' . __('Activity report') . '</title></head><body>' .
-dcPage::breadcrumb(array_merge([__('Activity report') => '', __('Logs') => ''], $breadcrumb), ['hl' => false]) .
-dcPage::notices();
-
-if ($logs->isEmpty()) {
-    echo '<p>' . __('No log') . '</p>';
-} else {
-    echo '
-    <div class="table-outer"><table><thead>
-    <tr>
-    <th>' . __('Action') . '</th>
-    <th>' . __('Message') . '</th>
-    <th>' . __('Date') . '</th>';
-    if ($super) {
-        echo '<th>' . __('Blog') . '</th>';
-    }
-    echo '</tr></thead><tbody>';
-
-    while ($logs->fetch()) {
-        $action = dcCore::app()->activityReport->getGroups($logs->activity_group, $logs->activity_action);
-
-        if (empty($action)) {
-            continue;
+    public static function process(): bool
+    {
+        if (!static::$init) {
+            return false;
         }
 
-        $off  = $super && $logs->activity_blog_status == 1 ? ' offline' : '';
-        $date = dt::str(
-            dcCore::app()->blog->settings->system->date_format . ', ' . dcCore::app()->blog->settings->system->time_format,
-            strtotime($logs->activity_dt),
-            dcCore::app()->auth->getInfo('user_tz')
+        if (!empty($_POST['delete_all_logs']) || !empty($_POST['delete_reported_logs'])) {
+            try {
+                ActivityReport::instance()->deleteLogs(!empty($_POST['delete_reported_logs']));
+                dcPage::addSuccessNotice(__('Logs successfully deleted'));
+                dcCore::app()->adminurl?->redirect('admin.plugin.' . My::id());
+            } catch (Exception $e) {
+                dcCore::app()->error->add($e->getMessage());
+            }
+        }
+
+        return true;
+    }
+
+    public static function render(): void
+    {
+        if (!static::$init) {
+            return;
+        }
+
+        $logs   = $counter = $list = null;
+        $filter = new adminGenericFilter(dcCore::app(), My::id());
+        $params = new ArrayObject($filter->params());
+
+        try {
+            $logs    = ActivityReport::instance()->getLogs($params);
+            $counter = ActivityReport::instance()->getLogs($params, true);
+            if (!is_null($logs) && !is_null($counter)) {
+                $list = new ManageList(dcCore::app(), $logs, $counter->f(0));
+            }
+        } catch (Exception $e) {
+            dcCore::app()->error->add($e->getMessage());
+        }
+
+        dcPage::openModule(
+            My::name(),
+            $filter->js((string) dcCore::app()->adminurl?->get('admin.plugin.' . My::id())) .
+            dcPage::jsJson(My::id(), ['confirm_delete' => __('Are you sure you want to delete logs?')]) .
+            dcPage::jsModuleLoad(My::id() . '/js/backend.js') .
+
+            # --BEHAVIOR-- activityReportListHeader --
+            dcCore::app()->callBehavior('activityReportListHeader')
         );
-        $msg = vsprintf(__($action['msg']), dcCore::app()->activityReport->decode($logs->activity_logs));
 
-        echo '
-        <tr class="line' . $off . '">
-        <td class="nowrap">' . __($action['title']) . '</td>
-        <td class="maximal">' . $msg . '</td>
-        <td class="nowrap">' . $date . '</td>';
-        if ($super) {
-            echo '<td class="nowrap">' . $logs->blog_id . '</td>';
+        echo
+        dcPage::breadcrumb([
+            __('Plugins') => '',
+            My::name()    => '',
+        ]) .
+        dcPage::notices();
+
+        if (!is_null($list)) {
+            $filter->display('admin.plugin.' . My::id(), (new Hidden('p', My::id()))->render());
+            $list->logsDisplay($filter, '%s');
         }
-        echo '</tr>';
-    }
-    echo '</tbody></table></div>';
-}
-dcCore::app()->activityReport->unsetGlobal();
 
-echo '</body></html>';
+        if (!is_null($logs) && !$logs->isEmpty()) {
+            echo
+            (new Form('form-logs'))->method('post')->action(dcCore::app()->admin->getPageURL())->fields([
+                (new Para())->class('right')->separator(' ')->items([
+                    (new Submit('delete_all_logs'))->class('delete')->value(__('Delete all aticivity logs')),
+                    (new Submit('delete_reported_logs'))->class('delete')->value(__('Delete all allready reported logs')),
+                    dcCore::app()->formNonce(false),
+                ]),
+            ])->render();
+        }
+
+        dcPage::closeModule();
+    }
+}

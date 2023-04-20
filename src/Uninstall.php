@@ -10,72 +10,78 @@
  * @copyright Jean-Christian Denis
  * @copyright GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
  */
-if (!defined('DC_CONTEXT_ADMIN')) {
-    return null;
+declare(strict_types=1);
+
+namespace Dotclear\Plugin\activityReport;
+
+use dcCore;
+use dcNsProcess;
+use Dotclear\Plugin\Uninstaller\Uninstaller;
+
+/**
+ * Uninstall process.
+ *
+ * Using plugin Uninstaller
+ */
+class Uninstall extends dcNsProcess
+{
+    public static function init(): bool
+    {
+        static::$init = defined('DC_CONTEXT_ADMIN');
+
+        return static::$init;
+    }
+
+    public static function process(): bool
+    {
+        if (!static::$init || !dcCore::app()->plugins->moduleExists('Uninstaller')) {
+            return false;
+        }
+
+        Uninstaller::instance()
+            ->addUserAction(
+                'tables',
+                'delete',
+                My::ACTIVITY_TABLE_NAME
+            )
+            ->addUserAction(
+                'settings',
+                'delete_all',
+                My::id()
+            )
+            ->addUserAction(
+                'versions',
+                'delete',
+                My::id()
+            )
+            ->addUserAction(
+                'plugins',
+                'delete',
+                My::id()
+            )
+            ->addDirectAction(
+                'tables',
+                'delete',
+                My::ACTIVITY_TABLE_NAME
+            )
+            ->addDirectAction(
+                'settings',
+                'delete_all',
+                My::id()
+            )
+            ->addDirectAction(
+                'versions',
+                'delete',
+                My::id()
+            )
+            ->addDirectAction(
+                'plugins',
+                'delete',
+                My::id()
+            )
+        ;
+
+        // no custom action
+        return false;
+    }
 }
-
-$this->addUserAction(
-    /* type */
-    'tables',
-    /* action */
-    'delete',
-    /* ns */
-    initActivityReport::ACTIVITY_TABLE_NAME,
-    /* description */
-    sprintf(__('delete %s table'), '"activity"')
-);
-
-$this->addUserAction(
-    /* type */
-    'tables',
-    /* action */
-    'delete',
-    /* ns */
-    initActivityReport::SETTING_TABLE_NAME,
-    /* description */
-    sprintf(__('delete %s table'), '"activity_setting"')
-);
-
-$this->addUserAction(
-    /* type */
-    'plugins',
-    /* action */
-    'delete',
-    /* ns */
-    basename(__DIR__),
-    /* description */
-    __('delete plugin files')
-);
-
-$this->addUserAction(
-    /* type */
-    'versions',
-    /* action */
-    'delete',
-    /* ns */
-    basename(__DIR__),
-    /* description */
-    __('delete the version number')
-);
-
-$this->addDirectAction(
-    /* type */
-    'versions',
-    /* action */
-    'delete',
-    /* ns */
-    basename(__DIR__),
-    /* description */
-    sprintf(__('delete %s version number'), basename(__DIR__))
-);
-
-$this->addDirectAction(
-    /* type */
-    'plugins',
-    /* action */
-    'delete',
-    /* ns */
-    basename(__DIR__),
-    /* description */
-    sprintf(__('delete %s plugin files'), basename(__DIR__))
-);

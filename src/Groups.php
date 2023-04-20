@@ -15,17 +15,17 @@ declare(strict_types=1);
 namespace Dotclear\Plugin\activityReport;
 
 /**
- * Email report formats stack.
+ * Actions groups stack.
  */
-class Formats
+class Groups
 {
-    /** @var    array<string, Format>  $stack   The formats stack */
+    /** @var    array<string, Group>    $stack  The actions groups stack */
     private array $stack = [];
 
     /**
-     * Chek if a format exists.
+     * Chek if a group exists.
      *
-     * @param   string  $id     The format ID
+     * @param   string  $id     The group ID
      *
      * @return  bool    True if it exists
      */
@@ -35,35 +35,35 @@ class Formats
     }
 
     /**
-     * Add a format.
+     * Add a group.
      *
-     * @param   Format  $format     The format object
+     * @param   Group  $group   The group object
      *
-     * @return  Formats The formats instance
+     * @return  Groups The groups instance
      */
-    public function add(Format $format): Formats
+    public function add(Group $group): Groups
     {
-        $this->stack[$format->id] = $format;
+        $this->stack[$group->id] = $group;
 
         return $this;
     }
 
     /**
-     * Get a format.
+     * Get a group.
      *
-     * @param   string  $id     The format ID
+     * @param   string  $id     The group ID
      *
-     * @return  Format  The format descriptor
+     * @return  Group  The group descriptor
      */
-    public function get(string $id): Format
+    public function get(string $id): Group
     {
-        return $this->stack[$id] ?? new Format('plain', []);
+        return $this->stack[$id] ?? new Group($id, 'undefined');
     }
 
     /**
-     * Get all formats.
+     * Get all groups.
      *
-     * @return array<string, Format>    The formats stack
+     * @return array<string, Group>    The groups stack
      */
     public function dump(): array
     {

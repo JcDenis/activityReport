@@ -10,140 +10,187 @@
  * @copyright Jean-Christian Denis
  * @copyright GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
  */
-if (!defined('DC_CONTEXT_ADMIN')) {
-    return null;
-}
-if (!defined('ACTIVITY_REPORT_V2')) {
-    return null;
-}
+declare(strict_types=1);
 
-dcCore::app()->menu[dcAdmin::MENU_PLUGINS]->addItem(
-    __('Activity report'),
-    dcCore::app()->adminurl->get('admin.plugin.' . basename(__DIR__)),
-    dcPage::getPF(basename(__DIR__) . '/icon.png'),
-    preg_match(
-        '/' . preg_quote(dcCore::app()->adminurl->get('admin.plugin.' . basename(__DIR__))) . '(&.*)?$/',
-        $_SERVER['REQUEST_URI']
-    ),
-    dcCore::app()->auth->check(dcCore::app()->auth->makePermissions([
-        dcAuth::PERMISSION_ADMIN,
-    ]), dcCore::app()->blog->id)
-);
+namespace Dotclear\Plugin\activityReport;
 
-if (dcCore::app()->activityReport->getSetting('active')) {
-    dcCore::app()->addBehavior('adminDashboardContentsV2', ['activityReportAdmin', 'adminDashboardContentsV2']);
-    dcCore::app()->addBehavior('adminDashboardOptionsFormV2', ['activityReportAdmin', 'adminDashboardOptionsFormV2']);
-    dcCore::app()->addBehavior('adminAfterDashboardOptionsUpdate', ['activityReportAdmin', 'adminAfterDashboardOptionsUpdate']);
-}
+use ArrayObject;
+use dcAdmin;
+use dcAuth;
+use dcCore;
+use dcFavorites;
+use dcNsProcess;
+use dcPage;
+use Dotclear\Helper\Date;
+use Dotclear\Helper\Html\Form\{
+    Div,
+    Label,
+    Para,
+    Select,
+    Text
+};
 
-class activityReportAdmin
+/**
+ * Backend process
+ */
+class Backend extends dcNsProcess
 {
-    public static function adminDashboardContentsV2($items)
+    public static function init(): bool
     {
-        dcCore::app()->auth->user_prefs->addWorkspace(basename(__DIR__));
-        $limit = abs((int) dcCore::app()->auth->user_prefs->__get(basename(__DIR__))->dashboard_item);
-        if (!$limit) {
-            return null;
-        }
-        $p = [
-            'limit' => $limit,
-            'order' => 'activity_dt DESC',
-            'sql'   => dcCore::app()->activityReport->requests2params(dcCore::app()->activityReport->getSetting('requests')),
-        ];
-        $lines = [];
-        $rs    = dcCore::app()->activityReport->getLogs($p);
-        if ($rs->isEmpty()) {
-            return null;
-        }
-        $groups = dcCore::app()->activityReport->getGroups();
-        while ($rs->fetch()) {
-            $group = $rs->activity_group;
+        static::$init = defined('DC_CONTEXT_ADMIN')
+            && defined('ACTIVITY_REPORT')
+            && My::phpCompliant()
+            && My::isInstalled();
 
-            if (!isset($groups[$group])) {
-                continue;
-            }
-            $lines[] = '<dt title="' . __($groups[$group]['title']) . '">' .
-            '<strong>' . __($groups[$group]['actions'][$rs->activity_action]['title']) . '</strong>' .
-            '<br />' . dt::str(
-                dcCore::app()->blog->settings->system->date_format . ', ' . dcCore::app()->blog->settings->system->time_format,
-                strtotime($rs->activity_dt),
-                dcCore::app()->auth->getInfo('user_tz')
-            ) . '<dt>' .
-            '<dd><p>' .
-            '<em>' . vsprintf(
-                __($groups[$group]['actions'][$rs->activity_action]['msg']),
-                dcCore::app()->activityReport->decode($rs->activity_logs)
-            ) . '</em></p></dd>';
-        }
-        if (empty($lines)) {
-            return null;
-        }
-        $items[] = new ArrayObject([
-            '<div id="activity-report-logs" class="box medium">' .
-            '<h3>' . __('Activity report') . '</h3>' .
-            '<dl id="reports">' . implode('', $lines) . '</dl>' .
-            '<p class="modules"><a class="module-details" href="' .
-            dcCore::app()->adminurl->get('admin.plugin.' . basename(__DIR__)) . '">' .
-            __('View all logs') . '</a> - <a class="module-config" href="' .
-            dcCore::app()->adminurl->get('admin.plugins', [
-                'module' => basename(__DIR__),
-                'conf'   => 1,
-                'redir'  => dcCore::app()->adminurl->get('admin.home') . '#activity-report-logs',
-            ]) . '">' .
-            __('Configure plugin') . '</a></p>' .
-            '</div>',
-        ]);
+        return static::$init;
     }
 
-    public static function adminDashboardOptionsFormV2()
+    public static function process(): bool
     {
-        dcCore::app()->auth->user_prefs->addWorkspace(basename(__DIR__));
-
-        echo
-        '<div class="fieldset">' .
-        '<h4>' . __('Activity report') . '</h4>' .
-        '<p><label for="activityReport_dashboard_item">' .
-        __('Number of activities to show on dashboard:') . '</label>' .
-        form::combo(
-            'activityReport_dashboard_item',
-            self::comboList(),
-            self::comboList(dcCore::app()->auth->user_prefs->__get(basename(__DIR__))->dashboard_item)
-        ) . '</p>' .
-        '</div>';
-    }
-
-    public static function adminAfterDashboardOptionsUpdate($user_id = null)
-    {
-        if (is_null($user_id)) {
-            return;
+        if (!static::$init) {
+            return false;
         }
 
-        dcCore::app()->auth->user_prefs->addWorkspace(basename(__DIR__));
-        dcCore::app()->auth->user_prefs->__get(basename(__DIR__))->put(
-            'dashboard_item',
-            self::comboList(@$_POST['activityReport_dashboard_item']),
-            'integer'
+        dcCore::app()->menu[dcAdmin::MENU_PLUGINS]->addItem(
+            My::name(),
+            dcCore::app()->adminurl?->get('admin.plugin.' . My::id()),
+            dcPage::getPF(My::id() . '/icon.svg'),
+            preg_match(
+                '/' . preg_quote((string) dcCore::app()->adminurl?->get('admin.plugin.' . My::id())) . '(&.*)?$/',
+                $_SERVER['REQUEST_URI']
+            ),
+            dcCore::app()->auth?->check(dcCore::app()->auth->makePermissions([
+                dcAuth::PERMISSION_ADMIN,
+            ]), dcCore::app()->blog?->id)
         );
-    }
 
-    private static function comboList($q = true)
-    {
-        $l = [
-            __('Do not show activity report') => 0,
-            5                                 => 5,
-            10                                => 10,
-            15                                => 15,
-            20                                => 20,
-            50                                => 50,
-            100                               => 100,
-        ];
-        if (true === $q) {
-            return $l;
-        }
-        if (!$q) {
-            $q = -1;
-        }
+        dcCore::app()->addBehaviors([
+            // dashboard favorites icon
+            'adminDashboardFavoritesV2' => function (dcFavorites $favs): void {
+                $favs->register(My::id(), [
+                    'title'       => My::name(),
+                    'url'         => dcCore::app()->adminurl?->get('admin.plugin.' . My::id()),
+                    'small-icon'  => dcPage::getPF(My::id() . '/icon.svg'),
+                    'large-icon'  => dcPage::getPF(My::id() . '/icon.svg'),
+                    'permissions' => dcCore::app()->auth?->makePermissions([
+                        dcAuth::PERMISSION_ADMIN,
+                    ]),
+                ]);
+            },
+            // dashboard content display
+            'adminDashboardContentsV2' => function (ArrayObject $items): void {
+                $limit = abs((int) dcCore::app()->auth?->user_prefs?->get(My::id())->get('dashboard_item'));
+                if (!$limit) {
+                    return ;
+                }
 
-        return in_array($q, $l) ? $l[$q] : 0;
+                $params = new ArrayObject([
+                    'limit'    => $limit,
+                    'requests' => true,
+                ]);
+                $rs = ActivityReport::instance()->getLogs($params);
+                if (!$rs || $rs->isEmpty()) {
+                    return;
+                }
+
+                $lines  = [];
+                $groups = ActivityReport::instance()->groups;
+                while ($rs->fetch()) {
+                    if (!$groups->has($rs->f('activity_group'))) {
+                        continue;
+                    }
+                    $group   = $groups->get($rs->f('activity_group'));
+                    $lines[] = '<dt title="' . __($group->title) . '">' .
+                    '<strong>' . __($group->get($rs->f('activity_action'))->title) . '</strong>' .
+                    '<br />' . Date::str(
+                        dcCore::app()->blog?->settings->get('system')->get('date_format') . ', ' . dcCore::app()->blog?->settings->get('system')->get('time_format'),
+                        (int) strtotime($rs->f('activity_dt')),
+                        dcCore::app()->auth?->getInfo('user_tz')
+                    ) . '<dt>' .
+                    '<dd><p>' .
+                    '<em>' . vsprintf(
+                        __($group->get($rs->f('activity_action'))->message),
+                        json_decode($rs->f('activity_logs'), true)
+                    ) . '</em></p></dd>';
+                }
+                if (empty($lines)) {
+                    return ;
+                }
+
+                $items[] = new ArrayObject([
+                    '<div id="activity-report-logs" class="box medium">' .
+                    '<h3>' . My::name() . '</h3>' .
+                    '<dl id="reports">' . implode('', $lines) . '</dl>' .
+                    '<p class="modules"><a class="module-details" href="' .
+                    dcCore::app()->adminurl?->get('admin.plugin.' . My::id()) . '">' .
+                    __('View all logs') . '</a> - <a class="module-config" href="' .
+                    dcCore::app()->adminurl?->get('admin.plugins', [
+                        'module' => My::id(),
+                        'conf'   => 1,
+                        'redir'  => dcCore::app()->adminurl->get('admin.home'),
+                    ]) . '">' .
+                    __('Configure plugin') . '</a></p>' .
+                    '</div>',
+                ]);
+            },
+            // dashboard content user preference form
+            'adminDashboardOptionsFormV2' => function (): void {
+                echo
+                (new Div())->class('fieldset')->items([
+                    (new Text('h4', My::name())),
+                    (new Para())->items([
+                        (new Label(__('Number of activities to show on dashboard:'), Label::OUTSIDE_LABEL_BEFORE))->for(My::id() . '_dashboard_item'),
+                        (new Select(My::id() . '_dashboard_item'))->default((string) dcCore::app()->auth?->user_prefs?->get(My::id())->get('dashboard_item'))->items([
+                            __('Do not show activity report') => 0,
+                            5                                 => 5,
+                            10                                => 10,
+                            15                                => 15,
+                            20                                => 20,
+                            50                                => 50,
+                            100                               => 100,
+                        ]),
+                    ]),
+                ])->render();
+            },
+            // save dashboard content user preference
+            'adminAfterDashboardOptionsUpdate' => function (?string $user_id = null): void {
+                if (!is_null($user_id)) {
+                    dcCore::app()->auth?->user_prefs?->get(My::id())->put(
+                        'dashboard_item',
+                        (int) $_POST[My::id() . '_dashboard_item'],
+                        'integer'
+                    );
+                }
+            },
+            // list filters
+            'adminFiltersListsV2' => function (ArrayObject $sorts): void {
+                $sorts[My::id()] = [
+                    My::name(),
+                    [
+                        __('Group')  => 'activity_group',
+                        __('Action') => 'activity_action',
+                        __('Date')   => 'activity_dt',
+                        __('Status') => 'activity_status',
+                    ],
+                    'activity_dt',
+                    'desc',
+                    [__('logs per page'), 30],
+                ];
+            },
+            // list columns user preference
+            'adminColumnsListsV2' => function (ArrayObject $cols): void {
+                $cols[My::id()] = [
+                    My::name(),
+                    [
+                        'activity_group'  => [true, __('Group')],
+                        'activity_action' => [true, __('Action')],
+                        'activity_dt'     => [true, __('Date')],
+                        'activity_status' => [false, __('Status')],
+                    ],
+                ];
+            },
+        ]);
+
+        return true;
     }
 }

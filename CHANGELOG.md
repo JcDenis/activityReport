@@ -1,4 +1,9 @@
-3.0
+3.1 - 2023.04.23
+- require Dotclear 2.26
+- require php 8.1
+- use latest dotclear namespace (database)
+
+3.0 - 2023.04.20
 - require Dotclear 2.26
 - require php 8.1
 - use new SVG icon

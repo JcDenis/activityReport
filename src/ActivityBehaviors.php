@@ -15,11 +15,13 @@ declare(strict_types=1);
 namespace Dotclear\Plugin\activityReport;
 
 use ArrayObject;
-use cursor;
 use dcBlog;
 use dcCore;
-use dcRecord;
 use dcUtils;
+use Dotclear\Database\{
+    Cursor,
+    MetaRecord
+};
 use Dotclear\Helper\Network\Http;
 
 /**
@@ -270,7 +272,7 @@ class ActivityBehaviors
         ActivityReport::instance()->addLog(My::id(), 'message', $logs);
     }
 
-    public static function blogUpdate(cursor $cur, string $blog_id): void
+    public static function blogUpdate(Cursor $cur, string $blog_id): void
     {
         $logs = [(string) dcCore::app()->auth?->getInfo('user_cn')];
         ActivityReport::instance()->addLog('blog', 'update', $logs);
@@ -285,7 +287,7 @@ class ActivityBehaviors
         ActivityReport::instance()->addLog('blog', 'p404', $logs);
     }
 
-    public static function postCreate(cursor $cur, int $post_id): void
+    public static function postCreate(Cursor $cur, int $post_id): void
     {
         $type     = $cur->getField('post_type') ?? 'post';
         $post_url = dcCore::app()->blog?->getPostURL('', $cur->getField('post_dt'), $cur->getField('post_title'), $post_id);
@@ -297,7 +299,7 @@ class ActivityBehaviors
         ActivityReport::instance()->addLog('post', 'create', $logs);
     }
 
-    public static function postUpdate(cursor $cur, int $post_id): void
+    public static function postUpdate(Cursor $cur, int $post_id): void
     {
         $type     = $cur->getField('post_type') ?? 'post';
         $post_url = dcCore::app()->blog?->getPostURL('', $cur->getField('post_dt'), $cur->getField('post_title'), $post_id);
@@ -334,7 +336,7 @@ class ActivityBehaviors
         ActivityReport::instance()->addLog('post', 'protection', $logs);
     }
 
-    public static function commentCreate(dcBlog $blog, cursor $cur): void
+    public static function commentCreate(dcBlog $blog, Cursor $cur): void
     {
         if ($cur->getField('comment_trackback')) {
             return;
@@ -355,7 +357,7 @@ class ActivityBehaviors
         ActivityReport::instance()->addLog('comment', 'create', $logs);
     }
 
-    public static function commentUpdate(dcBlog $blog, cursor $cur, dcRecord $old): void
+    public static function commentUpdate(dcBlog $blog, Cursor $cur, MetaRecord $old): void
     {
         $posts = dcCore::app()->blog?->getPosts(
             ['post_id' => $old->f('post_id'), 'limit' => 1]
@@ -373,7 +375,7 @@ class ActivityBehaviors
         ActivityReport::instance()->addLog('comment', 'update', $logs);
     }
 
-    public static function trackbackCreate(dcBlog $blog, cursor $cur): void
+    public static function trackbackCreate(dcBlog $blog, Cursor $cur): void
     {
         if (!$cur->getField('comment_trackback')) {
             return;
@@ -396,7 +398,7 @@ class ActivityBehaviors
         ActivityReport::instance()->addLog('comment', 'trackback', $logs);
     }
 
-    public static function categoryCreate(cursor $cur, int $cat_id): void
+    public static function categoryCreate(Cursor $cur, int $cat_id): void
     {
         $logs = [
             (string) $cur->getField('cat_title'),
@@ -406,7 +408,7 @@ class ActivityBehaviors
         ActivityReport::instance()->addLog('category', 'create', $logs);
     }
 
-    public static function categoryUpdate(cursor $cur, int $cat_id): void
+    public static function categoryUpdate(Cursor $cur, int $cat_id): void
     {
         $logs = [
             (string) $cur->getField('cat_title'),
@@ -416,7 +418,7 @@ class ActivityBehaviors
         ActivityReport::instance()->addLog('category', 'update', $logs);
     }
 
-    public static function userCreate(cursor $cur, string $user_id): void
+    public static function userCreate(Cursor $cur, string $user_id): void
     {
         $user_cn = dcUtils::getUserCN(
             $cur->getField('user_id'),
@@ -431,7 +433,7 @@ class ActivityBehaviors
         ActivityReport::instance()->addLog('user', 'create', $logs);
     }
 
-    public static function userUpdate(cursor $cur, string $user_id): void
+    public static function userUpdate(Cursor $cur, string $user_id): void
     {
         $user_cn = dcUtils::getUserCN(
             $cur->getField('user_id'),
@@ -446,7 +448,7 @@ class ActivityBehaviors
         ActivityReport::instance()->addLog('user', 'update', $logs);
     }
 
-    public static function userPreference(cursor $cur, string $user_id): void
+    public static function userPreference(Cursor $cur, string $user_id): void
     {
         $user = dcCore::app()->getUser($user_id);
         if ($user->isEmpty()) {

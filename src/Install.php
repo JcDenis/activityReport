@@ -14,9 +14,9 @@ declare(strict_types=1);
 
 namespace Dotclear\Plugin\activityReport;
 
-use dbStruct;
 use dcCore;
 use dcNsProcess;
+use Dotclear\Database\Structure;
 use Dotclear\Database\Statement\{
     DropStatement,
     TruncateStatement
@@ -46,16 +46,16 @@ class Install extends dcNsProcess
         try {
             self::beforeGrowUp();
 
-            $s = new dbStruct(dcCore::app()->con, dcCore::app()->prefix);
-            $s->{My::ACTIVITY_TABLE_NAME}
-                ->activity_id('bigint', 0, false)
-                ->activity_type('varchar', 32, false, "'" . My::id() . "'")
-                ->blog_id('varchar', 32, true)
-                ->activity_group('varchar', 32, false)
-                ->activity_action('varchar', 32, false)
-                ->activity_logs('text', 0, false)
-                ->activity_dt('timestamp', 0, false, 'now()')
-                ->activity_status('smallint', 0, false, 0)
+            $s = new Structure(dcCore::app()->con, dcCore::app()->prefix);
+            $s->__get(My::ACTIVITY_TABLE_NAME)
+                ->field('activity_id', 'bigint', 0, false)
+                ->field('activity_type', 'varchar', 32, false, "'" . My::id() . "'")
+                ->field('blog_id', 'varchar', 32, true)
+                ->field('activity_group', 'varchar', 32, false)
+                ->field('activity_action', 'varchar', 32, false)
+                ->field('activity_logs', 'text', 0, false)
+                ->field('activity_dt', 'timestamp', 0, false, 'now()')
+                ->field('activity_status', 'smallint', 0, false, 0)
 
                 ->primary('pk_activity', 'activity_id')
                 ->index('idx_activity_type', 'btree', 'activity_type')
@@ -63,7 +63,7 @@ class Install extends dcNsProcess
                 ->index('idx_activity_action', 'btree', 'activity_group', 'activity_action')
                 ->index('idx_activity_status', 'btree', 'activity_status');
 
-            (new dbStruct(dcCore::app()->con, dcCore::app()->prefix))->synchronize($s);
+            (new Structure(dcCore::app()->con, dcCore::app()->prefix))->synchronize($s);
 
             return true;
         } catch (Exception $e) {
@@ -82,7 +82,7 @@ class Install extends dcNsProcess
 
         // sorry not sorry we restart from scratch
         if ($current && version_compare($current, '3.0', '<')) {
-            $struct = new dbStruct(dcCore::app()->con, dcCore::app()->prefix);
+            $struct = new Structure(dcCore::app()->con, dcCore::app()->prefix);
 
             if ($struct->tableExists('activity')) {
                 (new TruncateStatement())->from(dcCore::app()->prefix . 'activity')->truncate();

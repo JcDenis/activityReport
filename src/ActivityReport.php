@@ -18,7 +18,7 @@ use ArrayObject;
 use dcAuth;
 use dcBlog;
 use dcCore;
-use dcRecord;
+use Dotclear\Database\MetaRecord;
 use Dotclear\Database\Statement\{
     DeleteStatement,
     JoinStatement,
@@ -61,6 +61,7 @@ class ActivityReport
     /** @var    ActivityReport  $instance   ActivityReport instance */
     private static $instance;
 
+    /** @var null|resource  $lock   File lock for update */
     private $lock = null;
 
     /**
@@ -100,9 +101,9 @@ class ActivityReport
      * @param   bool                    $count_only     Count only
      * @param   null|SelectStatement    $ext_sql        The sql select statement
      *
-     * @return null|dcRecord    The logs record
+     * @return null|MetaRecord    The logs record
      */
-    public function getLogs(ArrayObject $params = null, bool $count_only = false, ?SelectStatement $ext_sql = null): ?dcRecord
+    public function getLogs(ArrayObject $params = null, bool $count_only = false, ?SelectStatement $ext_sql = null): ?MetaRecord
     {
         if (is_null($params)) {
             $params = new ArrayObject();
@@ -271,11 +272,11 @@ class ActivityReport
     /**
      * Parse logs using a format.
      *
-     * @param   dcRecord    $rs     The logs record
+     * @param   MetaRecord    $rs     The logs record
      *
      * @return  string  The parsed logs
      */
-    private function parseLogs(dcRecord $rs): string
+    private function parseLogs(MetaRecord $rs): string
     {
         $from       = time();
         $to         = 0;

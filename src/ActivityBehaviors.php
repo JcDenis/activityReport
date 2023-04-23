@@ -210,7 +210,7 @@ class ActivityBehaviors
             __('updating user preference'),
             __('"%s" user preference has been updated'),
             'adminAfterDashboardOptionsUpdate',
-            [self::class, 'userPreference']
+            [self::class, 'userOption']
         ));
 
         // from BEHAVIOR adminBeforeUserDelete in admin/users.php
@@ -449,6 +449,11 @@ class ActivityBehaviors
     }
 
     public static function userPreference(Cursor $cur, string $user_id): void
+    {
+        self::userOption($user_id);
+    }
+
+    public static function userOption(string $user_id): void
     {
         $user = dcCore::app()->getUser($user_id);
         if ($user->isEmpty()) {

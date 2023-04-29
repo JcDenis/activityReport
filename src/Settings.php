@@ -72,9 +72,7 @@ class Settings
      */
     public function dump(): array
     {
-        $vars = get_class_vars(__CLASS__);
-
-        return  $vars ? $vars : [];
+        return get_object_vars($this);
     }
 
     /**

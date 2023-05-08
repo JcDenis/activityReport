@@ -37,7 +37,7 @@ class Frontend extends dcNsProcess
             return false;
         }
 
-        dcCore::app()->tpl->setPath(dcCore::app()->tpl->getPath(), implode(DIRECTORY_SEPARATOR, [My::root(), 'default-templates', 'tpl']));
+        dcCore::app()->tpl->setPath(dcCore::app()->tpl->getPath(), implode(DIRECTORY_SEPARATOR, [My::path(), 'default-templates', 'tpl']));
 
         dcCore::app()->tpl->addBlock('activityReports', [Template::class, 'activityReports']);
         dcCore::app()->tpl->addValue('activityReportFeedID', [Template::class, 'activityReportFeedID']);

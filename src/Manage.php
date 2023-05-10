@@ -38,7 +38,6 @@ class Manage extends dcNsProcess
     {
         static::$init = defined('DC_CONTEXT_ADMIN')
             && defined('ACTIVITY_REPORT')
-            && My::phpCompliant()
             && dcCore::app()->auth?->check(dcCore::app()->auth->makePermissions([
                 dcAuth::PERMISSION_ADMIN,
             ]), dcCore::app()->blog?->id);

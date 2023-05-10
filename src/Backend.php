@@ -39,7 +39,6 @@ class Backend extends dcNsProcess
     {
         static::$init = defined('DC_CONTEXT_ADMIN')
             && defined('ACTIVITY_REPORT')
-            && My::phpCompliant()
             && My::isInstalled();
 
         return static::$init;

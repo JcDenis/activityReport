@@ -25,7 +25,6 @@ class Frontend extends dcNsProcess
     public static function init(): bool
     {
         static::$init = defined('ACTIVITY_REPORT')
-            && My::phpCompliant()
             && My::isInstalled();
 
         return static::$init;

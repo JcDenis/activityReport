@@ -26,7 +26,6 @@ class Prepend extends dcNsProcess
     public static function init(): bool
     {
         static::$init = defined('DC_RC_PATH')
-            && My::phpCompliant()
             && My::isInstalled();
 
         return static::$init;

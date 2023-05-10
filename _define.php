@@ -22,7 +22,7 @@ $this->registerModule(
     [
         'requires' => [
             ['php', '8.1'],
-            ['core', '2.26']],
+            ['core', '2.26'],
         ],
         'permissions' => dcCore::app()->auth->makePermissions([
             dcCore::app()->auth::PERMISSION_USAGE,

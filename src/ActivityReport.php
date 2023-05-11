@@ -173,7 +173,7 @@ class ActivityReport
         }
 
         if (isset($params['activity_status'])) {
-            $sql->and('E.activity_status = ' . ((int) $params['activity_tatus']) . ' ');
+            $sql->and('E.activity_status = ' . ((int) $params['activity_status']) . ' ');
         }
         //$sql->and('E.activity_status = ' . self::STATUS_PENDING);
 

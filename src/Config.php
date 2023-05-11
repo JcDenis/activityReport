@@ -110,7 +110,7 @@ class Config extends dcNsProcess
         }
 
         $s  = ActivityReport::instance()->settings;
-        $tz = is_string(dcCore::app()->auth?->getInfo('user_tz')) ? dcCore::app()->auth?->getInfo('user_tz') : 'UTC';
+        $tz = is_string(dcCore::app()->auth?->getInfo('user_tz')) ? dcCore::app()->auth->getInfo('user_tz') : 'UTC';
 
         if (!$s->lastreport) {
             $last_report = __('never');

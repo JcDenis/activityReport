@@ -166,7 +166,7 @@ class ActivityReport
                 $params['blog_id'] = [$params['blog_id']];
             }
             $sql->and('E.blog_id' . $sql->in($params['blog_id']));
-        } elseif (is_null($params['blog_id'])) {
+        } elseif (isset($params['blog_id']) && is_null($params['blog_id'])) {
             $sql->and('E.blog_id IS NOT NULL');
         } else {
             $sql->and('E.blog_id = ' . $sql->quote((string) dcCore::app()->blog?->id));
@@ -208,7 +208,7 @@ class ActivityReport
                     $or[] = $sql->andGroup(['activity_group = ' . $sql->quote($group), 'activity_action = ' . $sql->quote($action)]);
                 }
             }
-            if (empty($or)) {
+            if (!empty($or)) {
                 $sql->and($sql->orGroup($or));
             }
         }

@@ -76,7 +76,7 @@ class ManageList extends adminGenericList
         $group   = ActivityReport::instance()->groups->get($this->rs->f('activity_group'));
         $action  = $group->get($this->rs->f('activity_action'));
         $message = json_decode((string) $this->rs->f('activity_logs'), true);
-        $message = $message[0] == 'undefined' ? __('undefined') : vsprintf(__($action->message), $message);
+        $message = ActivityReport::parseMessage(__($action->message), $message);
         $date    = Date::str(
             dcCore::app()->blog?->settings->get('system')->get('date_format') . ', ' . dcCore::app()->blog?->settings->get('system')->get('time_format'),
             (int) strtotime((string) $this->rs->f('activity_dt')),

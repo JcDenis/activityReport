@@ -270,6 +270,29 @@ class ActivityReport
     }
 
     /**
+     * Parse log message.
+     *
+     * @param   string  $message    The message to transform
+     * @param   array<int,string>   The log to parse
+     *
+     * @return  string  The parsed message
+     */
+    public static function parseMessage(string $message, array $data): string
+    {
+        if (!count($data)) {
+            return __('-- activity log is empty --');
+        }
+        if ($data[0] == 'undefined') {
+            return __('-- activity message is undefined --');
+        }
+        if ((count($data) + 1) != count(explode('%s', $message))) {
+            return __('-- activity data and message missmatch --');
+        }
+
+        return vsprintf($message, $data);
+    }
+
+    /**
      * Parse logs using a format.
      *
      * @param   MetaRecord    $rs     The logs record

@@ -42,14 +42,13 @@ L10n::$locales['A new category called "%s" was created by "%s" at %s']          
 L10n::$locales['updating category']                                                            = 'Mise à jour de catégorie';
 L10n::$locales['Category called "%s" has been updated by "%s" at %s']                          = 'La catégorie nommée "%s" a été mise à jour par "%s" à l\'adresse "%s"';
 L10n::$locales['user creation']                                                                = 'Création d\'utilisateur';
-L10n::$locales['A new user named "%s" was created by "%s"']                                    = 'Un nouvel utilisateur a été ajouté par "%s"';
+L10n::$locales['A new user named "%s" was created by "%s"']                                    = 'Un nouvel utilisateur "%s" a été ajouté par "%s"';
 L10n::$locales['updating user']                                                                = 'Mise à jour d\'utilisateur';
 L10n::$locales['User named "%s" has been updated by "%s"']                                     = 'L\'utilisateur "%s" a été mis à jour par "%s"';
 L10n::$locales['updating user preference']                                                     = 'Mise à jour de préférence';
 L10n::$locales['"%s" user preference has been updated']                                        = 'Les préférences utilisateur de "%s" ont été mis à jour';
 L10n::$locales['user deletion']                                                                = 'Suppression d\'utilisateur';
 L10n::$locales['User named "%s" has been deleted by "%"']                                      = 'L\'utilisateur nommé "%s" a été supprimé par "%s"';
-L10n::$locales['HTML']                                                                         = 'HTML';
 L10n::$locales['Activity report']                                                              = 'Rapport d\'activité';
 L10n::$locales['An error occured when parsing report.']                                        = 'Une erreur est survenue lors de la compilation du rapport.';
 L10n::$locales['You received a message from your blog\'s activity report module.']             = 'Vous recevez un message du module de rapport d\'activité de votre blog.';
@@ -104,7 +103,7 @@ L10n::$locales['No log']                                                        
 L10n::$locales['List of %s logs matching the filter.']                                         = 'Liste des %s logs correspondants au filtre.';
 L10n::$locales['List of %s logs.']                                                             = 'Listes des %s enregistrements';
 L10n::$locales['Message']                                                                      = 'Message';
-L10n::$locales['undefined']                                                                    = 'inconnu';
 L10n::$locales['reported']                                                                     = 'envoyé';
+L10n::$locales['undefined']                                                                    = 'inconnu';
 L10n::$locales['Activity log']                                                                 = 'Journal d\'activité';
 L10n::$locales['Log and receive your blog activity by email, feed, or on dashboard']           = 'Enregistrer et recevoir l\'activité de votre blog par mail, flux ou sur le tableau de bord';

@@ -99,6 +99,7 @@ class Backend extends dcNsProcess
                         continue;
                     }
                     $group   = $groups->get($rs->f('activity_group'));
+                    $data    = json_decode($rs->f('activity_logs'), true);
                     $lines[] = '<dt title="' . __($group->title) . '">' .
                     '<strong>' . __($group->get($rs->f('activity_action'))->title) . '</strong>' .
                     '<br />' . Date::str(
@@ -107,10 +108,7 @@ class Backend extends dcNsProcess
                         dcCore::app()->auth?->getInfo('user_tz')
                     ) . '<dt>' .
                     '<dd><p>' .
-                    '<em>' . vsprintf(
-                        __($group->get($rs->f('activity_action'))->message),
-                        json_decode($rs->f('activity_logs'), true)
-                    ) . '</em></p></dd>';
+                    '<em>' . ActivityReport::parseMessage(__($group->get($rs->f('activity_action'))->message), $data) . '</em></p></dd>';
                 }
                 if (empty($lines)) {
                     return ;

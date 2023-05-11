@@ -19,6 +19,7 @@ use dcAdmin;
 use dcAuth;
 use dcCore;
 use dcFavorites;
+use dcMenu;
 use dcNsProcess;
 use dcPage;
 use Dotclear\Helper\Date;
@@ -50,18 +51,20 @@ class Backend extends dcNsProcess
             return false;
         }
 
-        dcCore::app()->menu[dcAdmin::MENU_PLUGINS]->addItem(
-            My::name(),
-            dcCore::app()->adminurl?->get('admin.plugin.' . My::id()),
-            dcPage::getPF(My::id() . '/icon.svg'),
-            preg_match(
-                '/' . preg_quote((string) dcCore::app()->adminurl?->get('admin.plugin.' . My::id())) . '(&.*)?$/',
-                $_SERVER['REQUEST_URI']
-            ),
-            dcCore::app()->auth?->check(dcCore::app()->auth->makePermissions([
-                dcAuth::PERMISSION_ADMIN,
-            ]), dcCore::app()->blog?->id)
-        );
+        if ((dcCore::app()->menu[dcAdmin::MENU_PLUGINS] instanceof dcMenu)) {
+            dcCore::app()->menu[dcAdmin::MENU_PLUGINS]->addItem(
+                My::name(),
+                (string) dcCore::app()->adminurl?->get('admin.plugin.' . My::id()),
+                dcPage::getPF(My::id() . '/icon.svg'),
+                preg_match(
+                    '/' . preg_quote((string) dcCore::app()->adminurl?->get('admin.plugin.' . My::id())) . '(&.*)?$/',
+                    $_SERVER['REQUEST_URI']
+                ),
+                (bool) dcCore::app()->auth?->check(dcCore::app()->auth->makePermissions([
+                    dcAuth::PERMISSION_ADMIN,
+                ]), dcCore::app()->blog?->id)
+            );
+        }
 
         dcCore::app()->addBehaviors([
             // dashboard favorites icon
@@ -78,7 +81,8 @@ class Backend extends dcNsProcess
             },
             // dashboard content display
             'adminDashboardContentsV2' => function (ArrayObject $items): void {
-                $limit = abs((int) dcCore::app()->auth?->user_prefs?->get(My::id())->get('dashboard_item'));
+                $db    = dcCore::app()->auth?->user_prefs?->get(My::id())->get('dashboard_item');
+                $limit = abs(is_numeric($db) ? (int) $db : 0);
                 if (!$limit) {
                     return ;
                 }
@@ -95,20 +99,20 @@ class Backend extends dcNsProcess
                 $lines  = [];
                 $groups = ActivityReport::instance()->groups;
                 while ($rs->fetch()) {
-                    if (!$groups->has($rs->f('activity_group'))) {
+                    $row = new ActivityRow($rs);
+                    if (!$groups->has($row->group)) {
                         continue;
                     }
-                    $group   = $groups->get($rs->f('activity_group'));
-                    $data    = json_decode($rs->f('activity_logs'), true);
+                    $group   = $groups->get($row->group);
                     $lines[] = '<dt title="' . __($group->title) . '">' .
-                    '<strong>' . __($group->get($rs->f('activity_action'))->title) . '</strong>' .
+                    '<strong>' . __($group->get($row->action)->title) . '</strong>' .
                     '<br />' . Date::str(
                         dcCore::app()->blog?->settings->get('system')->get('date_format') . ', ' . dcCore::app()->blog?->settings->get('system')->get('time_format'),
-                        (int) strtotime($rs->f('activity_dt')),
-                        dcCore::app()->auth?->getInfo('user_tz')
+                        (int) strtotime($row->dt),
+                        is_string(dcCore::app()->auth?->getInfo('user_tz')) ? dcCore::app()->auth->getInfo('user_tz') : 'UTC'
                     ) . '<dt>' .
                     '<dd><p>' .
-                    '<em>' . ActivityReport::parseMessage(__($group->get($rs->f('activity_action'))->message), $data) . '</em></p></dd>';
+                    '<em>' . ActivityReport::parseMessage(__($group->get($row->action)->message), $row->logs) . '</em></p></dd>';
                 }
                 if (empty($lines)) {
                     return ;
@@ -132,12 +136,13 @@ class Backend extends dcNsProcess
             },
             // dashboard content user preference form
             'adminDashboardOptionsFormV2' => function (): void {
+                $db = dcCore::app()->auth?->user_prefs?->get(My::id())->get('dashboard_item');
                 echo
                 (new Div())->class('fieldset')->items([
                     (new Text('h4', My::name())),
                     (new Para())->items([
                         (new Label(__('Number of activities to show on dashboard:'), Label::OUTSIDE_LABEL_BEFORE))->for(My::id() . '_dashboard_item'),
-                        (new Select(My::id() . '_dashboard_item'))->default((string) dcCore::app()->auth?->user_prefs?->get(My::id())->get('dashboard_item'))->items([
+                        (new Select(My::id() . '_dashboard_item'))->default(is_string($db) ? $db : '')->items([
                             __('Do not show activity report') => 0,
                             5                                 => 5,
                             10                                => 10,

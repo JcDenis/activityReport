@@ -303,21 +303,22 @@ class ActivityReport
     {
         $from       = time();
         $to         = 0;
-        $res        = $blog = $group = '';
+        $res        = $blog_name = $blog_url = $group = '';
         $tz         = dcCore::app()->blog?->settings->get('system')->get('blog_timezone');
         $dt         = empty($this->settings->dateformat) ? '%Y-%m-%d %H:%M:%S' : $this->settings->dateformat;
         $format     = $this->formats->get($this->formats->has($this->settings->mailformat) ? $this->settings->mailformat : 'plain');
         $group_open = false;
 
         while ($rs->fetch()) {
-            if ($this->groups->has($rs->f('activity_group')) && $this->groups->get($rs->f('activity_group'))->has($rs->f('activity_action'))) {
+            $row = new ActivityRow($rs);
+            if ($this->groups->has($row->group) && $this->groups->get($row->group)->has($row->action)) {
                 // Type
-                if ($rs->f('activity_group') != $group) {
+                if ($row->group != $group) {
                     if ($group_open) {
                         $res .= $format->group_close;
                     }
 
-                    $group = $rs->f('activity_group');
+                    $group = $row->group;
 
                     $res .= str_replace(
                         '%TEXT%',
@@ -329,12 +330,11 @@ class ActivityReport
                 }
 
                 // Action
-                $time = strtotime($rs->f('activity_dt'));
-                $data = json_decode($rs->f('activity_logs'), true);
+                $time = strtotime($row->dt);
 
                 $res .= str_replace(
                     ['%TIME%', '%TEXT%'],
-                    [Date::str($dt, (int) $time, $tz), vsprintf(__($this->groups->get($group)->get($rs->f('activity_action'))->message), $data)],
+                    [Date::str($dt, (int) $time, $tz), vsprintf(__($this->groups->get($group)->get($row->action)->message), $row->logs)],
                     $format->action
                 );
 
@@ -346,6 +346,8 @@ class ActivityReport
                     $to = $time;
                 }
             }
+            $blog_name = $row->blog_name;
+            $blog_url  = $row->blog_url;
         }
 
         if ($group_open) {
@@ -372,8 +374,8 @@ class ActivityReport
             $format->info
         );
 
-        $period .= str_replace('%TEXT%', $rs->f('blog_name'), $format->info);
-        $period .= str_replace('%TEXT%', $rs->f('blog_url'), $format->info);
+        $period .= str_replace('%TEXT%', $blog_name, $format->info);
+        $period .= str_replace('%TEXT%', $blog_url, $format->info);
 
         $period .= str_replace(
             '%TEXT%',

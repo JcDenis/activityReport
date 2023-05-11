@@ -74,17 +74,18 @@ class ManageList extends adminGenericList
 
     private function logsLine(): string
     {
-        $offline = (int) $this->rs->f('activity_status') == ActivityReport::STATUS_REPORTED ? ' offline' : '';
-        $group   = ActivityReport::instance()->groups->get($this->rs->f('activity_group'));
-        $action  = $group->get($this->rs->f('activity_action'));
-        $data    = json_decode((string) $this->rs->f('activity_logs'), true);
-        $message = ActivityReport::parseMessage(__($action->message), is_array($data) ? $data : []);
+        $row = new ActivityRow($this->rs);
+
+        $offline = $row->status == ActivityReport::STATUS_REPORTED ? ' offline' : '';
+        $group   = ActivityReport::instance()->groups->get($row->group);
+        $action  = $group->get($row->action);
+        $message = ActivityReport::parseMessage(__($action->message), $row->logs);
         $date    = Date::str(
             dcCore::app()->blog?->settings->get('system')->get('date_format') . ', ' . dcCore::app()->blog?->settings->get('system')->get('time_format'),
-            (int) strtotime((string) $this->rs->f('activity_dt')),
+            (int) strtotime($row->dt),
             is_string(dcCore::app()->auth?->getInfo('user_tz')) ? dcCore::app()->auth->getInfo('user_tz') : 'UTC'
         );
-        $status = (int) $this->rs->f('activity_status') == ActivityReport::STATUS_PENDING ? __('pending') : __('reported');
+        $status = $row->status == ActivityReport::STATUS_PENDING ? __('pending') : __('reported');
 
         $cols = new ArrayObject([
             'activity_group'  => '<td class="nowrap">' . __($group->title) . '</td>',
@@ -97,7 +98,7 @@ class ManageList extends adminGenericList
         $this->userColumns(My::id(), $cols);
 
         return
-            '<tr class="line ' . $offline . '" id="l' . $this->rs->f('activity_id') . '">' .
+            '<tr class="line ' . $offline . '" id="l' . $row->id . '">' .
             implode(iterator_to_array($cols)) .
             '</tr>';
     }

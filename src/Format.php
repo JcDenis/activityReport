@@ -58,8 +58,8 @@ class Format
     /**
      * Constructor sets format id.
      *
-     * @param   string  $id     The format ID
-     * @param   array   $format     The format values
+     * @param   string                  $id         The format ID
+     * @param   array<string,string>    $format     The format values
      */
     public function __construct(
         public readonly string  $id,

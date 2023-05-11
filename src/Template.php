@@ -39,7 +39,7 @@ class Template
     public static function activityReports(ArrayObject $attr, string $content): string
     {
         $lastn = 0;
-        if (isset($attr['lastn'])) {
+        if (isset($attr['lastn']) && is_numeric($attr['lastn'])) {
             $lastn = abs((int) $attr['lastn']) + 0;
         }
 
@@ -139,7 +139,7 @@ class Template
     public static function activityReportDate(ArrayObject $attr): string
     {
         $format = '';
-        if (!empty($attr['format'])) {
+        if (!empty($attr['format']) && is_string($attr['format'])) {
             $format = addslashes($attr['format']);
         }
 

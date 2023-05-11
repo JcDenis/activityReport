@@ -35,7 +35,9 @@ class ManageList extends adminGenericList
                 echo '<p><strong>' . __('No log') . '</strong></p>';
             }
         } else {
-            $pager           = new dcPager((int) $filter->value('page'), (int) $this->rs_count, (int) $filter->value('nb'), 10);
+            $page            = $filter->value('page');
+            $nbpp            = $filter->value('nb');
+            $pager           = new dcPager(is_numeric($page) ? (int) $page : 1, (int) $this->rs_count, is_numeric($nbpp) ? (int) $nbpp : 20, 10);
             $pager->var_page = 'page';
 
             $html_block = '<div class="table-outer"><table><caption>' . (
@@ -75,12 +77,12 @@ class ManageList extends adminGenericList
         $offline = (int) $this->rs->f('activity_status') == ActivityReport::STATUS_REPORTED ? ' offline' : '';
         $group   = ActivityReport::instance()->groups->get($this->rs->f('activity_group'));
         $action  = $group->get($this->rs->f('activity_action'));
-        $message = json_decode((string) $this->rs->f('activity_logs'), true);
-        $message = ActivityReport::parseMessage(__($action->message), $message);
+        $data    = json_decode((string) $this->rs->f('activity_logs'), true);
+        $message = ActivityReport::parseMessage(__($action->message), is_array($data) ? $data : []);
         $date    = Date::str(
             dcCore::app()->blog?->settings->get('system')->get('date_format') . ', ' . dcCore::app()->blog?->settings->get('system')->get('time_format'),
             (int) strtotime((string) $this->rs->f('activity_dt')),
-            dcCore::app()->auth?->getInfo('user_tz')
+            is_string(dcCore::app()->auth?->getInfo('user_tz')) ? dcCore::app()->auth->getInfo('user_tz') : 'UTC'
         );
         $status = (int) $this->rs->f('activity_status') == ActivityReport::STATUS_PENDING ? __('pending') : __('reported');
 

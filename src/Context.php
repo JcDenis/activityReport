@@ -15,6 +15,7 @@ declare(strict_types=1);
 namespace Dotclear\Plugin\activityReport;
 
 use dcCore;
+use Dotclear\Database\MetaRecord;
 
 /**
  * Template helper.
@@ -28,14 +29,20 @@ class Context
      */
     public static function parseTitle(): string
     {
-        if (!dcCore::app()->ctx || !dcCore::app()->ctx->exists('activityreports')) {
+        if (!dcCore::app()->ctx
+            || !dcCore::app()->ctx->exists('activityreports')
+            || !(dcCore::app()->ctx->__get('activityreports') instanceof MetaRecord)
+        ) {
             return '';
         }
 
-        $group  = dcCore::app()->ctx->__get('activityreports')->activity_group;
-        $action = dcCore::app()->ctx->__get('activityreports')->activity_action;
+        $group  = dcCore::app()->ctx->__get('activityreports')->f('activity_group');
+        $action = dcCore::app()->ctx->__get('activityreports')->f('activity_action');
 
-        if (!ActivityReport::instance()->groups->get($group)->has($action)) {
+        if (!is_string($group)
+            || !is_string($action)
+            || !ActivityReport::instance()->groups->get($group)->has($action)
+        ) {
             return '';
         }
 
@@ -49,15 +56,23 @@ class Context
      */
     public static function parseContent(): string
     {
-        if (!dcCore::app()->ctx || !dcCore::app()->ctx->exists('activityreports')) {
+        if (!dcCore::app()->ctx
+            || !dcCore::app()->ctx->exists('activityreports')
+            || !(dcCore::app()->ctx->__get('activityreports') instanceof MetaRecord)
+        ) {
             return '';
         }
 
-        $group  = dcCore::app()->ctx->__get('activityreports')->activity_group;
-        $action = dcCore::app()->ctx->__get('activityreports')->activity_action;
-        $logs   = json_decode((string) dcCore::app()->ctx->__get('activityreports')->activity_logs, true);
+        $group  = dcCore::app()->ctx->__get('activityreports')->f('activity_group');
+        $action = dcCore::app()->ctx->__get('activityreports')->f('activity_action');
+        $logs   = dcCore::app()->ctx->__get('activityreports')->f('activity_logs');
+        $logs   = json_decode(is_string($logs) ? $logs : '', true);
 
-        if (!is_array($logs) || !ActivityReport::instance()->groups->get($group)->has($action)) {
+        if (!is_string($group)
+            || !is_string($action)
+            || !is_array($logs)
+            || !ActivityReport::instance()->groups->get($group)->has($action)
+        ) {
             return '';
         }
 

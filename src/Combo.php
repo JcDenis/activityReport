@@ -22,7 +22,7 @@ class Combo
     /**
      * Mail content formats.
      *
-     * @return  array   The formats combo
+     * @return  array<string,string>    The formats combo
      */
     public static function mailformat(): array
     {
@@ -37,7 +37,7 @@ class Combo
     /**
      * Get report intervals.
      *
-     * @return  array   The intervals combo
+     * @return  array<string,int>   The intervals combo
      */
     public static function interval(): array
     {
@@ -54,7 +54,7 @@ class Combo
     /**
      * Get obsolete period.
      *
-     * @return  array   The obsolete period combo
+     * @return  array<string,int>   The obsolete period combo
      */
     public static function obselete(): array
     {

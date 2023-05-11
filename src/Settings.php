@@ -34,7 +34,7 @@ class Settings
     /** @var    int     $lastreport     The last report time */
     public readonly int $lastreport;
 
-    /** @var    array   $mailinglist    The mailing list */
+    /** @var    array<int,string>   $mailinglist    The mailing list */
     public readonly array $mailinglist;
 
     /** @var    string  $mailformat     The mail content format */
@@ -43,7 +43,7 @@ class Settings
     /** @var    string $date format     The date format */
     public readonly string $dateformat;
 
-    /** @var    array   $requests   The selected actions list to report */
+    /** @var    array<string,array{string,int}>   $requests   The selected actions list to report */
     public readonly array $requests;
 
     /**
@@ -56,13 +56,13 @@ class Settings
         }
 
         $this->feed_active = (bool) ($this->get('feed_active') ?? false);
-        $this->obsolete    = (int) ($this->get('obsolete') ?? 2419200);
-        $this->interval    = (int) ($this->get('interval') ?? 86400);
-        $this->lastreport  = (int) ($this->get('lastreport') ?? 0);
-        $this->mailinglist = (array) ($this->get('mailinglist') ?? []);
-        $this->mailformat  = (string) ($this->get('mailformat') ?? 'plain');
-        $this->dateformat  = (string) ($this->get('dateformat') ?? '%Y-%m-%d %H:%M:%S');
-        $this->requests    = (array) ($this->get('requests') ?? []);
+        $this->obsolete    = is_numeric($this->get('obsolete')) ? (int) $this->get('obsolete') : 2419200;
+        $this->interval    = is_numeric($this->get('interval')) ? (int) $this->get('interval') : 86400;
+        $this->lastreport  = is_numeric($this->get('lastreport')) ? (int) $this->get('lastreport') : 0;
+        $this->mailinglist = is_array($this->get('mailinglist')) ? $this->get('mailinglist') : [];
+        $this->mailformat  = is_string($this->get('mailformat')) ? $this->get('mailformat') : 'plain';
+        $this->dateformat  = is_string($this->get('dateformat')) ? $this->get('dateformat') : '%Y-%m-%d %H:%M:%S';
+        $this->requests    = is_array($this->get('requests')) ? $this->get('requests') : [];
     }
 
     /**

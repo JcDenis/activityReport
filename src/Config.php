@@ -109,7 +109,8 @@ class Config extends dcNsProcess
             return;
         }
 
-        $s = ActivityReport::instance()->settings;
+        $s  = ActivityReport::instance()->settings;
+        $tz = is_string(dcCore::app()->auth?->getInfo('user_tz')) ? dcCore::app()->auth?->getInfo('user_tz') : 'UTC';
 
         if (!$s->lastreport) {
             $last_report = __('never');
@@ -118,12 +119,12 @@ class Config extends dcNsProcess
             $last_report = Date::str(
                 dcCore::app()->blog?->settings->get('system')->get('date_format') . ', ' . dcCore::app()->blog?->settings->get('system')->get('time_format'),
                 $s->lastreport,
-                dcCore::app()->auth?->getInfo('user_tz')
+                $tz
             );
             $next_report = Date::str(
                 dcCore::app()->blog?->settings->get('system')->get('date_format') . ', ' . dcCore::app()->blog?->settings->get('system')->get('time_format'),
                 $s->interval + $s->lastreport,
-                dcCore::app()->auth?->getInfo('user_tz')
+                $tz
             );
         }
 

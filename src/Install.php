@@ -31,6 +31,7 @@ class Install extends dcNsProcess
     public static function init(): bool
     {
         static::$init = defined('DC_CONTEXT_ADMIN')
+            && is_string(dcCore::app()->plugins->moduleInfo(My::id(), 'version'))
             && dcCore::app()->newVersion(My::id(), dcCore::app()->plugins->moduleInfo(My::id(), 'version'));
 
         return static::$init;
@@ -77,10 +78,10 @@ class Install extends dcNsProcess
      */
     private static function beforeGrowUp(): void
     {
-        $current = dcCore::app()->getVersion('activityReport');
-
         // sorry not sorry we restart from scratch
-        if ($current && version_compare($current, '3.0', '<')) {
+        if (is_string(dcCore::app()->getVersion('activityReport'))
+            && version_compare(dcCore::app()->getVersion('activityReport'), '3.0', '<')
+        ) {
             $struct = new Structure(dcCore::app()->con, dcCore::app()->prefix);
 
             if ($struct->tableExists('activity')) {

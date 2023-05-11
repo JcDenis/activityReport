@@ -32,7 +32,7 @@ L10n::$locales['Post called "%s" has been deleted by "%s"']                     
 L10n::$locales['Post protection']                                                              = 'Protection des billets';
 L10n::$locales['An attempt failed on a passworded post with password "%s" at "%s"']            = 'Une tentative a échoué sur un billet protégé par mot de passe avec l\'essai "%s" à l\'adresse "%s"';
 L10n::$locales['comment creation']                                                             = 'Création de commentaire';
-L10n::$locales['A new comment was created by "%s" on post "%s" at %s']                         = 'Un nouveau commentaire a été créé par "%s" sur le billet "%s"';
+L10n::$locales['A new comment was created by "%s" on post "%s" at %s']                         = 'Un nouveau commentaire a été créé par "%s" sur le billet "%s" à l\'adresse "%s"';
 L10n::$locales['updating comment']                                                             = 'Mise à jour de commentaire';
 L10n::$locales['Comment has been updated by "%s" at %s']                                       = 'Un commentaire a été mise à jour par "%s" à l\'adresse "%s"';
 L10n::$locales['trackback creation']                                                           = 'Création de trackback';

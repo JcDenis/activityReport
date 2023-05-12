@@ -61,8 +61,8 @@ class ActivityReport
     /** @var    ActivityReport  $instance   ActivityReport instance */
     private static $instance;
 
-    /** @var null|resource  $lock   File lock for update */
-    private $lock = null;
+    /** @var null|string  $lock   File lock for update */
+    private static $lock = null;
 
     /**
      * Constructor sets activity main type.
@@ -495,75 +495,49 @@ class ActivityReport
     }
 
     /**
-     * Lock update.
-     *
      * Lock a file to see if an update is ongoing.
      *
-     * @return  bool    The lock success
+     * @return  bool    True if file is locked
      */
     public function lockUpdate(): bool
     {
         try {
-            # Need flock function
-            if (!function_exists('flock')) {
-                throw new Exception("Can't call php function named flock");
-            }
             # Cache writable ?
             if (!is_writable(DC_TPL_CACHE)) {
                 throw new Exception("Can't write in cache fodler");
             }
             # Set file path
-            $f_md5       = md5((string) dcCore::app()->blog?->id);
-            $cached_file = sprintf(
+            $f_md5 = md5((string) dcCore::app()->blog?->id);
+            $file  = sprintf(
                 '%s/%s/%s/%s/%s.txt',
                 DC_TPL_CACHE,
-                My::CACHE_DIR_NAME,
+                My::id(),
                 substr($f_md5, 0, 2),
                 substr($f_md5, 2, 2),
                 $f_md5
             );
-            # Real path
-            $cached_file = (string) Path::real($cached_file, false);
-            // make dir
-            if (!is_dir(dirname($cached_file))) {
-                Files::makeDir(dirname($cached_file), true);
-            }
-            //ake file
-            if (!file_exists($cached_file)) {
-                !$fp = @fopen($cached_file, 'w');
-                if ($fp === false) {
-                    throw new Exception("Can't create file");
-                }
-                fwrite($fp, '1', strlen('1'));
-                fclose($fp);
-            }
-            // open file
-            if (!($fp = @fopen($cached_file, 'r+'))) {
-                throw new Exception("Can't open file");
-            }
-            // lock file
-            if (!flock($fp, LOCK_EX | LOCK_NB)) {
-                //throw new Exception("Can't lock file");
+
+            $file = Lock::lock($file);
+            if (is_null($file) || empty($file)) {
                 return false;
             }
 
-            $this->lock = $fp;
+            self::$lock = $file;
 
             return true;
         } catch (Exception $e) {
-            // what ?
             throw $e;
         }
     }
 
     /**
-     * Unlock update.
+     * Unlock file of update process.
      */
     public function unlockUpdate(): void
     {
-        if ($this->lock) {
-            @fclose($this->lock);
-            $this->lock = null;
+        if (!is_null(self::$lock)) {
+            Lock::unlock(self::$lock);
+            self::$lock = null;
         }
     }
 

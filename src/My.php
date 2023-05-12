@@ -24,9 +24,6 @@ class My
     /** @var    string  Activity database table name */
     public const ACTIVITY_TABLE_NAME = 'activity';
 
-    /** @var    string  Cache sub directory name */
-    public const CACHE_DIR_NAME = 'activityreport';
-
     /** @var    int     Incremental version by breaking changes */
     public const COMPATIBILITY_VERSION = 3;
 

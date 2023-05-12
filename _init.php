@@ -17,5 +17,4 @@ if (!defined('DC_RC_PATH')) {
 class initActivityReport
 {
     public const ACTIVITY_TABLE_NAME = 'activity';
-    public const CACHE_DIR_NAME      = 'activityreport';
 }

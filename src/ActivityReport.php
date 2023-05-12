@@ -155,24 +155,24 @@ class ActivityReport
             //nope
         }
 
-        if (!empty($params['activity_type'])) {
+        if (!empty($params['activity_type']) && is_string($params['activity_type'])) {
             $sql->where('E.activity_type = ' . $sql->quote($params['activity_type']));
         } else {
             $sql->where('E.activity_type = ' . $sql->quote($this->type));
         }
 
-        if (!empty($params['blog_id'])) {
+        if (isset($params['blog_id']) && is_null($params['blog_id'])) {
+            $sql->and('E.blog_id IS NOT NULL');
+        } elseif (!empty($params['blog_id'])) {
             if (!is_array($params['blog_id'])) {
                 $params['blog_id'] = [$params['blog_id']];
             }
             $sql->and('E.blog_id' . $sql->in($params['blog_id']));
-        } elseif (isset($params['blog_id']) && is_null($params['blog_id'])) {
-            $sql->and('E.blog_id IS NOT NULL');
         } else {
             $sql->and('E.blog_id = ' . $sql->quote((string) dcCore::app()->blog?->id));
         }
 
-        if (isset($params['activity_status'])) {
+        if (isset($params['activity_status']) && is_numeric($params['activity_status'])) {
             $sql->and('E.activity_status = ' . ((int) $params['activity_status']) . ' ');
         }
         //$sql->and('E.activity_status = ' . self::STATUS_PENDING);
@@ -191,20 +191,17 @@ class ActivityReport
             $sql->and('E.activity_action' . $sql->in($params['activity_action']));
         }
 
-        if (isset($params['from_date_ts'])) {
-            $sql->and("E.activity_dt >= TIMESTAMP '" . date('Y-m-d H:i:s', $params['from_date_ts']) . "' ");
+        if (isset($params['from_date_ts']) && is_numeric($params['from_date_ts'])) {
+            $sql->and("E.activity_dt >= TIMESTAMP '" . date('Y-m-d H:i:s', (int) $params['from_date_ts']) . "' ");
         }
-        if (isset($params['to_date_ts'])) {
-            $sql->and("E.activity_dt < TIMESTAMP '" . date('Y-m-d H:i:s', $params['to_date_ts']) . "' ");
+        if (isset($params['to_date_ts']) && is_numeric($params['to_date_ts'])) {
+            $sql->and("E.activity_dt < TIMESTAMP '" . date('Y-m-d H:i:s', (int) $params['to_date_ts']) . "' ");
         }
 
         if (!empty($params['requests'])) {
             $or = [];
             foreach ($this->settings->requests as $group => $actions) {
-                if (empty($actions)) {
-                    continue;
-                }
-                foreach ($actions as $action => $is) {
+                foreach ($actions as $action) {
                     $or[] = $sql->andGroup(['activity_group = ' . $sql->quote($group), 'activity_action = ' . $sql->quote($action)]);
                 }
             }
@@ -218,7 +215,7 @@ class ActivityReport
         }
 
         if (!$count_only) {
-            if (!empty($params['order'])) {
+            if (!empty($params['order']) && is_string($params['order'])) {
                 $sql->order($sql->escape($params['order']));
             } else {
                 $sql->order('E.activity_dt DESC');
@@ -236,9 +233,9 @@ class ActivityReport
     /**
      * Add a log.
      *
-     * @param   string  $group      The group
-     * @param   string  $action     The action
-     * @param   array   $logs       The logs values
+     * @param   string              $group      The group
+     * @param   string              $action     The action
+     * @param   array<int,string>   $logs       The logs values
      */
     public function addLog(string $group, string $action, array $logs): void
     {
@@ -272,24 +269,24 @@ class ActivityReport
     /**
      * Parse log message.
      *
-     * @param   string  $message    The message to transform
-     * @param   array<int,string>   The log to parse
+     * @param   string              $message    The message to transform
+     * @param   array<int,string>   $logs       The log to parse
      *
      * @return  string  The parsed message
      */
-    public static function parseMessage(string $message, array $data): string
+    public static function parseMessage(string $message, array $logs): string
     {
-        if (!count($data)) {
+        if (!count($logs)) {
             return __('-- activity log is empty --');
         }
-        if ($data[0] == 'undefined') {
+        if ($logs[0] == 'undefined') {
             return __('-- activity message is undefined --');
         }
-        if ((count($data) + 1) != count(explode('%s', $message))) {
+        if ((count($logs) + 1) != count(explode('%s', $message))) {
             return __('-- activity data and message missmatch --');
         }
 
-        return vsprintf($message, $data);
+        return vsprintf($message, $logs);
     }
 
     /**
@@ -305,6 +302,7 @@ class ActivityReport
         $to         = 0;
         $res        = $blog_name = $blog_url = $group = '';
         $tz         = dcCore::app()->blog?->settings->get('system')->get('blog_timezone');
+        $tz         = is_string($tz) ? $tz : 'UTC';
         $dt         = empty($this->settings->dateformat) ? '%Y-%m-%d %H:%M:%S' : $this->settings->dateformat;
         $format     = $this->formats->get($this->formats->has($this->settings->mailformat) ? $this->settings->mailformat : 'plain');
         $group_open = false;
@@ -397,6 +395,7 @@ class ActivityReport
         // Get blogs and logs count
         $sql = new SelectStatement();
         $sql->from(dcCore::app()->prefix . My::ACTIVITY_TABLE_NAME)
+            ->column('blog_id')
             ->where('activity_type =' . $sql->quote($this->type))
             ->group('blog_id');
 
@@ -409,33 +408,34 @@ class ActivityReport
         while ($rs->fetch()) {
             $ts  = time();
             $obs = Date::str('%Y-%m-%d %H:%M:%S', $ts - (int) $this->settings->obsolete);
+            if (is_string($rs->f('blog_id'))) {
+                $sql = new DeleteStatement();
+                $sql->from(dcCore::app()->prefix . My::ACTIVITY_TABLE_NAME)
+                    ->where('activity_type =' . $sql->quote($this->type))
+                    ->and('activity_dt < TIMESTAMP ' . $sql->quote($obs))
+                    ->and('blog_id = ' . $sql->quote($rs->f('blog_id')))
+                    ->delete();
 
-            $sql = new DeleteStatement();
-            $sql->from(dcCore::app()->prefix . My::ACTIVITY_TABLE_NAME)
-                ->where('activity_type =' . $sql->quote($this->type))
-                ->and('activity_dt < TIMESTAMP ' . $sql->quote($obs))
-                ->and('blog_id = ' . $sql->quote($rs->f('blog_id')))
-                ->delete();
+                if (dcCore::app()->con->changes()) {
+                    try {
+                        $cur = dcCore::app()->con->openCursor(dcCore::app()->prefix . My::ACTIVITY_TABLE_NAME);
+                        dcCore::app()->con->writeLock(dcCore::app()->prefix . My::ACTIVITY_TABLE_NAME);
 
-            if (dcCore::app()->con->changes()) {
-                try {
-                    $cur = dcCore::app()->con->openCursor(dcCore::app()->prefix . My::ACTIVITY_TABLE_NAME);
-                    dcCore::app()->con->writeLock(dcCore::app()->prefix . My::ACTIVITY_TABLE_NAME);
+                        $cur->setField('activity_id', $this->getNextId());
+                        $cur->setField('activity_type', $this->type);
+                        $cur->setField('blog_id', $rs->f('blog_id'));
+                        $cur->setField('activity_group', My::id());
+                        $cur->setField('activity_action', 'message');
+                        $cur->setField('activity_logs', json_encode([__('Activity report deletes some old logs.')]));
+                        $cur->setField('activity_dt', date('Y-m-d H:i:s'));
+                        $cur->setField('activity_status', self::STATUS_PENDING);
 
-                    $cur->setField('activity_id', $this->getNextId());
-                    $cur->setField('activity_type', $this->type);
-                    $cur->setField('blog_id', $rs->f('blog_id'));
-                    $cur->setField('activity_group', My::id());
-                    $cur->setField('activity_action', 'message');
-                    $cur->setField('activity_logs', json_encode([__('Activity report deletes some old logs.')]));
-                    $cur->setField('activity_dt', date('Y-m-d H:i:s'));
-                    $cur->setField('activity_status', self::STATUS_PENDING);
-
-                    $cur->insert();
-                    dcCore::app()->con->unlock();
-                } catch (Exception $e) {
-                    dcCore::app()->con->unlock();
-                    dcCore::app()->error->add($e->getMessage());
+                        $cur->insert();
+                        dcCore::app()->con->unlock();
+                    } catch (Exception $e) {
+                        dcCore::app()->con->unlock();
+                        dcCore::app()->error->add($e->getMessage());
+                    }
                 }
             }
         }
@@ -653,9 +653,9 @@ class ActivityReport
     /**
      * Send a report.
      *
-     * @param   array   $recipients     The recipients
-     * @param   string  $message        The message
-     * @param   string  $mailformat     The mail content format
+     * @param   array<int,string>   $recipients     The recipients
+     * @param   string              $message        The message
+     * @param   string              $mailformat     The mail content format
      *
      * @return  bool    The sent success
      */
@@ -719,8 +719,9 @@ class ActivityReport
      */
     public function getUserCode(): string
     {
-        $code = pack('a32', (string) dcCore::app()->auth?->userID()) .
-            pack('H*', Crypt::hmac(DC_MASTER_KEY, (string) dcCore::app()->auth?->getInfo('user_pwd')));
+        $id   = is_string(dcCore::app()->auth?->userID()) ? dcCore::app()->auth->userID() : '';
+        $pw   = is_string(dcCore::app()->auth?->getInfo('user_pwd')) ? dcCore::app()->auth->getInfo('user_pwd') : '';
+        $code = pack('a32', $id) . pack('H*', Crypt::hmac(DC_MASTER_KEY, $pw));
 
         return bin2hex($code);
     }
@@ -752,7 +753,7 @@ class ActivityReport
 
         $rs = $sql->select();
 
-        if (!$rs || $rs->isEmpty()) {
+        if (!$rs || $rs->isEmpty() || !is_string($rs->f('user_pwd')) || !is_string($rs->f('user_id'))) {
             return false;
         }
 

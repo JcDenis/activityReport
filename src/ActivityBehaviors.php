@@ -274,7 +274,7 @@ class ActivityBehaviors
 
     public static function blogUpdate(Cursor $cur, string $blog_id): void
     {
-        $logs = [(string) dcCore::app()->auth?->getInfo('user_cn')];
+        $logs = [self::str(dcCore::app()->auth?->getInfo('user_cn'))];
         ActivityReport::instance()->addLog('blog', 'update', $logs);
     }
 
@@ -283,30 +283,28 @@ class ActivityBehaviors
         if (dcCore::app()->url->type != '404') {
             return;
         }
-        $logs = [(string) dcCore::app()->blog?->url . $_SERVER['QUERY_STRING']];
+        $logs = [self::str(dcCore::app()->blog?->url) . $_SERVER['QUERY_STRING']];
         ActivityReport::instance()->addLog('blog', 'p404', $logs);
     }
 
     public static function postCreate(Cursor $cur, int $post_id): void
     {
-        $type     = $cur->getField('post_type') ?? 'post';
-        $post_url = dcCore::app()->blog?->getPostURL('', $cur->getField('post_dt'), $cur->getField('post_title'), $post_id);
+        $post_url = dcCore::app()->blog?->getPostURL('', self::str($cur->getField('post_dt')), self::str($cur->getField('post_title')), $post_id);
         $logs     = [
-            (string) $cur->getField('post_title'),
-            (string) dcCore::app()->auth?->getInfo('user_cn'),
-            (string) dcCore::app()->blog?->url . dcCore::app()->url->getBase($type) . '/' . $post_url,
+            self::str($cur->getField('post_title')),
+            self::str(dcCore::app()->auth?->getInfo('user_cn')),
+            self::str(dcCore::app()->blog?->url) . dcCore::app()->url->getBase(self::str($cur->getField('post_type'))) . '/' . $post_url,
         ];
         ActivityReport::instance()->addLog('post', 'create', $logs);
     }
 
     public static function postUpdate(Cursor $cur, int $post_id): void
     {
-        $type     = $cur->getField('post_type') ?? 'post';
-        $post_url = dcCore::app()->blog?->getPostURL('', $cur->getField('post_dt'), $cur->getField('post_title'), $post_id);
+        $post_url = dcCore::app()->blog?->getPostURL('', self::str($cur->getField('post_dt')), self::str($cur->getField('post_title')), $post_id);
         $logs     = [
-            (string) $cur->getField('post_title'),
-            (string) dcCore::app()->auth?->getInfo('user_cn'),
-            (string) dcCore::app()->blog?->url . dcCore::app()->url->getBase($type) . '/' . $post_url,
+            self::str($cur->getField('post_title')),
+            self::str(dcCore::app()->auth?->getInfo('user_cn')),
+            self::str(dcCore::app()->blog?->url) . dcCore::app()->url->getBase(self::str($cur->getField('post_type'))) . '/' . $post_url,
         ];
         ActivityReport::instance()->addLog('post', 'update', $logs);
     }
@@ -318,8 +316,8 @@ class ActivityBehaviors
             return;
         }
         $logs = [
-            (string) $posts->f('post_title'),
-            (string) dcCore::app()->auth?->getInfo('user_cn'),
+            self::str($posts->f('post_title')),
+            self::str(dcCore::app()->auth?->getInfo('user_cn')),
         ];
         ActivityReport::instance()->addLog('post', 'delete', $logs);
     }
@@ -349,10 +347,10 @@ class ActivityBehaviors
         }
 
         $logs = [
-            (string) $cur->getField('comment_author'),
-            (string) $posts->f('post_title'),
-            (string) dcCore::app()->blog?->url . dcCore::app()->url->getBase((string) $posts->f('post_type')) .
-                '/' . $posts->f('post_url') . '#c' . $cur->getField('comment_id'),
+            self::str($cur->getField('comment_author')),
+            self::str($posts->f('post_title')),
+            self::str(dcCore::app()->blog?->url) . dcCore::app()->url->getBase(self::str($posts->f('post_type'))) .
+                '/' . self::str($posts->f('post_url')) . '#c' . self::str($cur->getField('comment_id')),
         ];
         ActivityReport::instance()->addLog('comment', 'create', $logs);
     }
@@ -367,10 +365,10 @@ class ActivityBehaviors
         }
 
         $logs = [
-            (string) dcCore::app()->auth?->getInfo('user_cn'),
-            (string) $posts->f('post_title'),
-            (string) dcCore::app()->blog?->url . dcCore::app()->url->getBase((string) $posts->f('post_type')) .
-                '/' . $posts->f('post_url') . '#c' . $old->f('comment_id'),
+            self::str(dcCore::app()->auth?->getInfo('user_cn')),
+            self::str($posts->f('post_title')),
+            self::str(dcCore::app()->blog?->url) . dcCore::app()->url->getBase(self::str($posts->f('post_type'))) .
+                '/' . self::str($posts->f('post_url')) . '#c' . self::str($old->f('comment_id')),
         ];
         ActivityReport::instance()->addLog('comment', 'update', $logs);
     }
@@ -389,11 +387,11 @@ class ActivityBehaviors
         }
 
         $logs = [
-            (string) $cur->getField('comment_author'),
-            (string) $cur->getField('comment_site'),
-            (string) $posts->f('post_title'),
-            (string) dcCore::app()->blog?->url . dcCore::app()->url->getBase($posts->f('post_type')) .
-                '/' . $posts->f('post_url'),
+            self::str($cur->getField('comment_author')),
+            self::str($cur->getField('comment_site')),
+            self::str($posts->f('post_title')),
+            self::str(dcCore::app()->blog?->url) . dcCore::app()->url->getBase(self::str($posts->f('post_type'))) .
+                '/' . self::str($posts->f('post_url')),
         ];
         ActivityReport::instance()->addLog('comment', 'trackback', $logs);
     }
@@ -401,9 +399,9 @@ class ActivityBehaviors
     public static function categoryCreate(Cursor $cur, int $cat_id): void
     {
         $logs = [
-            (string) $cur->getField('cat_title'),
-            (string) dcCore::app()->auth?->getInfo('user_cn'),
-            (string) dcCore::app()->blog?->url . dcCore::app()->url->getBase('category') . '/' . $cur->getField('cat_url'),
+            self::str($cur->getField('cat_title')),
+            self::str(dcCore::app()->auth?->getInfo('user_cn')),
+            self::str(dcCore::app()->blog?->url) . dcCore::app()->url->getBase('category') . '/' . self::str($cur->getField('cat_url')),
         ];
         ActivityReport::instance()->addLog('category', 'create', $logs);
     }
@@ -411,9 +409,9 @@ class ActivityBehaviors
     public static function categoryUpdate(Cursor $cur, int $cat_id): void
     {
         $logs = [
-            (string) $cur->getField('cat_title'),
-            (string) dcCore::app()->auth?->getInfo('user_cn'),
-            (string) dcCore::app()->blog?->url . dcCore::app()->url->getBase('category') . '/' . $cur->getField('cat_url'),
+            self::str($cur->getField('cat_title')),
+            self::str(dcCore::app()->auth?->getInfo('user_cn')),
+            self::str(dcCore::app()->blog?->url) . dcCore::app()->url->getBase('category') . '/' . self::str($cur->getField('cat_url')),
         ];
         ActivityReport::instance()->addLog('category', 'update', $logs);
     }
@@ -421,14 +419,14 @@ class ActivityBehaviors
     public static function userCreate(Cursor $cur, string $user_id): void
     {
         $user_cn = dcUtils::getUserCN(
-            $cur->getField('user_id'),
-            $cur->getField('user_name'),
-            $cur->getField('user_firstname'),
-            $cur->getField('user_displayname')
+            self::str($cur->getField('user_id')),
+            self::str($cur->getField('user_name')),
+            self::str($cur->getField('user_firstname')),
+            self::str($cur->getField('user_displayname'))
         );
         $logs = [
-            (string) $user_cn,
-            (string) dcCore::app()->auth?->getInfo('user_cn'),
+            self::str($user_cn),
+            self::str(dcCore::app()->auth?->getInfo('user_cn')),
         ];
         ActivityReport::instance()->addLog('user', 'create', $logs);
     }
@@ -436,14 +434,14 @@ class ActivityBehaviors
     public static function userUpdate(Cursor $cur, string $user_id): void
     {
         $user_cn = dcUtils::getUserCN(
-            $cur->getField('user_id'),
-            $cur->getField('user_name'),
-            $cur->getField('user_firstname'),
-            $cur->getField('user_displayname')
+            self::str($cur->getField('user_id')),
+            self::str($cur->getField('user_name')),
+            self::str($cur->getField('user_firstname')),
+            self::str($cur->getField('user_displayname'))
         );
         $logs = [
-            (string) $user_cn,
-            (string) dcCore::app()->auth?->getInfo('user_cn'),
+            self::str($user_cn),
+            self::str(dcCore::app()->auth?->getInfo('user_cn')),
         ];
         ActivityReport::instance()->addLog('user', 'update', $logs);
     }
@@ -460,13 +458,13 @@ class ActivityBehaviors
             return;
         }
         $user_cn = dcUtils::getUserCN(
-            $user->f('user_id'),
-            $user->f('user_name'),
-            $user->f('user_firstname'),
-            $user->f('user_displayname')
+            self::str($user->f('user_id')),
+            self::str($user->f('user_name')),
+            self::str($user->f('user_firstname')),
+            self::str($user->f('user_displayname'))
         );
         $logs = [
-            (string) $user_cn,
+            self::str($user_cn),
         ];
         ActivityReport::instance()->addLog('user', 'preference', $logs);
     }
@@ -475,15 +473,27 @@ class ActivityBehaviors
     {
         $users   = dcCore::app()->getUser($user_id);
         $user_cn = dcUtils::getUserCN(
-            $users->f('user_id'),
-            $users->f('user_name'),
-            $users->f('user_firstname'),
-            $users->f('user_displayname')
+            self::str($users->f('user_id')),
+            self::str($users->f('user_name')),
+            self::str($users->f('user_firstname')),
+            self::str($users->f('user_displayname'))
         );
         $logs = [
-            (string) $user_cn,
-            (string) dcCore::app()->auth?->getInfo('user_cn'),
+            self::str($user_cn),
+            self::str(dcCore::app()->auth?->getInfo('user_cn')),
         ];
         ActivityReport::instance()->addLog('user', 'delete', $logs);
+    }
+
+    /**
+     * Type cast.
+     *
+     * @param   mixed   $field  The field to check
+     *
+     * @return  string  The string field
+     */
+    private static function str(mixed $field): string
+    {
+        return is_string($field) || is_numeric($field) ? (string) $field : 'unknown';
     }
 }

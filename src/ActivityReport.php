@@ -249,7 +249,7 @@ class ActivityReport
             $cur->setField('activity_group', $group);
             $cur->setField('activity_action', $action);
             $cur->setField('activity_logs', json_encode($logs));
-            $cur->setField('activity_dt', date('Y-m-d H:i:s'));
+            $cur->setField('activity_dt', Date::str('%Y-%m-%d %H:%M:%S', time(), 'UTC'));
             $cur->setField('activity_status', self::STATUS_PENDING);
 
             $cur->insert();
@@ -427,7 +427,7 @@ class ActivityReport
                         $cur->setField('activity_group', My::id());
                         $cur->setField('activity_action', 'message');
                         $cur->setField('activity_logs', json_encode([__('Activity report deletes some old logs.')]));
-                        $cur->setField('activity_dt', date('Y-m-d H:i:s'));
+                        $cur->setField('activity_dt', Date::str('%Y-%m-%d %H:%M:%S', time(), 'UTC'));
                         $cur->setField('activity_status', self::STATUS_PENDING);
 
                         $cur->insert();

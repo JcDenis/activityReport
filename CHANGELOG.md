@@ -1,3 +1,16 @@
+todo:
+- add group and action on list filters
+
+3.2 - 2023.05.13
+- require Dotclear 2.26
+- require php 8.1
+- add php_min to define.php
+- fix uncomplete messages
+- fix unknow params
+- fix dashboard activity
+- fix translation
+- various type hint fix
+
 3.1 - 2023.04.23
 - require Dotclear 2.26
 - require php 8.1

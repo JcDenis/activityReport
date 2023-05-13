@@ -517,7 +517,7 @@ class ActivityReport
                 $f_md5
             );
 
-            $file = Lock::lock($file);
+            $file = Files::lock($file);
             if (is_null($file) || empty($file)) {
                 return false;
             }
@@ -536,7 +536,7 @@ class ActivityReport
     public function unlockUpdate(): void
     {
         if (!is_null(self::$lock)) {
-            Lock::unlock(self::$lock);
+            Files::unlock(self::$lock);
             self::$lock = null;
         }
     }

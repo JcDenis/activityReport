@@ -14,10 +14,9 @@ declare(strict_types=1);
 
 namespace Dotclear\Plugin\activityReport;
 
-use dcAuth;
 use dcCore;
-use dcPage;
-use dcNsProcess;
+use Dotclear\Core\Backend\Notices;
+use Dotclear\Core\Process;
 use Dotclear\Helper\Date;
 use Dotclear\Helper\Html\Form\{
     Checkbox,
@@ -35,22 +34,16 @@ use Exception;
 /**
  * Config process.
  */
-class Config extends dcNsProcess
+class Config extends Process
 {
     public static function init(): bool
     {
-        static::$init == defined('DC_CONTEXT_ADMIN')
-            && defined('ACTIVITY_REPORT')
-            && dcCore::app()->auth?->check(dcCore::app()->auth->makePermissions([
-                dcAuth::PERMISSION_ADMIN,
-            ]), dcCore::app()->blog?->id);
-
-        return static::$init;
+        return self::status(My::checkContext(My::CONFIG));
     }
 
     public static function process(): bool
     {
-        if (!static::$init) {
+        if (!self::status()) {
             return false;
         }
 
@@ -65,7 +58,7 @@ class Config extends dcNsProcess
             if (in_array($_POST['interval'], Combo::interval())) {
                 $s->set('interval', (int) $_POST['interval']);
             }
-            if (in_array($_POST['obsolete'], Combo::obselete())) {
+            if (in_array($_POST['obsolete'], Combo::obsolete())) {
                 $s->set('obsolete', (int) $_POST['obsolete']);
             }
             $s->set('mailinglist', explode(';', $_POST['mailinglist']));
@@ -73,26 +66,26 @@ class Config extends dcNsProcess
             $s->set('dateformat', $_POST['dateformat']);
             $s->set('requests', $_POST['requests'] ?? []);
 
-            dcPage::addSuccessNotice(
+            Notices::addSuccessNotice(
                 __('Configuration successfully updated.')
             );
 
             if (!empty($_POST['send_report_now'])) {
                 ActivityReport::instance()->needReport(true);
 
-                dcPage::addSuccessNotice(
+                Notices::addSuccessNotice(
                     __('Report successfully sent.')
                 );
             }
             if (!empty($_POST['delete_report_now'])) {
                 ActivityReport::instance()->deleteLogs();
 
-                dcPage::addSuccessNotice(
+                Notices::addSuccessNotice(
                     __('Logs successfully deleted.')
                 );
             }
 
-            dcCore::app()->adminurl?->redirect('admin.plugins', [
+            dcCore::app()->admin->url->redirect('admin.plugins', [
                 'module' => My::id(),
                 'conf'   => 1,
             ]);
@@ -105,12 +98,12 @@ class Config extends dcNsProcess
 
     public static function render(): void
     {
-        if (!static::$init) {
+        if (!self::status()) {
             return;
         }
 
         $s  = ActivityReport::instance()->settings;
-        $tz = is_string(dcCore::app()->auth?->getInfo('user_tz')) ? dcCore::app()->auth->getInfo('user_tz') : 'UTC';
+        $tz = is_string(dcCore::app()->auth->getInfo('user_tz')) ? dcCore::app()->auth->getInfo('user_tz') : 'UTC';
 
         if (!$s->lastreport) {
             $last_report = __('never');
@@ -171,11 +164,11 @@ class Config extends dcNsProcess
                 ]),
                 (new Text(
                     'ul',
-                    '<li><img alt="' . __('RSS feed') . '" src="' . dcPage::getPF(My::id() . '/img/feed.png') . '" /> ' .
+                    '<li><img alt="' . __('RSS feed') . '" src="' . My::fileURL('img/feed.png') . '" /> ' .
                     '<a title="' . __('RSS feed') . '" href="' .
                     dcCore::app()->blog?->url . dcCore::app()->url->getBase(My::id()) . '/rss2/' . ActivityReport::instance()->getUserCode() . '">' .
                     __('Rss2 activities feed') . '</a></li>' .
-                    '<li><img alt="' . __('Atom feed') . '" src="' . dcPage::getPF(My::id() . '/img/feed.png') . '" /> ' .
+                    '<li><img alt="' . __('Atom feed') . '" src="' . My::fileURL('img/feed.png') . '" /> ' .
                     '<a title="' . __('Atom feed') . '" href="' .
                     dcCore::app()->blog?->url . dcCore::app()->url->getBase(My::id()) . '/atom/' . ActivityReport::instance()->getUserCode() . '">' .
                     __('Atom activities feed') . '</a></li>'
@@ -211,8 +204,8 @@ class Config extends dcNsProcess
         (new Div('settings'))->class('fieldset')->items([
             (new Text('h4', __('Maintenance'))),
             (new Para())->items([
-                (new Label(__('Automatic cleaning of old logs:'), Label::OUTSIDE_LABEL_BEFORE))->for('obselete'),
-                (new Select('obselete'))->default((string) $s->obsolete)->items(Combo::obselete()),
+                (new Label(__('Automatic cleaning of old logs:'), Label::OUTSIDE_LABEL_BEFORE))->for('obsolete'),
+                (new Select('obsolete'))->default((string) $s->obsolete)->items(Combo::obsolete()),
             ]),
             (new Para())->items([
                 (new Checkbox('send_report_now'))->value(1),

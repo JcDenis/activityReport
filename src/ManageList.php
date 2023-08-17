@@ -15,18 +15,20 @@ declare(strict_types=1);
 namespace Dotclear\Plugin\activityReport;
 
 use ArrayObject;
-use adminGenericFilter;
-use adminGenericList;
 use dcCore;
-use dcPager;
+use Dotclear\Core\Backend\Filter\Filters;
+use Dotclear\Core\Backend\Listing\{
+    Listing,
+    Pager
+};
 use Dotclear\Helper\Date;
 
 /**
  * Logs admin list helper.
  */
-class ManageList extends adminGenericList
+class ManageList extends Listing
 {
-    public function logsDisplay(adminGenericFilter $filter, string $enclose_block = ''): void
+    public function logsDisplay(Filters $filter, string $enclose_block = ''): void
     {
         if (!$this->rs || $this->rs->isEmpty()) {
             if ($filter->show()) {
@@ -37,7 +39,7 @@ class ManageList extends adminGenericList
         } else {
             $page            = $filter->value('page');
             $nbpp            = $filter->value('nb');
-            $pager           = new dcPager(is_numeric($page) ? (int) $page : 1, (int) $this->rs_count, is_numeric($nbpp) ? (int) $nbpp : 20, 10);
+            $pager           = new Pager(is_numeric($page) ? (int) $page : 1, (int) $this->rs_count, is_numeric($nbpp) ? (int) $nbpp : 20, 10);
             $pager->var_page = 'page';
 
             $html_block = '<div class="table-outer"><table><caption>' . (
@@ -83,7 +85,7 @@ class ManageList extends adminGenericList
         $date    = Date::str(
             dcCore::app()->blog?->settings->get('system')->get('date_format') . ', ' . dcCore::app()->blog?->settings->get('system')->get('time_format'),
             (int) strtotime($row->dt),
-            is_string(dcCore::app()->auth?->getInfo('user_tz')) ? dcCore::app()->auth->getInfo('user_tz') : 'UTC'
+            is_string(dcCore::app()->auth->getInfo('user_tz')) ? dcCore::app()->auth->getInfo('user_tz') : 'UTC'
         );
         $status = $row->status == ActivityReport::STATUS_PENDING ? __('pending') : __('reported');
 

@@ -667,7 +667,7 @@ class ActivityReport
             $headers[] = 'From: ' . (defined('DC_ADMIN_MAILFROM') && str_contains(DC_ADMIN_MAILFROM, '@') ? DC_ADMIN_MAILFROM : 'dotclear@local');
             $headers[] = 'Content-Type: text/' . $mailformat . '; charset=UTF-8;';
             //$headers[] = 'MIME-Version: 1.0';
-            //$headers[] = 'X-Originating-IP: ' . mb_encode_mimeheader(http::realIP(), 'UTF-8', 'B');
+            //$headers[] = 'X-Originating-IP: ' . mb_encode_mimeheader(Http::realIP(), 'UTF-8', 'B');
             //$headers[] = 'X-Mailer: Dotclear';
             //$headers[] = 'X-Blog-Id: ' . mb_encode_mimeheader(dcCore::app()->blog->id), 'UTF-8', 'B');
             //$headers[] = 'X-Blog-Name: ' . mb_encode_mimeheader(dcCore::app()->blog->name), 'UTF-8', 'B');
@@ -693,8 +693,8 @@ class ActivityReport
      */
     public function getUserCode(): string
     {
-        $id   = is_string(dcCore::app()->auth?->userID()) ? dcCore::app()->auth->userID() : '';
-        $pw   = is_string(dcCore::app()->auth?->getInfo('user_pwd')) ? dcCore::app()->auth->getInfo('user_pwd') : '';
+        $id   = is_string(dcCore::app()->auth->userID()) ? dcCore::app()->auth->userID() : '';
+        $pw   = is_string(dcCore::app()->auth->getInfo('user_pwd')) ? dcCore::app()->auth->getInfo('user_pwd') : '';
         $code = pack('a32', $id) . pack('H*', Crypt::hmac(DC_MASTER_KEY, $pw));
 
         return bin2hex($code);

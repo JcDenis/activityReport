@@ -15,13 +15,10 @@ declare(strict_types=1);
 namespace Dotclear\Plugin\activityReport;
 
 use ArrayObject;
-use dcAdmin;
 use dcAuth;
 use dcCore;
-use dcFavorites;
-use dcMenu;
-use dcNsProcess;
-use dcPage;
+use Dotclear\Core\Backend\Favorites;
+use Dotclear\Core\Process;
 use Dotclear\Helper\Date;
 use Dotclear\Helper\Html\Form\{
     Div,
@@ -34,54 +31,37 @@ use Dotclear\Helper\Html\Form\{
 /**
  * Backend process
  */
-class Backend extends dcNsProcess
+class Backend extends Process
 {
     public static function init(): bool
     {
-        static::$init = defined('DC_CONTEXT_ADMIN')
-            && defined('ACTIVITY_REPORT')
-            && My::isInstalled();
-
-        return static::$init;
+        return self::status(My::checkContext(My::BACKEND));
     }
 
     public static function process(): bool
     {
-        if (!static::$init) {
+        if (!self::status()) {
             return false;
         }
 
-        if ((dcCore::app()->menu[dcAdmin::MENU_PLUGINS] instanceof dcMenu)) {
-            dcCore::app()->menu[dcAdmin::MENU_PLUGINS]->addItem(
-                My::name(),
-                (string) dcCore::app()->adminurl?->get('admin.plugin.' . My::id()),
-                dcPage::getPF(My::id() . '/icon.svg'),
-                preg_match(
-                    '/' . preg_quote((string) dcCore::app()->adminurl?->get('admin.plugin.' . My::id())) . '(&.*)?$/',
-                    $_SERVER['REQUEST_URI']
-                ),
-                (bool) dcCore::app()->auth?->check(dcCore::app()->auth->makePermissions([
-                    dcAuth::PERMISSION_ADMIN,
-                ]), dcCore::app()->blog?->id)
-            );
-        }
+        My::addBackendMenuItem();
 
         dcCore::app()->addBehaviors([
             // dashboard favorites icon
-            'adminDashboardFavoritesV2' => function (dcFavorites $favs): void {
+            'adminDashboardFavoritesV2' => function (Favorites $favs): void {
                 $favs->register(My::id(), [
                     'title'       => My::name(),
-                    'url'         => dcCore::app()->adminurl?->get('admin.plugin.' . My::id()),
-                    'small-icon'  => dcPage::getPF(My::id() . '/icon.svg'),
-                    'large-icon'  => dcPage::getPF(My::id() . '/icon.svg'),
-                    'permissions' => dcCore::app()->auth?->makePermissions([
+                    'url'         => My::manageUrl(),
+                    'small-icon'  => My::icons(),
+                    'large-icon'  => My::icons(),
+                    'permissions' => dcCore::app()->auth->makePermissions([
                         dcAuth::PERMISSION_ADMIN,
                     ]),
                 ]);
             },
             // dashboard content display
             'adminDashboardContentsV2' => function (ArrayObject $items): void {
-                $db    = dcCore::app()->auth?->user_prefs?->get(My::id())->get('dashboard_item');
+                $db    = dcCore::app()->auth->user_prefs?->get(My::id())->get('dashboard_item');
                 $limit = abs(is_numeric($db) ? (int) $db : 0);
                 if (!$limit) {
                     return ;
@@ -109,7 +89,7 @@ class Backend extends dcNsProcess
                     '<br />' . Date::str(
                         dcCore::app()->blog?->settings->get('system')->get('date_format') . ', ' . dcCore::app()->blog?->settings->get('system')->get('time_format'),
                         (int) strtotime($row->dt),
-                        is_string(dcCore::app()->auth?->getInfo('user_tz')) ? dcCore::app()->auth->getInfo('user_tz') : 'UTC'
+                        is_string(dcCore::app()->auth->getInfo('user_tz')) ? dcCore::app()->auth->getInfo('user_tz') : 'UTC'
                     ) . '<dt>' .
                     '<dd><p>' .
                     '<em>' . ActivityReport::parseMessage(__($group->get($row->action)->message), $row->logs) . '</em></p></dd>';
@@ -123,12 +103,12 @@ class Backend extends dcNsProcess
                     '<h3>' . My::name() . '</h3>' .
                     '<dl id="reports">' . implode('', $lines) . '</dl>' .
                     '<p class="modules"><a class="module-details" href="' .
-                    dcCore::app()->adminurl?->get('admin.plugin.' . My::id()) . '">' .
+                    My::manageUrl() . '">' .
                     __('View all logs') . '</a> - <a class="module-config" href="' .
-                    dcCore::app()->adminurl?->get('admin.plugins', [
+                    dcCore::app()->admin->url->get('admin.plugins', [
                         'module' => My::id(),
                         'conf'   => 1,
-                        'redir'  => dcCore::app()->adminurl->get('admin.home'),
+                        'redir'  => dcCore::app()->admin->url->get('admin.home'),
                     ]) . '">' .
                     __('Configure plugin') . '</a></p>' .
                     '</div>',
@@ -136,7 +116,7 @@ class Backend extends dcNsProcess
             },
             // dashboard content user preference form
             'adminDashboardOptionsFormV2' => function (): void {
-                $db = dcCore::app()->auth?->user_prefs?->get(My::id())->get('dashboard_item');
+                $db = dcCore::app()->auth->user_prefs?->get(My::id())->get('dashboard_item');
                 echo
                 (new Div())->class('fieldset')->items([
                     (new Text('h4', My::name())),
@@ -157,7 +137,7 @@ class Backend extends dcNsProcess
             // save dashboard content user preference
             'adminAfterDashboardOptionsUpdate' => function (?string $user_id = null): void {
                 if (!is_null($user_id)) {
-                    dcCore::app()->auth?->user_prefs?->get(My::id())->put(
+                    dcCore::app()->auth->user_prefs?->get(My::id())->put(
                         'dashboard_item',
                         (int) $_POST[My::id() . '_dashboard_item'],
                         'integer'

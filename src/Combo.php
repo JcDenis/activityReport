@@ -56,7 +56,7 @@ class Combo
      *
      * @return  array<string,int>   The obsolete period combo
      */
-    public static function obselete(): array
+    public static function obsolete(): array
     {
         return [
             __('every hour')     => 3600,

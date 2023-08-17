@@ -15,11 +15,12 @@ declare(strict_types=1);
 namespace Dotclear\Plugin\activityReport;
 
 use dcCore;
+use Dotclear\Module\MyPlugin;
 
 /**
  * This module definitions.
  */
-class My
+class My extends MyPlugin
 {
     /** @var    string  Activity database table name */
     public const ACTIVITY_TABLE_NAME = 'activity';
@@ -27,30 +28,23 @@ class My
     /** @var    int     Incremental version by breaking changes */
     public const COMPATIBILITY_VERSION = 3;
 
-    /**
-     * This module id.
-     */
-    public static function id(): string
+    public static function checkCustomContext(int $context): ?bool
     {
-        return basename(dirname(__DIR__));
-    }
-
-    /**
-     * This module name.
-     */
-    public static function name(): string
-    {
-        $name = dcCore::app()->plugins->moduleInfo(self::id(), 'name');
-
-        return __(is_string($name) ? $name : self::id());
-    }
-
-    /**
-     * This module path.
-     */
-    public static function path(): string
-    {
-        return dirname(__DIR__);
+        switch($context) {
+            case My::FRONTEND:
+                return defined('ACTIVITY_REPORT') && My::isInstalled();
+            case My::BACKEND:
+                return defined('DC_CONTEXT_ADMIN') && defined('ACTIVITY_REPORT') && My::isInstalled();
+            case My::CONFIG:
+            case My::MANAGE:
+                return defined('DC_CONTEXT_ADMIN')
+                    && defined('ACTIVITY_REPORT')
+                    && dcCore::app()->auth->check(dcCore::app()->auth->makePermissions([
+                        dcCore::app()->auth::PERMISSION_ADMIN,
+                    ]), dcCore::app()->blog?->id);
+            default:
+                return null;
+        }
     }
 
     /**
@@ -60,6 +54,6 @@ class My
      */
     public static function isInstalled(): bool
     {
-        return dcCore::app()->getVersion(self::id()) == dcCore::app()->plugins->moduleInfo(self::id(), 'version');
+        return dcCore::app()->getVersion(self::id()) == (string) dcCore::app()->plugins->getDefine(self::id())->get('version');
     }
 }

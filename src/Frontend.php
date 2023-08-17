@@ -15,24 +15,21 @@ declare(strict_types=1);
 namespace Dotclear\Plugin\activityReport;
 
 use dcCore;
-use dcNsProcess;
+use Dotclear\Core\Process;
 
 /**
  * Front end process.
  */
-class Frontend extends dcNsProcess
+class Frontend extends Process
 {
     public static function init(): bool
     {
-        static::$init = defined('ACTIVITY_REPORT')
-            && My::isInstalled();
-
-        return static::$init;
+        return self::status(My::checkContext(My::FRONTEND));
     }
 
     public static function process(): bool
     {
-        if (!static::$init) {
+        if (!self::status()) {
             return false;
         }
 

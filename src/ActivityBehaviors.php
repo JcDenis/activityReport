@@ -274,7 +274,7 @@ class ActivityBehaviors
 
     public static function blogUpdate(Cursor $cur, string $blog_id): void
     {
-        $logs = [self::str(dcCore::app()->auth?->getInfo('user_cn'))];
+        $logs = [self::str(dcCore::app()->auth->getInfo('user_cn'))];
         ActivityReport::instance()->addLog('blog', 'update', $logs);
     }
 
@@ -292,18 +292,19 @@ class ActivityBehaviors
         $post_url = dcCore::app()->blog?->getPostURL('', self::str($cur->getField('post_dt')), self::str($cur->getField('post_title')), $post_id);
         $logs     = [
             self::str($cur->getField('post_title')),
-            self::str(dcCore::app()->auth?->getInfo('user_cn')),
+            self::str(dcCore::app()->auth->getInfo('user_cn')),
             self::str(dcCore::app()->blog?->url) . dcCore::app()->url->getBase(self::str($cur->getField('post_type'))) . '/' . $post_url,
         ];
         ActivityReport::instance()->addLog('post', 'create', $logs);
     }
 
-    public static function postUpdate(Cursor $cur, int $post_id): void
+    public static function postUpdate(Cursor $cur, int|string $post_id): void
     {
+        $post_id  = is_numeric($post_id) ? (int) $post_id : 0;
         $post_url = dcCore::app()->blog?->getPostURL('', self::str($cur->getField('post_dt')), self::str($cur->getField('post_title')), $post_id);
         $logs     = [
             self::str($cur->getField('post_title')),
-            self::str(dcCore::app()->auth?->getInfo('user_cn')),
+            self::str(dcCore::app()->auth->getInfo('user_cn')),
             self::str(dcCore::app()->blog?->url) . dcCore::app()->url->getBase(self::str($cur->getField('post_type'))) . '/' . $post_url,
         ];
         ActivityReport::instance()->addLog('post', 'update', $logs);
@@ -317,7 +318,7 @@ class ActivityBehaviors
         }
         $logs = [
             self::str($posts->f('post_title')),
-            self::str(dcCore::app()->auth?->getInfo('user_cn')),
+            self::str(dcCore::app()->auth->getInfo('user_cn')),
         ];
         ActivityReport::instance()->addLog('post', 'delete', $logs);
     }
@@ -365,7 +366,7 @@ class ActivityBehaviors
         }
 
         $logs = [
-            self::str(dcCore::app()->auth?->getInfo('user_cn')),
+            self::str(dcCore::app()->auth->getInfo('user_cn')),
             self::str($posts->f('post_title')),
             self::str(dcCore::app()->blog?->url) . dcCore::app()->url->getBase(self::str($posts->f('post_type'))) .
                 '/' . self::str($posts->f('post_url')) . '#c' . self::str($old->f('comment_id')),
@@ -400,7 +401,7 @@ class ActivityBehaviors
     {
         $logs = [
             self::str($cur->getField('cat_title')),
-            self::str(dcCore::app()->auth?->getInfo('user_cn')),
+            self::str(dcCore::app()->auth->getInfo('user_cn')),
             self::str(dcCore::app()->blog?->url) . dcCore::app()->url->getBase('category') . '/' . self::str($cur->getField('cat_url')),
         ];
         ActivityReport::instance()->addLog('category', 'create', $logs);
@@ -410,7 +411,7 @@ class ActivityBehaviors
     {
         $logs = [
             self::str($cur->getField('cat_title')),
-            self::str(dcCore::app()->auth?->getInfo('user_cn')),
+            self::str(dcCore::app()->auth->getInfo('user_cn')),
             self::str(dcCore::app()->blog?->url) . dcCore::app()->url->getBase('category') . '/' . self::str($cur->getField('cat_url')),
         ];
         ActivityReport::instance()->addLog('category', 'update', $logs);
@@ -426,7 +427,7 @@ class ActivityBehaviors
         );
         $logs = [
             self::str($user_cn),
-            self::str(dcCore::app()->auth?->getInfo('user_cn')),
+            self::str(dcCore::app()->auth->getInfo('user_cn')),
         ];
         ActivityReport::instance()->addLog('user', 'create', $logs);
     }
@@ -441,7 +442,7 @@ class ActivityBehaviors
         );
         $logs = [
             self::str($user_cn),
-            self::str(dcCore::app()->auth?->getInfo('user_cn')),
+            self::str(dcCore::app()->auth->getInfo('user_cn')),
         ];
         ActivityReport::instance()->addLog('user', 'update', $logs);
     }
@@ -480,7 +481,7 @@ class ActivityBehaviors
         );
         $logs = [
             self::str($user_cn),
-            self::str(dcCore::app()->auth?->getInfo('user_cn')),
+            self::str(dcCore::app()->auth->getInfo('user_cn')),
         ];
         ActivityReport::instance()->addLog('user', 'delete', $logs);
     }

@@ -14,9 +14,6 @@ declare(strict_types=1);
 
 namespace Dotclear\Plugin\activityReport;
 
-use dcCore;
-use Exception;
-
 /**
  * Module settings helper.
  */
@@ -51,10 +48,6 @@ class Settings
      */
     public function __construct()
     {
-        if (is_null(dcCore::app()->blog)) {
-            throw new Exception('Blog is not set');
-        }
-
         $this->feed_active = (bool) ($this->get('feed_active') ?? false);
         $this->obsolete    = is_numeric($this->get('obsolete')) ? (int) $this->get('obsolete') : 2419200;
         $this->interval    = is_numeric($this->get('interval')) ? (int) $this->get('interval') : 86400;
@@ -86,7 +79,7 @@ class Settings
     public function set(string $key, mixed $value): void
     {
         if (property_exists($this, $key) && gettype($value) == gettype($this->{$key})) {
-            dcCore::app()->blog?->settings->get(My::id())->put(
+            My::settings()->put(
                 $key,
                 $value,
                 gettype($value),
@@ -106,6 +99,6 @@ class Settings
      */
     private function get(string $key): mixed
     {
-        return dcCore::app()->blog?->settings->get(My::id())->get($key);
+        return My::settings()->get($key);
     }
 }

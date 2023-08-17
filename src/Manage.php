@@ -15,11 +15,13 @@ declare(strict_types=1);
 namespace Dotclear\Plugin\activityReport;
 
 use ArrayObject;
-use adminGenericFilter;
-use dcAuth;
 use dcCore;
-use dcNsProcess;
-use dcPage;
+use Dotclear\Core\Backend\Filter\Filters;
+use Dotclear\Core\Backend\{
+    Notices,
+    Page
+};
+use Dotclear\Core\Process;
 use Dotclear\Helper\Html\Form\{
     Form,
     Hidden,
@@ -32,30 +34,24 @@ use Exception;
 /**
  * Manage process (admin logs list).
  */
-class Manage extends dcNsProcess
+class Manage extends Process
 {
     public static function init(): bool
     {
-        static::$init = defined('DC_CONTEXT_ADMIN')
-            && defined('ACTIVITY_REPORT')
-            && dcCore::app()->auth?->check(dcCore::app()->auth->makePermissions([
-                dcAuth::PERMISSION_ADMIN,
-            ]), dcCore::app()->blog?->id);
-
-        return static::$init;
+        return self::status(My::checkContext(My::MANAGE));
     }
 
     public static function process(): bool
     {
-        if (!static::$init) {
+        if (!self::status()) {
             return false;
         }
 
         if (!empty($_POST['delete_all_logs']) || !empty($_POST['delete_reported_logs'])) {
             try {
                 ActivityReport::instance()->deleteLogs(!empty($_POST['delete_reported_logs']));
-                dcPage::addSuccessNotice(__('Logs successfully deleted'));
-                dcCore::app()->adminurl?->redirect('admin.plugin.' . My::id());
+                Notices::addSuccessNotice(__('Logs successfully deleted'));
+                My::redirect();
             } catch (Exception $e) {
                 dcCore::app()->error->add($e->getMessage());
             }
@@ -66,40 +62,40 @@ class Manage extends dcNsProcess
 
     public static function render(): void
     {
-        if (!static::$init) {
+        if (!self::status()) {
             return;
         }
 
         $logs   = $counter = $list = null;
-        $filter = new adminGenericFilter(dcCore::app(), My::id());
+        $filter = new Filters(My::id());
         $params = new ArrayObject($filter->params());
 
         try {
             $logs    = ActivityReport::instance()->getLogs($params);
             $counter = ActivityReport::instance()->getLogs($params, true);
             if (!is_null($logs) && !is_null($counter)) {
-                $list = new ManageList(dcCore::app(), $logs, $counter->f(0));
+                $list = new ManageList($logs, $counter->f(0));
             }
         } catch (Exception $e) {
             dcCore::app()->error->add($e->getMessage());
         }
 
-        dcPage::openModule(
+        Page::openModule(
             My::name(),
-            $filter->js((string) dcCore::app()->adminurl?->get('admin.plugin.' . My::id())) .
-            dcPage::jsJson(My::id(), ['confirm_delete' => __('Are you sure you want to delete logs?')]) .
-            dcPage::jsModuleLoad(My::id() . '/js/backend.js') .
+            $filter->js((string) My::manageUrl()) .
+            Page::jsJson(My::id(), ['confirm_delete' => __('Are you sure you want to delete logs?')]) .
+            My::jsLoad('backend') .
 
             # --BEHAVIOR-- activityReportListHeader --
             dcCore::app()->callBehavior('activityReportListHeader')
         );
 
         echo
-        dcPage::breadcrumb([
+        Page::breadcrumb([
             __('Plugins') => '',
             My::name()    => '',
         ]) .
-        dcPage::notices();
+        Notices::getNotices();
 
         if (!is_null($list)) {
             $filter->display('admin.plugin.' . My::id(), (new Hidden('p', My::id()))->render());
@@ -112,11 +108,11 @@ class Manage extends dcNsProcess
                 (new Para())->class('right')->separator(' ')->items([
                     (new Submit('delete_all_logs'))->class('delete')->value(__('Delete all aticivity logs')),
                     (new Submit('delete_reported_logs'))->class('delete')->value(__('Delete all allready reported logs')),
-                    dcCore::app()->formNonce(false),
+                    ... My::hiddenFields(),
                 ]),
             ])->render();
         }
 
-        dcPage::closeModule();
+        Page::closeModule();
     }
 }

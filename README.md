@@ -1,11 +1,10 @@
 # README
 
-[![Release](https://img.shields.io/github/v/release/JcDenis/activityReport)](https://github.com/JcDenis/activityReport/releases)
-[![Date](https://img.shields.io/github/release-date/JcDenis/activityReport)](https://github.com/JcDenis/activityReport/releases)
-[![Issues](https://img.shields.io/github/issues/JcDenis/activityReport)](https://github.com/JcDenis/activityReport/issues)
-[![Dotclear](https://img.shields.io/badge/dotclear-v2.26-blue.svg)](https://fr.dotclear.org/download)
-[![Dotaddict](https://img.shields.io/badge/dotaddict-official-green.svg)](https://plugins.dotaddict.org/dc2/details/activityReport)
-[![License](https://img.shields.io/github/license/JcDenis/activityReport)](https://github.com/JcDenis/activityReport/blob/master/LICENSE)
+[![Release](https://img.shields.io/badge/release-3.3-a2cbe9.svg)](https://git.dotclear.watch/JcDenis/activityReport/releases)
+[![Date](https://img.shields.io/badge/date-2023.08.17-c44d58.svg)](https://git.dotclear.watch/JcDenis/activityReport/releases)
+[![Dotclear](https://img.shields.io/badge/dotclear-v2.27-137bbb.svg)](https://fr.dotclear.org/download)
+[![Dotaddict](https://img.shields.io/badge/dotaddict-official-9ac123.svg)](https://plugins.dotaddict.org/dc2/details/activityReport)
+[![License](https://img.shields.io/github/license/JcDenis/activityReport)](https://git.dotclear.watch/JcDenis/activityReport/blob/master/LICENSE)
 
 ## WHAT IS ACTIVITYREPORT ?
 
@@ -17,13 +16,13 @@ themes and plugins from Dotclear administration pages.
 
 ## REQUIREMENTS
 
- _activityReport_ requires: 
+_activityReport_ requires: 
 
-  * Permissions admin
-  * Dotclear 2.26
-  * PHP 8.1+
-  * permission to add table on database
-  * permission to send email
+* Permissions admin
+* Dotclear 2.27
+* PHP 8.1+
+* permission to add table on database
+* permission to send email
 
 ## USAGE
 
@@ -38,6 +37,12 @@ Once it's done you can manage your reports from menu
 
 ## MORE
 
- * License : GNU GPL v2
- * Source & contribution : [GitHub Page](https://github.com/JcDenis/pacKman)
- * Packages & details:  [Dotaddict Page](https://plugins.dotaddict.org/dc2/details/pacKman)
+* License : [GNU GPL v2](https://www.gnu.org/licenses/old-licenses/lgpl-2.0.html)
+* Source & contribution : [Gitea Page](https://git.dotclear.watch/JcDenis/activityReport) or [GitHub Page](https://github.com/JcDenis/activityReport)
+* Packages & details: [Gitea Page](https://git.dotclear.watch/JcDenis/activityReport/releases) or [Dotaddict Page](https://plugins.dotaddict.org/dc2/details/activityReport)
+
+## CONTRIBUTORS
+
+* Jean-Christian Denis (author)
+
+You are welcome to contribute to this code.

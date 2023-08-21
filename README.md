@@ -1,28 +1,24 @@
 # README
 
 [![Release](https://img.shields.io/badge/release-3.3-a2cbe9.svg)](https://git.dotclear.watch/JcDenis/activityReport/releases)
-[![Date](https://img.shields.io/badge/date-2023.08.17-c44d58.svg)](https://git.dotclear.watch/JcDenis/activityReport/releases)
+![Date](https://img.shields.io/badge/date-2023.08.17-c44d58.svg)
 [![Dotclear](https://img.shields.io/badge/dotclear-v2.27-137bbb.svg)](https://fr.dotclear.org/download)
 [![Dotaddict](https://img.shields.io/badge/dotaddict-official-9ac123.svg)](https://plugins.dotaddict.org/dc2/details/activityReport)
-[![License](https://img.shields.io/github/license/JcDenis/activityReport)](https://git.dotclear.watch/JcDenis/activityReport/blob/master/LICENSE)
+[![License](https://img.shields.io/badge/license-GPL--2.0-ececec.svg)](https://git.dotclear.watch/JcDenis/activityReport/blob/master/LICENSE)
 
-## WHAT IS ACTIVITYREPORT ?
+## ABOUT
 
-_activityReport_ is a plugin for the open-source 
-web publishing software called Dotclear.
+_activityReport_ is a plugin for the open-source web publishing software called [Dotclear](https://www.dotclear.org).
 
-It help super admin to create and manage packages of
-themes and plugins from Dotclear administration pages.
+> Log and receive your blog activity by email, feed, or on dashboard
 
 ## REQUIREMENTS
 
-_activityReport_ requires: 
-
-* Permissions admin
 * Dotclear 2.27
 * PHP 8.1+
-* permission to add table on database
-* permission to send email
+* System permissions to add table on database
+* System permissions to send email
+* Dotclear admin permissions
 
 ## USAGE
 
@@ -35,11 +31,12 @@ go to ''configure plugin'', fill in form.
 Once it's done you can manage your reports from menu 
 ''Activity report'' on sidebar or you can add dashboard icon.
 
-## MORE
+## LINKS
 
-* License : [GNU GPL v2](https://www.gnu.org/licenses/old-licenses/lgpl-2.0.html)
-* Source & contribution : [Gitea Page](https://git.dotclear.watch/JcDenis/activityReport) or [GitHub Page](https://github.com/JcDenis/activityReport)
-* Packages & details: [Gitea Page](https://git.dotclear.watch/JcDenis/activityReport/releases) or [Dotaddict Page](https://plugins.dotaddict.org/dc2/details/activityReport)
+* [License](https://git.dotclear.watch/JcDenis/activityReport/blob/master/LICENSE)
+* [Packages & details](https://git.dotclear.watch/JcDenis/activityReport/releases) (or on [Dotaddict](https://plugins.dotaddict.org/dc2/details/activityReport))
+* [Sources & contributions](https://git.dotclear.watch/JcDenis/activityReport) (or on [GitHub](https://github.com/JcDenis/activityReport))
+* [Issues & security](https://git.dotclear.watch/JcDenis/activityReport/issues) (or on [GitHub](https://github.com/JcDenis/activityReport/issues))
 
 ## CONTRIBUTORS
 

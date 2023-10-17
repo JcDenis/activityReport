@@ -1,20 +1,10 @@
 <?php
-/**
- * @brief activityReport, a plugin for Dotclear 2
- *
- * @package Dotclear
- * @subpackage Plugin
- *
- * @author Jean-Christian Denis and contributors
- *
- * @copyright Jean-Christian Denis
- * @copyright GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
- */
+
 declare(strict_types=1);
 
 namespace Dotclear\Plugin\activityReport;
 
-use dcCore;
+use Dotclear\App;
 use Dotclear\Core\Process;
 use Dotclear\Database\Structure;
 use Dotclear\Database\Statement\{
@@ -24,7 +14,11 @@ use Dotclear\Database\Statement\{
 use Exception;
 
 /**
- * Install process.
+ * @brief       activityReport install class.
+ * @ingroup     activityReport
+ *
+ * @author      Jean-Christian Denis (author)
+ * @copyright   GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
  */
 class Install extends Process
 {
@@ -42,7 +36,7 @@ class Install extends Process
         try {
             self::beforeGrowUp();
 
-            $s = new Structure(dcCore::app()->con, dcCore::app()->prefix);
+            $s = new Structure(App::con(), App::con()->prefix());
             $s->__get(My::ACTIVITY_TABLE_NAME)
                 ->field('activity_id', 'bigint', 0, false)
                 ->field('activity_type', 'varchar', 32, false, "'" . My::id() . "'")
@@ -59,11 +53,11 @@ class Install extends Process
                 ->index('idx_activity_action', 'btree', 'activity_group', 'activity_action')
                 ->index('idx_activity_status', 'btree', 'activity_status');
 
-            (new Structure(dcCore::app()->con, dcCore::app()->prefix))->synchronize($s);
+            (new Structure(App::con(), App::con()->prefix()))->synchronize($s);
 
             return true;
         } catch (Exception $e) {
-            dcCore::app()->error->add($e->getMessage());
+            App::error()->add($e->getMessage());
 
             return false;
         }
@@ -75,17 +69,17 @@ class Install extends Process
     private static function beforeGrowUp(): void
     {
         // sorry not sorry we restart from scratch
-        if (is_string(dcCore::app()->getVersion('activityReport'))
-            && version_compare(dcCore::app()->getVersion('activityReport'), '3.0', '<')
+        if (is_string(App::version()->getVersion('activityReport'))
+            && version_compare(App::version()->getVersion('activityReport'), '3.0', '<')
         ) {
-            $struct = new Structure(dcCore::app()->con, dcCore::app()->prefix);
+            $struct = new Structure(App::con(), App::con()->prefix());
 
             if ($struct->tableExists('activity')) {
-                (new TruncateStatement())->from(dcCore::app()->prefix . 'activity')->truncate();
+                (new TruncateStatement())->from(App::con()->prefix() . 'activity')->truncate();
             }
             if ($struct->tableExists('activity_settings')) {
-                (new TruncateStatement())->from(dcCore::app()->prefix . 'activity_settings')->truncate();
-                (new DropStatement())->from(dcCore::app()->prefix . 'activity_settings')->drop();
+                (new TruncateStatement())->from(App::con()->prefix() . 'activity_settings')->truncate();
+                (new DropStatement())->from(App::con()->prefix() . 'activity_settings')->drop();
             }
         }
     }

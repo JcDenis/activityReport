@@ -1,21 +1,11 @@
 <?php
-/**
- * @brief activityReport, a plugin for Dotclear 2
- *
- * @package Dotclear
- * @subpackage Plugin
- *
- * @author Jean-Christian Denis and contributors
- *
- * @copyright Jean-Christian Denis
- * @copyright GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
- */
+
 declare(strict_types=1);
 
 namespace Dotclear\Plugin\activityReport;
 
 use ArrayObject;
-use dcCore;
+use Dotclear\App;
 use Dotclear\Core\Backend\Filter\Filters;
 use Dotclear\Core\Backend\{
     Notices,
@@ -32,7 +22,11 @@ use Dotclear\Helper\Html\Form\{
 use Exception;
 
 /**
- * Manage process (admin logs list).
+ * @brief       activityReport manage class.
+ * @ingroup     activityReport
+ *
+ * @author      Jean-Christian Denis (author)
+ * @copyright   GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
  */
 class Manage extends Process
 {
@@ -53,7 +47,7 @@ class Manage extends Process
                 Notices::addSuccessNotice(__('Logs successfully deleted'));
                 My::redirect();
             } catch (Exception $e) {
-                dcCore::app()->error->add($e->getMessage());
+                App::error()->add($e->getMessage());
             }
         }
 
@@ -77,7 +71,7 @@ class Manage extends Process
                 $list = new ManageList($logs, $counter->f(0));
             }
         } catch (Exception $e) {
-            dcCore::app()->error->add($e->getMessage());
+            App::error()->add($e->getMessage());
         }
 
         Page::openModule(
@@ -87,7 +81,7 @@ class Manage extends Process
             My::jsLoad('backend') .
 
             # --BEHAVIOR-- activityReportListHeader --
-            dcCore::app()->callBehavior('activityReportListHeader')
+            App::behavior()->callBehavior('activityReportListHeader')
         );
 
         echo
@@ -104,7 +98,7 @@ class Manage extends Process
 
         if (!is_null($logs) && !$logs->isEmpty()) {
             echo
-            (new Form('form-logs'))->method('post')->action(dcCore::app()->admin->getPageURL())->fields([
+            (new Form('form-logs'))->method('post')->action(App::backend()->getPageURL())->fields([
                 (new Para())->class('right')->separator(' ')->items([
                     (new Submit('delete_all_logs'))->class('delete')->value(__('Delete all aticivity logs')),
                     (new Submit('delete_reported_logs'))->class('delete')->value(__('Delete all allready reported logs')),

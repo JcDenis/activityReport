@@ -1,21 +1,11 @@
 <?php
-/**
- * @brief activityReport, a plugin for Dotclear 2
- *
- * @package Dotclear
- * @subpackage Plugin
- *
- * @author Jean-Christian Denis and contributors
- *
- * @copyright Jean-Christian Denis
- * @copyright GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
- */
+
 declare(strict_types=1);
 
 namespace Dotclear\Plugin\activityReport;
 
 use ArrayObject;
-use dcCore;
+use Dotclear\App;
 use Dotclear\Core\Backend\Filter\Filters;
 use Dotclear\Core\Backend\Listing\{
     Listing,
@@ -24,7 +14,11 @@ use Dotclear\Core\Backend\Listing\{
 use Dotclear\Helper\Date;
 
 /**
- * Logs admin list helper.
+ * @brief       activityReport manage logs list class.
+ * @ingroup     activityReport
+ *
+ * @author      Jean-Christian Denis (author)
+ * @copyright   GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
  */
 class ManageList extends Listing
 {
@@ -83,9 +77,9 @@ class ManageList extends Listing
         $action  = $group->get($row->action);
         $message = ActivityReport::parseMessage(__($action->message), $row->logs);
         $date    = Date::str(
-            dcCore::app()->blog?->settings->get('system')->get('date_format') . ', ' . dcCore::app()->blog?->settings->get('system')->get('time_format'),
+            App::blog()->settings()->get('system')->get('date_format') . ', ' . App::blog()->settings()->get('system')->get('time_format'),
             (int) strtotime($row->dt),
-            is_string(dcCore::app()->auth->getInfo('user_tz')) ? dcCore::app()->auth->getInfo('user_tz') : 'UTC'
+            is_string(App::auth()->getInfo('user_tz')) ? App::auth()->getInfo('user_tz') : 'UTC'
         );
         $status = $row->status == ActivityReport::STATUS_PENDING ? __('pending') : __('reported');
 

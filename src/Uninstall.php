@@ -1,27 +1,18 @@
 <?php
-/**
- * @brief activityReport, a plugin for Dotclear 2
- *
- * @package Dotclear
- * @subpackage Plugin
- *
- * @author Jean-Christian Denis and contributors
- *
- * @copyright Jean-Christian Denis
- * @copyright GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
- */
+
 declare(strict_types=1);
 
 namespace Dotclear\Plugin\activityReport;
 
-use dcCore;
 use Dotclear\Core\Process;
 use Dotclear\Plugin\Uninstaller\Uninstaller;
 
 /**
- * Uninstall process.
+ * @brief       activityReport uninstall class.
+ * @ingroup     activityReport
  *
- * Using plugin Uninstaller
+ * @author      Jean-Christian Denis (author)
+ * @copyright   GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
  */
 class Uninstall extends Process
 {
@@ -32,7 +23,7 @@ class Uninstall extends Process
 
     public static function process(): bool
     {
-        if (!self::status() || !dcCore::app()->plugins->moduleExists('Uninstaller')) {
+        if (!self::status()) {
             return false;
         }
 

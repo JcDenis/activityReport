@@ -1,22 +1,11 @@
 <?php
-/**
- * @brief activityReport, a plugin for Dotclear 2
- *
- * @package Dotclear
- * @subpackage Plugin
- *
- * @author Jean-Christian Denis and contributors
- *
- * @copyright Jean-Christian Denis
- * @copyright GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
- */
+
 declare(strict_types=1);
 
 namespace Dotclear\Plugin\activityReport;
 
 use ArrayObject;
-use dcAuth;
-use dcCore;
+use Dotclear\App;
 use Dotclear\Core\Backend\Favorites;
 use Dotclear\Core\Process;
 use Dotclear\Helper\Date;
@@ -29,7 +18,11 @@ use Dotclear\Helper\Html\Form\{
 };
 
 /**
- * Backend process
+ * @brief       activityReport backend class.
+ * @ingroup     activityReport
+ *
+ * @author      Jean-Christian Denis (author)
+ * @copyright   GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
  */
 class Backend extends Process
 {
@@ -46,7 +39,7 @@ class Backend extends Process
 
         My::addBackendMenuItem();
 
-        dcCore::app()->addBehaviors([
+        App::behavior()->addBehaviors([
             // dashboard favorites icon
             'adminDashboardFavoritesV2' => function (Favorites $favs): void {
                 $favs->register(My::id(), [
@@ -54,14 +47,14 @@ class Backend extends Process
                     'url'         => My::manageUrl(),
                     'small-icon'  => My::icons(),
                     'large-icon'  => My::icons(),
-                    'permissions' => dcCore::app()->auth->makePermissions([
-                        dcAuth::PERMISSION_ADMIN,
+                    'permissions' => App::auth()->makePermissions([
+                        App::auth()::PERMISSION_ADMIN,
                     ]),
                 ]);
             },
             // dashboard content display
             'adminDashboardContentsV2' => function (ArrayObject $items): void {
-                $db    = dcCore::app()->auth->user_prefs?->get(My::id())->get('dashboard_item');
+                $db    = App::auth()->prefs()->get(My::id())->get('dashboard_item');
                 $limit = abs(is_numeric($db) ? (int) $db : 0);
                 if (!$limit) {
                     return ;
@@ -87,9 +80,9 @@ class Backend extends Process
                     $lines[] = '<dt title="' . __($group->title) . '">' .
                     '<strong>' . __($group->get($row->action)->title) . '</strong>' .
                     '<br />' . Date::str(
-                        dcCore::app()->blog?->settings->get('system')->get('date_format') . ', ' . dcCore::app()->blog?->settings->get('system')->get('time_format'),
+                        App::blog()->settings()->get('system')->get('date_format') . ', ' . App::blog()->settings()->get('system')->get('time_format'),
                         (int) strtotime($row->dt),
-                        is_string(dcCore::app()->auth->getInfo('user_tz')) ? dcCore::app()->auth->getInfo('user_tz') : 'UTC'
+                        is_string(App::auth()->getInfo('user_tz')) ? App::auth()->getInfo('user_tz') : 'UTC'
                     ) . '<dt>' .
                     '<dd><p>' .
                     '<em>' . ActivityReport::parseMessage(__($group->get($row->action)->message), $row->logs) . '</em></p></dd>';
@@ -105,10 +98,10 @@ class Backend extends Process
                     '<p class="modules"><a class="module-details" href="' .
                     My::manageUrl() . '">' .
                     __('View all logs') . '</a> - <a class="module-config" href="' .
-                    dcCore::app()->admin->url->get('admin.plugins', [
+                    App::backend()->url()->get('admin.plugins', [
                         'module' => My::id(),
                         'conf'   => 1,
-                        'redir'  => dcCore::app()->admin->url->get('admin.home'),
+                        'redir'  => App::backend()->url()->get('admin.home'),
                     ]) . '">' .
                     __('Configure plugin') . '</a></p>' .
                     '</div>',
@@ -116,7 +109,7 @@ class Backend extends Process
             },
             // dashboard content user preference form
             'adminDashboardOptionsFormV2' => function (): void {
-                $db = dcCore::app()->auth->user_prefs?->get(My::id())->get('dashboard_item');
+                $db = App::auth()->prefs()->get(My::id())->get('dashboard_item');
                 echo
                 (new Div())->class('fieldset')->items([
                     (new Text('h4', My::name())),
@@ -137,7 +130,7 @@ class Backend extends Process
             // save dashboard content user preference
             'adminAfterDashboardOptionsUpdate' => function (?string $user_id = null): void {
                 if (!is_null($user_id)) {
-                    dcCore::app()->auth->user_prefs?->get(My::id())->put(
+                    App::auth()->prefs()->get(My::id())->put(
                         'dashboard_item',
                         (int) $_POST[My::id() . '_dashboard_item'],
                         'integer'

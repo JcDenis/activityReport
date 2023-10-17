@@ -1,27 +1,20 @@
 <?php
-/**
- * @brief activityReport, a plugin for Dotclear 2
- *
- * @package Dotclear
- * @subpackage Plugin
- *
- * @author Jean-Christian Denis and contributors
- *
- * @copyright Jean-Christian Denis
- * @copyright GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
- */
+
 declare(strict_types=1);
 
 namespace Dotclear\Plugin\activityReport;
 
-use context;
-use dcCore;
-use dcUrlHandlers;
+use Dotclear\App;
+use Dotclear\Core\Frontend\Url;
 
 /**
- * Frontend URL handler.
+ * @brief       activityReport frontend URL handler class.
+ * @ingroup     activityReport
+ *
+ * @author      Jean-Christian Denis (author)
+ * @copyright   GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
  */
-class UrlHandler extends dcUrlHandlers
+class UrlHandler extends Url
 {
     /**
      * Get activity logs feed.
@@ -31,8 +24,7 @@ class UrlHandler extends dcUrlHandlers
     public static function feed(?string $args): void
     {
         // no context or wrong URL args or module no loaded or report unactive
-        if (!dcCore::app()->ctx
-            || !preg_match('/^(atom|rss2)\/(.+)$/', (string) $args, $m)
+        if (!preg_match('/^(atom|rss2)\/(.+)$/', (string) $args, $m)
             || !defined('ACTIVITY_REPORT')
             || !ActivityReport::instance()->settings->feed_active
         ) {
@@ -50,15 +42,15 @@ class UrlHandler extends dcUrlHandlers
         }
 
         // feed limits
-        $nb = dcCore::app()->blog?->settings->get('system')->get('nb_post_per_feed');
-        //$it = dcCore::app()->blog?->settings->get('system')->get('short_feed_items');
-        $rb = dcCore::app()->blog?->settings->get('system')->get('robots_policy');
+        $nb = App::blog()->settings()->get('system')->get('nb_post_per_feed');
+        //$it = App::blog()->settings()->get('system')->get('short_feed_items');
+        $rb = App::blog()->settings()->get('system')->get('robots_policy');
 
-        dcCore::app()->ctx->__set('nb_entry_per_page', is_numeric($nb) ? (int) $nb : 20);
-        // dcCore::app()->ctx->__set('short_feed_items', is_numerci($it) ? (int) $it : 1);
+        App::frontend()->context()->__set('nb_entry_per_page', is_numeric($nb) ? (int) $nb : 20);
+        // App::frontend->context()->__set('short_feed_items', is_numerci($it) ? (int) $it : 1);
 
         // serve activity feed template
-        header('X-Robots-Tag: ' . context::robotsPolicy(is_string($rb) ? $rb : '', ''));
+        header('X-Robots-Tag: ' . App::frontend()->context()::robotsPolicy(is_string($rb) ? $rb : '', ''));
         self::serveDocument('activityreport-' . $m[1] . '.xml', $mime);
     }
 }

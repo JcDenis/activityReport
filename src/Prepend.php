@@ -1,25 +1,19 @@
 <?php
-/**
- * @brief activityReport, a plugin for Dotclear 2
- *
- * @package Dotclear
- * @subpackage Plugin
- *
- * @author Jean-Christian Denis and contributors
- *
- * @copyright Jean-Christian Denis
- * @copyright GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
- */
+
 declare(strict_types=1);
 
 namespace Dotclear\Plugin\activityReport;
 
-use dcCore;
+use Dotclear\App;
 use Dotclear\Core\Process;
 use Exception;
 
 /**
- * Prepend process.
+ * @brief       activityReport prepend class.
+ * @ingroup     activityReport
+ *
+ * @author      Jean-Christian Denis (author)
+ * @copyright   GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
  */
 class Prepend extends Process
 {
@@ -43,11 +37,11 @@ class Prepend extends Process
             ActivityReport::instance();
 
             // regirster activity feed URL
-            dcCore::app()->url->register(
+            App::url()->register(
                 My::id(),
                 'reports',
                 '^reports/((atom|rss2)/(.+))$',
-                [UrlHandler::class, 'feed']
+                UrlHandler::feed(...)
             );
 
             // declare report open

@@ -1,25 +1,19 @@
 <?php
-/**
- * @brief activityReport, a plugin for Dotclear 2
- *
- * @package Dotclear
- * @subpackage Plugin
- *
- * @author Jean-Christian Denis and contributors
- *
- * @copyright Jean-Christian Denis
- * @copyright GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
- */
+
 declare(strict_types=1);
 
 namespace Dotclear\Plugin\activityReport;
 
 use ArrayObject;
-use dcCore;
+use Dotclear\App;
 use Dotclear\Helper\Date;
 
 /**
- * Template blocs and values.
+ * @brief       activityReport frontend template class.
+ * @ingroup     activityReport
+ *
+ * @author      Jean-Christian Denis (author)
+ * @copyright   GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
  */
 class Template
 {
@@ -43,12 +37,12 @@ class Template
             $lastn = abs((int) $attr['lastn']) + 0;
         }
 
-        $p = '$_page_number = dcCore::app()->public->getPageNumber(); if ($_page_number < 1) { $_page_number = 1; }' . "\n\$params = new ArrayObject();\n";
+        $p = '$_page_number = App::frontend()->getPageNumber(); if ($_page_number < 1) { $_page_number = 1; }' . "\n\$params = new ArrayObject();\n";
 
         if ($lastn > 0) {
             $p .= "\$params['limit'] = " . $lastn . ";\n";
         } else {
-            $p .= "\$params['limit'] = dcCore::app()->ctx->nb_entry_per_page;\n";
+            $p .= "\$params['limit'] = App::frontend()->context()->nb_entry_per_page;\n";
         }
 
         if (!isset($attr['ignore_pagination']) || $attr['ignore_pagination'] == '0') {
@@ -60,10 +54,10 @@ class Template
         return
         "<?php \n" .
         $p .
-        'dcCore::app()->ctx->activityreport_params = $params; ' . "\n" .
-        'dcCore::app()->ctx->activityreports = ' . ActivityReport::class . '::instance()->getLogs($params); unset($params); ' . "\n" .
-        'while (dcCore::app()->ctx->activityreports->fetch()) : ?>' . $content . '<?php endwhile; ' .
-        'dcCore::app()->ctx->pop("activityreports"); dcCore::app()->ctx->pop("activityreport_params"); ' . "\n" .
+        'App::frontend()->context()->activityreport_params = $params; ' . "\n" .
+        'App::frontend()->context()->activityreports = ' . ActivityReport::class . '::instance()->getLogs($params); unset($params); ' . "\n" .
+        'while (App::frontend()->context()->activityreports->fetch()) : ?>' . $content . '<?php endwhile; ' .
+        'App::frontend()->context()->pop("activityreports"); App::frontend()->context()x->pop("activityreport_params"); ' . "\n" .
         '?>';
     }
 
@@ -81,8 +75,8 @@ class Template
     public static function activityReportFeedID(ArrayObject $attr): string
     {
         return
-        'urn:md5:<?php echo md5(dcCore::app()->ctx->activityreports->blog_id.' .
-        'dcCore::app()->ctx->activityreports->activity_id.dcCore::app()->ctx->activityreports->activity_dt); ' .
+        'urn:md5:<?php echo md5(App::frontend()->context()->activityreports->blog_id.' .
+        'App::frontend()->context()->activityreports->activity_id.App::frontend()->context()->activityreports->activity_dt); ' .
         '?>';
     }
 
@@ -99,7 +93,7 @@ class Template
      */
     public static function activityReportTitle(ArrayObject $attr): string
     {
-        $f = dcCore::app()->tpl->getFilters($attr);
+        $f = App::frontend()->template()->getFilters($attr);
 
         return '<?php echo ' . sprintf($f, Context::class . '::parseTitle()') . '; ?>';
     }
@@ -117,7 +111,7 @@ class Template
      */
     public static function activityReportContent(ArrayObject $attr): string
     {
-        $f = dcCore::app()->tpl->getFilters($attr);
+        $f = App::frontend()->context()->getFilters($attr);
 
         return '<?php echo ' . sprintf($f, Context::class . '::parseContent()') . '; ?>';
     }
@@ -146,16 +140,16 @@ class Template
         $iso8601 = !empty($attr['iso8601']);
         $rfc822  = !empty($attr['rfc822']);
 
-        $f = dcCore::app()->tpl->getFilters($attr);
+        $f = App::frontend()->template()->getFilters($attr);
 
         if ($rfc822) {
-            return '<?php echo ' . sprintf($f, Date::class . '::rfc822(strtotime(dcCore::app()->ctx->activityreports->activity_dt),dcCore::app()->blog->settings->system->blog_timezone)') . '; ?>';
+            return '<?php echo ' . sprintf($f, Date::class . '::rfc822(strtotime(App::frontend()->context()->activityreports->activity_dt),App::blog()->settings()->system->blog_timezone)') . '; ?>';
         } elseif ($iso8601) {
-            return '<?php echo ' . sprintf($f, Date::class . '::iso8601(strtotime(dcCore::app()->ctx->activityreports->activity_dt),dcCore::app()->blog->settings->system->blog_timezone)') . '; ?>';
+            return '<?php echo ' . sprintf($f, Date::class . '::iso8601(strtotime(App::frontend()->context()->activityreports->activity_dt),App::blog()->settings()->system->blog_timezone)') . '; ?>';
         } elseif (!empty($format)) {
-            return '<?php echo ' . sprintf($f, Date::class . "::dt2str('" . $format . "',dcCore::app()->ctx->activityreports->activity_dt)") . '; ?>';
+            return '<?php echo ' . sprintf($f, Date::class . "::dt2str('" . $format . "',App::frontend()->context()->activityreports->activity_dt)") . '; ?>';
         }
 
-        return '<?php echo ' . sprintf($f, Date::class . '::dt2str(dcCore::app()->blog->settings->system->date_format,dcCore::app()->ctx->activityreports->activity_dt)') . '; ?>';
+        return '<?php echo ' . sprintf($f, Date::class . '::dt2str(App::blog()->settings()->system->date_format,App::frontend()->context()->activityreports->activity_dt)') . '; ?>';
     }
 }

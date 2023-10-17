@@ -1,23 +1,11 @@
 <?php
-/**
- * @brief activityReport, a plugin for Dotclear 2
- *
- * @package Dotclear
- * @subpackage Plugin
- *
- * @author Jean-Christian Denis and contributors
- *
- * @copyright Jean-Christian Denis
- * @copyright GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
- */
+
 declare(strict_types=1);
 
 namespace Dotclear\Plugin\activityReport;
 
 use ArrayObject;
-use dcAuth;
-use dcBlog;
-use dcCore;
+use Dotclear\App;
 use Dotclear\Database\MetaRecord;
 use Dotclear\Database\Statement\{
     DeleteStatement,
@@ -36,7 +24,11 @@ use Dotclear\Helper\Text;
 use Exception;
 
 /**
- * Activity report main class.
+ * @brief       activityReport main class.
+ * @ingroup     activityReport
+ *
+ * @author      Jean-Christian Denis (author)
+ * @copyright   GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
  */
 class ActivityReport
 {
@@ -134,11 +126,11 @@ class ActivityReport
             ]);
         }
         $sql
-            ->from($sql->as(dcCore::app()->prefix . My::ACTIVITY_TABLE_NAME, 'E'), false, true)
+            ->from($sql->as(App::con()->prefix() . My::ACTIVITY_TABLE_NAME, 'E'), false, true)
             ->join(
                 (new JoinStatement())
                     ->left()
-                    ->from($sql->as(dcCore::app()->prefix . dcBlog::BLOG_TABLE_NAME, 'B'))
+                    ->from($sql->as(App::con()->prefix() . App::blog()::BLOG_TABLE_NAME, 'B'))
                     ->on('E.blog_id = B.blog_id')
                     ->statement()
             );
@@ -169,7 +161,7 @@ class ActivityReport
             }
             $sql->and('E.blog_id' . $sql->in($params['blog_id']));
         } else {
-            $sql->and('E.blog_id = ' . $sql->quote((string) dcCore::app()->blog?->id));
+            $sql->and('E.blog_id = ' . $sql->quote(App::blog()->id()));
         }
 
         if (isset($params['activity_status']) && is_numeric($params['activity_status'])) {
@@ -240,12 +232,12 @@ class ActivityReport
     public function addLog(string $group, string $action, array $logs): void
     {
         try {
-            $cur = dcCore::app()->con->openCursor(dcCore::app()->prefix . My::ACTIVITY_TABLE_NAME);
-            dcCore::app()->con->writeLock(dcCore::app()->prefix . My::ACTIVITY_TABLE_NAME);
+            $cur = App::con()->openCursor(App::con()->prefix() . My::ACTIVITY_TABLE_NAME);
+            App::con()->writeLock(App::con()->prefix() . My::ACTIVITY_TABLE_NAME);
 
             $cur->setField('activity_id', $this->getNextId());
             $cur->setField('activity_type', $this->type);
-            $cur->setField('blog_id', (string) dcCore::app()->blog?->id);
+            $cur->setField('blog_id', App::blog()->id());
             $cur->setField('activity_group', $group);
             $cur->setField('activity_action', $action);
             $cur->setField('activity_logs', json_encode($logs));
@@ -253,13 +245,13 @@ class ActivityReport
             $cur->setField('activity_status', self::STATUS_PENDING);
 
             $cur->insert();
-            dcCore::app()->con->unlock();
+            App::con()->unlock();
 
             # --BEHAVIOR-- coreAfterCategoryCreate -- ActivityReport, cursor
-            dcCore::app()->callBehavior('activityReportAfteAddLog', $this, $cur);
+            App::behavior()->callBehavior('activityReportAfteAddLog', $this, $cur);
         } catch (Exception $e) {
-            dcCore::app()->con->unlock();
-            dcCore::app()->error->add($e->getMessage());
+            App::con()->unlock();
+            App::error()->add($e->getMessage());
         }
 
         // Test if email report is needed
@@ -301,7 +293,7 @@ class ActivityReport
         $from       = time();
         $to         = 0;
         $res        = $blog_name = $blog_url = $group = '';
-        $tz         = dcCore::app()->blog?->settings->get('system')->get('blog_timezone');
+        $tz         = App::blog()->settings()->get('system')->get('blog_timezone');
         $tz         = is_string($tz) ? $tz : 'UTC';
         $dt         = empty($this->settings->dateformat) ? '%Y-%m-%d %H:%M:%S' : $this->settings->dateformat;
         $format     = $this->formats->get($this->formats->has($this->settings->mailformat) ? $this->settings->mailformat : 'plain');
@@ -394,7 +386,7 @@ class ActivityReport
     {
         // Get blogs and logs count
         $sql = new SelectStatement();
-        $sql->from(dcCore::app()->prefix . My::ACTIVITY_TABLE_NAME)
+        $sql->from(App::con()->prefix() . My::ACTIVITY_TABLE_NAME)
             ->column('blog_id')
             ->where('activity_type =' . $sql->quote($this->type))
             ->group('blog_id');
@@ -410,16 +402,16 @@ class ActivityReport
             $obs = Date::str('%Y-%m-%d %H:%M:%S', $ts - (int) $this->settings->obsolete);
             if (is_string($rs->f('blog_id'))) {
                 $sql = new DeleteStatement();
-                $sql->from(dcCore::app()->prefix . My::ACTIVITY_TABLE_NAME)
+                $sql->from(App::con()->prefix() . My::ACTIVITY_TABLE_NAME)
                     ->where('activity_type =' . $sql->quote($this->type))
                     ->and('activity_dt < TIMESTAMP ' . $sql->quote($obs))
                     ->and('blog_id = ' . $sql->quote($rs->f('blog_id')))
                     ->delete();
 
-                if (dcCore::app()->con->changes()) {
+                if (App::con()->changes()) {
                     try {
-                        $cur = dcCore::app()->con->openCursor(dcCore::app()->prefix . My::ACTIVITY_TABLE_NAME);
-                        dcCore::app()->con->writeLock(dcCore::app()->prefix . My::ACTIVITY_TABLE_NAME);
+                        $cur = App::con()->openCursor(App::con()->prefix() . My::ACTIVITY_TABLE_NAME);
+                        App::con()->writeLock(App::con()->prefix() . My::ACTIVITY_TABLE_NAME);
 
                         $cur->setField('activity_id', $this->getNextId());
                         $cur->setField('activity_type', $this->type);
@@ -431,10 +423,10 @@ class ActivityReport
                         $cur->setField('activity_status', self::STATUS_PENDING);
 
                         $cur->insert();
-                        dcCore::app()->con->unlock();
+                        App::con()->unlock();
                     } catch (Exception $e) {
-                        dcCore::app()->con->unlock();
-                        dcCore::app()->error->add($e->getMessage());
+                        App::con()->unlock();
+                        App::error()->add($e->getMessage());
                     }
                 }
             }
@@ -456,7 +448,7 @@ class ActivityReport
             $sql->and('activity_status = ' . self::STATUS_REPORTED);
         }
 
-        return $sql->from(dcCore::app()->prefix . My::ACTIVITY_TABLE_NAME)
+        return $sql->from(App::con()->prefix() . My::ACTIVITY_TABLE_NAME)
             ->where('activity_type = ' . $sql->quote($this->type))
             ->delete();
     }
@@ -470,10 +462,10 @@ class ActivityReport
     private function updateStatus(int $from_date_ts, int $to_date_ts): void
     {
         $sql = new UpdateStatement();
-        $sql->from(dcCore::app()->prefix . My::ACTIVITY_TABLE_NAME)
+        $sql->from(App::con()->prefix() . My::ACTIVITY_TABLE_NAME)
             ->column('activity_status')
             ->set((string) self::STATUS_REPORTED)
-            ->where('blog_id = ' . $sql->quote((string) dcCore::app()->blog?->id))
+            ->where('blog_id = ' . $sql->quote(App::blog()->id()))
             ->and('activity_type =' . $sql->quote($this->type))
             ->and('activity_dt >= TIMESTAMP ' . $sql->quote(date('Y-m-d H:i:s', $from_date_ts)))
             ->and('activity_dt < TIMESTAMP ' . $sql->quote(date('Y-m-d H:i:s', $to_date_ts)))
@@ -488,7 +480,7 @@ class ActivityReport
     public function getNextId(): int
     {
         $sql = new SelectStatement();
-        $sql->from(dcCore::app()->prefix . My::ACTIVITY_TABLE_NAME)
+        $sql->from(App::con()->prefix() . My::ACTIVITY_TABLE_NAME)
             ->column($sql->max('activity_id'));
 
         return (int) $sql->select()?->f(0) + 1;
@@ -503,14 +495,14 @@ class ActivityReport
     {
         try {
             # Cache writable ?
-            if (!is_writable(DC_TPL_CACHE)) {
+            if (!is_writable(App::config()->cacheRoot())) {
                 throw new Exception("Can't write in cache fodler");
             }
             # Set file path
-            $f_md5 = md5((string) dcCore::app()->blog?->id);
+            $f_md5 = md5(App::blog()->id());
             $file  = sprintf(
                 '%s/%s/%s/%s/%s.txt',
-                DC_TPL_CACHE,
+                App::config()->cacheRoot(),
                 My::id(),
                 substr($f_md5, 0, 2),
                 substr($f_md5, 2, 2),
@@ -591,7 +583,7 @@ class ActivityReport
                 $params = new ArrayObject([
                     'from_date_ts'    => $lastreport,
                     'to_date_ts'      => $now,
-                    'blog_id'         => dcCore::app()->blog?->id,
+                    'blog_id'         => App::blog()->id(),
                     'activity_status' => self::STATUS_PENDING,
                     'requests'        => true,
                     'order'           => 'activity_group ASC, activity_action ASC, activity_dt ASC ',
@@ -612,7 +604,7 @@ class ActivityReport
                     $this->updateStatus($lastreport, $now);
                     $this->settings->set('lastreport', $now);
 
-                    dcCore::app()->callBehavior('messageActivityReport', 'Activity report has been successfully send by mail.');
+                    App::behavior()->callBehavior('messageActivityReport', 'Activity report has been successfully send by mail.');
                 }
             }
 
@@ -658,20 +650,20 @@ class ActivityReport
         # Sending mails
         try {
             $subject = mb_encode_mimeheader(
-                sprintf(__('Blog "%s" activity report'), dcCore::app()->blog?->name),
+                sprintf(__('Blog "%s" activity report'), App::blog()->name()),
                 'UTF-8',
                 'B'
             );
 
             $headers   = [];
-            $headers[] = 'From: ' . (defined('DC_ADMIN_MAILFROM') && str_contains(DC_ADMIN_MAILFROM, '@') ? DC_ADMIN_MAILFROM : 'dotclear@local');
+            $headers[] = 'From: ' . (defined('DC_ADMIN_MAILFROM') && str_contains(App::config()->adminMailFrom(), '@') ? App::config()->adminMailFrom() : 'dotclear@local');
             $headers[] = 'Content-Type: text/' . $mailformat . '; charset=UTF-8;';
             //$headers[] = 'MIME-Version: 1.0';
             //$headers[] = 'X-Originating-IP: ' . mb_encode_mimeheader(Http::realIP(), 'UTF-8', 'B');
             //$headers[] = 'X-Mailer: Dotclear';
-            //$headers[] = 'X-Blog-Id: ' . mb_encode_mimeheader(dcCore::app()->blog->id), 'UTF-8', 'B');
-            //$headers[] = 'X-Blog-Name: ' . mb_encode_mimeheader(dcCore::app()->blog->name), 'UTF-8', 'B');
-            //$headers[] = 'X-Blog-Url: ' . mb_encode_mimeheader(dcCore::app()->blog->url), 'UTF-8', 'B');
+            //$headers[] = 'X-Blog-Id: ' . mb_encode_mimeheader(App::blog()->id()), 'UTF-8', 'B');
+            //$headers[] = 'X-Blog-Name: ' . mb_encode_mimeheader(App::blog()->name()), 'UTF-8', 'B');
+            //$headers[] = 'X-Blog-Url: ' . mb_encode_mimeheader(App::>blog()->url()), 'UTF-8', 'B');
 
             $done = true;
             foreach ($recipients as $email) {
@@ -693,9 +685,9 @@ class ActivityReport
      */
     public function getUserCode(): string
     {
-        $id   = is_string(dcCore::app()->auth->userID()) ? dcCore::app()->auth->userID() : '';
-        $pw   = is_string(dcCore::app()->auth->getInfo('user_pwd')) ? dcCore::app()->auth->getInfo('user_pwd') : '';
-        $code = pack('a32', $id) . pack('H*', Crypt::hmac(DC_MASTER_KEY, $pw));
+        $id   = is_string(App::auth()->userID()) ? App::auth()->userID() : '';
+        $pw   = is_string(App::auth()->getInfo('user_pwd')) ? App::auth()->getInfo('user_pwd') : '';
+        $code = pack('a32', $id) . pack('H*', Crypt::hmac(App::config()->masterKey(), $pw));
 
         return bin2hex($code);
     }
@@ -721,7 +713,7 @@ class ActivityReport
         $pwd = $pwd['hex'];
 
         $sql = new SelectStatement();
-        $sql->from(dcCore::app()->prefix . dcAuth::USER_TABLE_NAME)
+        $sql->from(App::con()->prefix() . App::auth()::USER_TABLE_NAME)
             ->columns(['user_id', 'user_pwd'])
             ->where('user_id =' . $sql->quote($user_id));
 
@@ -731,7 +723,7 @@ class ActivityReport
             return false;
         }
 
-        if (Crypt::hmac(DC_MASTER_KEY, $rs->f('user_pwd')) != $pwd) {
+        if (Crypt::hmac(App::config()->masterKey(), $rs->f('user_pwd')) != $pwd) {
             return false;
         }
 

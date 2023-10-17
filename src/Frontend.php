@@ -1,24 +1,18 @@
 <?php
-/**
- * @brief activityReport, a plugin for Dotclear 2
- *
- * @package Dotclear
- * @subpackage Plugin
- *
- * @author Jean-Christian Denis and contributors
- *
- * @copyright Jean-Christian Denis
- * @copyright GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
- */
+
 declare(strict_types=1);
 
 namespace Dotclear\Plugin\activityReport;
 
-use dcCore;
+use Dotclear\App;
 use Dotclear\Core\Process;
 
 /**
- * Front end process.
+ * @brief       activityReport frontend class.
+ * @ingroup     activityReport
+ *
+ * @author      Jean-Christian Denis (author)
+ * @copyright   GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
  */
 class Frontend extends Process
 {
@@ -33,13 +27,13 @@ class Frontend extends Process
             return false;
         }
 
-        dcCore::app()->tpl->setPath(dcCore::app()->tpl->getPath(), implode(DIRECTORY_SEPARATOR, [My::path(), 'default-templates', 'tpl']));
+        App::frontend()->template()->setPath(App::frontend()->template()->getPath(), implode(DIRECTORY_SEPARATOR, [My::path(), 'default-templates', 'tpl']));
 
-        dcCore::app()->tpl->addBlock('activityReports', [Template::class, 'activityReports']);
-        dcCore::app()->tpl->addValue('activityReportFeedID', [Template::class, 'activityReportFeedID']);
-        dcCore::app()->tpl->addValue('activityReportTitle', [Template::class, 'activityReportTitle']);
-        dcCore::app()->tpl->addValue('activityReportDate', [Template::class, 'activityReportDate']);
-        dcCore::app()->tpl->addValue('activityReportContent', [Template::class, 'activityReportContent']);
+        App::frontend()->template()->addBlock('activityReports', Template::activityReports(...));
+        App::frontend()->template()->addValue('activityReportFeedID', Template::activityReportFeedID(...));
+        App::frontend()->template()->addValue('activityReportTitle', Template::activityReportTitle(...));
+        App::frontend()->template()->addValue('activityReportDate', Template::activityReportDate(...));
+        App::frontend()->template()l->addValue('activityReportContent', Template::activityReportContent(...));
 
         return true;
     }

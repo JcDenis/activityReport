@@ -1,20 +1,10 @@
 <?php
-/**
- * @brief activityReport, a plugin for Dotclear 2
- *
- * @package Dotclear
- * @subpackage Plugin
- *
- * @author Jean-Christian Denis and contributors
- *
- * @copyright Jean-Christian Denis
- * @copyright GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
- */
+
 declare(strict_types=1);
 
 namespace Dotclear\Plugin\activityReport;
 
-use dcCore;
+use Dotclear\App;
 use Dotclear\Core\Backend\Notices;
 use Dotclear\Core\Process;
 use Dotclear\Helper\Date;
@@ -32,7 +22,11 @@ use Dotclear\Helper\Html\Form\{
 use Exception;
 
 /**
- * Config process.
+ * @brief       activityReport config class.
+ * @ingroup     activityReport
+ *
+ * @author      Jean-Christian Denis (author)
+ * @copyright   GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
  */
 class Config extends Process
 {
@@ -85,12 +79,12 @@ class Config extends Process
                 );
             }
 
-            dcCore::app()->admin->url->redirect('admin.plugins', [
+            App::bakend()->url()->redirect('admin.plugins', [
                 'module' => My::id(),
                 'conf'   => 1,
             ]);
         } catch (Exception $e) {
-            dcCore::app()->error->add($e->getMessage());
+            App::error()->add($e->getMessage());
         }
 
         return true;
@@ -103,19 +97,19 @@ class Config extends Process
         }
 
         $s  = ActivityReport::instance()->settings;
-        $tz = is_string(dcCore::app()->auth->getInfo('user_tz')) ? dcCore::app()->auth->getInfo('user_tz') : 'UTC';
+        $tz = is_string(App::auth()->getInfo('user_tz')) ? App::auth()->getInfo('user_tz') : 'UTC';
 
         if (!$s->lastreport) {
             $last_report = __('never');
             $next_report = __('on new activity');
         } else {
             $last_report = Date::str(
-                dcCore::app()->blog?->settings->get('system')->get('date_format') . ', ' . dcCore::app()->blog?->settings->get('system')->get('time_format'),
+                App::blog()->settings()->get('system')->get('date_format') . ', ' . App::blog()->settings()->get('system')->get('time_format'),
                 $s->lastreport,
                 $tz
             );
             $next_report = Date::str(
-                dcCore::app()->blog?->settings->get('system')->get('date_format') . ', ' . dcCore::app()->blog?->settings->get('system')->get('time_format'),
+                App::blog()->settings()->get('system')->get('date_format') . ', ' . App::blog()->settings()->get('system')->get('time_format'),
                 $s->interval + $s->lastreport,
                 $tz
             );
@@ -166,11 +160,11 @@ class Config extends Process
                     'ul',
                     '<li><img alt="' . __('RSS feed') . '" src="' . My::fileURL('img/feed.png') . '" /> ' .
                     '<a title="' . __('RSS feed') . '" href="' .
-                    dcCore::app()->blog?->url . dcCore::app()->url->getBase(My::id()) . '/rss2/' . ActivityReport::instance()->getUserCode() . '">' .
+                    App::blog()->url() . App::url()->getBase(My::id()) . '/rss2/' . ActivityReport::instance()->getUserCode() . '">' .
                     __('Rss2 activities feed') . '</a></li>' .
                     '<li><img alt="' . __('Atom feed') . '" src="' . My::fileURL('img/feed.png') . '" /> ' .
                     '<a title="' . __('Atom feed') . '" href="' .
-                    dcCore::app()->blog?->url . dcCore::app()->url->getBase(My::id()) . '/atom/' . ActivityReport::instance()->getUserCode() . '">' .
+                    App::blog()->url() . App::url()->getBase(My::id()) . '/atom/' . ActivityReport::instance()->getUserCode() . '">' .
                     __('Atom activities feed') . '</a></li>'
                 )),
             ]),

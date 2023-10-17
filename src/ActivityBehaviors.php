@@ -1,23 +1,12 @@
 <?php
-/**
- * @brief activityReport, a plugin for Dotclear 2
- *
- * @package Dotclear
- * @subpackage Plugin
- *
- * @author Jean-Christian Denis and contributors
- *
- * @copyright Jean-Christian Denis
- * @copyright GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
- */
+
 declare(strict_types=1);
 
 namespace Dotclear\Plugin\activityReport;
 
 use ArrayObject;
-use dcBlog;
-use dcCore;
-use dcUtils;
+use Dotclear\App;
+use Dotclear\Interface\Core\BlogInterace;
 use Dotclear\Database\{
     Cursor,
     MetaRecord
@@ -25,7 +14,15 @@ use Dotclear\Database\{
 use Dotclear\Helper\Network\Http;
 
 /**
+ */
+/**
+ * @brief       activityReport register class.
+ * @ingroup     activityReport
+ *
  * Register default activities and export mail formats.
+ *
+ * @author      Jean-Christian Denis (author)
+ * @copyright   GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
  */
 class ActivityBehaviors
 {
@@ -45,7 +42,7 @@ class ActivityBehaviors
             __('Special messages'),
             __('%s'),
             'messageActivityReport',
-            [self::class, 'messageActivityReport']
+            self::messageActivityReport(...)
         ));
 
         // Not use as it is global : BEHAVIOR adminAfterBlogCreate in admin/blog.php
@@ -56,7 +53,7 @@ class ActivityBehaviors
             __('updating blog'),
             __('Blog was updated by "%s"'),
             'adminAfterBlogUpdate',
-            [self::class, 'blogUpdate']
+            self::blogUpdate(...)
         ));
 
         // from BEHAVIOR publicHeadContent in template
@@ -65,7 +62,7 @@ class ActivityBehaviors
             __('404 error'),
             __('New 404 error page at "%s"'),
             'publicHeadContent',
-            [self::class, 'blogP404']
+            self::blogP404(...)
         ));
 
         // from BEHAVIOR coreAfterPostCreate in inc/core/class.dc.blog.php (DC 2.2)
@@ -76,7 +73,7 @@ class ActivityBehaviors
             __('post creation'),
             __('A new post called "%s" was created by "%s" at %s'),
             'adminAfterPostCreate',
-            [self::class, 'postCreate']
+            self::postCreate(...)
         ));
 
         // Plugin contribute
@@ -86,7 +83,7 @@ class ActivityBehaviors
             __('post creation'),
             __('A new post called "%s" was created by "%s" at %s'),
             'publicAfterPostCreate',
-            [self::class, 'postCreate']
+            self::postCreate(...)
         ));
 
         // from BEHAVIOR coreAfterPostUpdate in inc/core/class.dc.blog.php (DC2.2)
@@ -96,7 +93,7 @@ class ActivityBehaviors
             __('updating post'),
             __('Post called "%s" has been updated by "%s" at %s'),
             'adminAfterPostUpdate',
-            [self::class, 'postUpdate']
+            self::postUpdate(...)
         ));
 
         // from BEHAVIOR adminBeforePostDelete in admin/post.php
@@ -105,7 +102,7 @@ class ActivityBehaviors
             __('post deletion'),
             __('Post called "%s" has been deleted by "%s"'),
             'adminBeforePostDelete',
-            [self::class, 'postDelete']
+            self::postDelete(...)
         ));
 
         // Wrong attempt on passworded enrty
@@ -115,7 +112,7 @@ class ActivityBehaviors
             __('Post protection'),
             __('An attempt failed on a passworded post with password "%s" at "%s"'),
             'urlHandlerServeDocument',
-            [self::class, 'postPasswordAttempt']
+            self::postPasswordAttempt(...)
         ));
 
         // from BEHAVIOR coreAfterCommentCreate in inc/core/class.dc.blog.php
@@ -126,7 +123,7 @@ class ActivityBehaviors
             __('comment creation'),
             __('A new comment was created by "%s" on post "%s" at %s'),
             'coreAfterCommentCreate',
-            [self::class, 'commentCreate']
+            self::commentCreate(...)
         ));
 
         // from BEHAVIOR coreAfterCommentUpdate in inc/core/class.dc.blog.php
@@ -136,7 +133,7 @@ class ActivityBehaviors
             __('updating comment'),
             __('Comment has been updated by "%s" at %s'),
             'coreAfterCommentUpdate',
-            [self::class, 'commentUpdate']
+            self::commentUpdate(...)
         ));
 
         // Missing coreBeforeCommentDelete in inc/core/class.dc.blog.php
@@ -149,7 +146,7 @@ class ActivityBehaviors
             __('trackback creation'),
             __('A new trackback to "%" at "%s" was created on post "%s" at %s'),
             'coreAfterCommentCreate',
-            [self::class, 'trackbackCreate']
+            self::trackbackCreate(...)
         ));
 
         // from BEHAVIOR adminAfterCategoryCreate in admin/category.php
@@ -158,7 +155,7 @@ class ActivityBehaviors
             __('category creation'),
             __('A new category called "%s" was created by "%s" at %s'),
             'adminAfterCategoryCreate',
-            [self::class, 'categoryCreate']
+            self::categoryCreate(...)
         ));
 
         // from BEHAVIOR adminAfterCategoryUpdate in admin/category.php
@@ -167,7 +164,7 @@ class ActivityBehaviors
             __('updating category'),
             __('Category called "%s" has been updated by "%s" at %s'),
             'adminAfterCategoryUpdate',
-            [self::class, 'categoryUpdate']
+            self::categoryUpdate(...)
         ));
 
         // Missing adminBeforeCategoryDelete in admin/category.php
@@ -178,7 +175,7 @@ class ActivityBehaviors
             __('user creation'),
             __('A new user named "%s" was created by "%s"'),
             'adminAfterUserCreate',
-            [self::class, 'userCreate']
+            self::userCreate(...)
         ));
 
         // from BEHAVIOR adminAfterUserUpdated in admin/user.php
@@ -187,7 +184,7 @@ class ActivityBehaviors
             __('updating user'),
             __('User named "%s" has been updated by "%s"'),
             'adminAfterUserUpdate',
-            [self::class, 'userUpdate']
+            self::userUpdate(...)
         ));
 
         // from BEHAVIOR adminAfterUserProfileUpdate in admin/preferences.php
@@ -196,21 +193,21 @@ class ActivityBehaviors
             __('updating user preference'),
             __('"%s" user preference has been updated'),
             'adminAfterUserProfileUpdate',
-            [self::class, 'userPreference']
+            self::userPreference(...)
         ));
         $user->add(new Action(
             'preference',
             __('updating user preference'),
             __('"%s" user preference has been updated'),
             'adminAfterUserOptionsUpdate',
-            [self::class, 'userPreference']
+            self::userPreference(...)
         ));
         $user->add(new Action(
             'preference',
             __('updating user preference'),
             __('"%s" user preference has been updated'),
             'adminAfterDashboardOptionsUpdate',
-            [self::class, 'userOption']
+            self::userOption(...)
         ));
 
         // from BEHAVIOR adminBeforeUserDelete in admin/users.php
@@ -219,7 +216,7 @@ class ActivityBehaviors
             __('user deletion'),
             __('User named "%s" has been deleted by "%"'),
             'adminBeforeUserDelete',
-            [self::class, 'userDelete']
+            self::userDelete(...)
         ));
 
         ActivityReport::instance()->groups
@@ -274,26 +271,26 @@ class ActivityBehaviors
 
     public static function blogUpdate(Cursor $cur, string $blog_id): void
     {
-        $logs = [self::str(dcCore::app()->auth->getInfo('user_cn'))];
+        $logs = [self::str(App::auth()->getInfo('user_cn'))];
         ActivityReport::instance()->addLog('blog', 'update', $logs);
     }
 
     public static function blogP404(): void
     {
-        if (dcCore::app()->url->type != '404') {
+        if (App::url()->type != '404') {
             return;
         }
-        $logs = [self::str(dcCore::app()->blog?->url) . $_SERVER['QUERY_STRING']];
+        $logs = [self::str(App::blog()->url()) . $_SERVER['QUERY_STRING']];
         ActivityReport::instance()->addLog('blog', 'p404', $logs);
     }
 
     public static function postCreate(Cursor $cur, int $post_id): void
     {
-        $post_url = dcCore::app()->blog?->getPostURL('', self::str($cur->getField('post_dt')), self::str($cur->getField('post_title')), $post_id);
+        $post_url = App::blog()->getPostURL('', self::str($cur->getField('post_dt')), self::str($cur->getField('post_title')), $post_id);
         $logs     = [
             self::str($cur->getField('post_title')),
-            self::str(dcCore::app()->auth->getInfo('user_cn')),
-            self::str(dcCore::app()->blog?->url) . dcCore::app()->url->getBase(self::str($cur->getField('post_type'))) . '/' . $post_url,
+            self::str(App::auth()->getInfo('user_cn')),
+            self::str(App::blog()->url()) . App::url()->getBase(self::str($cur->getField('post_type'))) . '/' . $post_url,
         ];
         ActivityReport::instance()->addLog('post', 'create', $logs);
     }
@@ -301,24 +298,24 @@ class ActivityBehaviors
     public static function postUpdate(Cursor $cur, int|string $post_id): void
     {
         $post_id  = is_numeric($post_id) ? (int) $post_id : 0;
-        $post_url = dcCore::app()->blog?->getPostURL('', self::str($cur->getField('post_dt')), self::str($cur->getField('post_title')), $post_id);
+        $post_url = App::blog()->getPostURL('', self::str($cur->getField('post_dt')), self::str($cur->getField('post_title')), $post_id);
         $logs     = [
             self::str($cur->getField('post_title')),
-            self::str(dcCore::app()->auth->getInfo('user_cn')),
-            self::str(dcCore::app()->blog?->url) . dcCore::app()->url->getBase(self::str($cur->getField('post_type'))) . '/' . $post_url,
+            self::str(App::auth()->getInfo('user_cn')),
+            self::str(App::blog()->url()) . App::url()->getBase(self::str($cur->getField('post_type'))) . '/' . $post_url,
         ];
         ActivityReport::instance()->addLog('post', 'update', $logs);
     }
 
     public static function postDelete(int $post_id): void
     {
-        $posts = dcCore::app()->blog?->getPosts(['post_id' => $post_id, 'limit' => 1]);
+        $posts = App::blog()->getPosts(['post_id' => $post_id, 'limit' => 1]);
         if (!$posts || $posts->isEmpty()) {
             return;
         }
         $logs = [
             self::str($posts->f('post_title')),
-            self::str(dcCore::app()->auth->getInfo('user_cn')),
+            self::str(App::auth()->getInfo('user_cn')),
         ];
         ActivityReport::instance()->addLog('post', 'delete', $logs);
     }
@@ -335,12 +332,12 @@ class ActivityBehaviors
         ActivityReport::instance()->addLog('post', 'protection', $logs);
     }
 
-    public static function commentCreate(dcBlog $blog, Cursor $cur): void
+    public static function commentCreate(BlogInterace $blog, Cursor $cur): void
     {
         if ($cur->getField('comment_trackback')) {
             return;
         }
-        $posts = dcCore::app()->blog?->getPosts(
+        $posts = App::blog()->getPosts(
             ['post_id' => $cur->getField('post_id'), 'limit' => 1, 'post_type' => '']
         );
         if (!$posts || $posts->isEmpty()) {
@@ -350,15 +347,15 @@ class ActivityBehaviors
         $logs = [
             self::str($cur->getField('comment_author')),
             self::str($posts->f('post_title')),
-            self::str(dcCore::app()->blog?->url) . dcCore::app()->url->getBase(self::str($posts->f('post_type'))) .
+            self::str(App::blog()->url()) . App::url()->getBase(self::str($posts->f('post_type'))) .
                 '/' . self::str($posts->f('post_url')) . '#c' . self::str($cur->getField('comment_id')),
         ];
         ActivityReport::instance()->addLog('comment', 'create', $logs);
     }
 
-    public static function commentUpdate(dcBlog $blog, Cursor $cur, MetaRecord $old): void
+    public static function commentUpdate(BlogInterace $blog, Cursor $cur, MetaRecord $old): void
     {
-        $posts = dcCore::app()->blog?->getPosts(
+        $posts = App::blog()->getPosts(
             ['post_id' => $old->f('post_id'), 'limit' => 1]
         );
         if (!$posts || $posts->isEmpty()) {
@@ -366,21 +363,21 @@ class ActivityBehaviors
         }
 
         $logs = [
-            self::str(dcCore::app()->auth->getInfo('user_cn')),
+            self::str(App::auth()->getInfo('user_cn')),
             self::str($posts->f('post_title')),
-            self::str(dcCore::app()->blog?->url) . dcCore::app()->url->getBase(self::str($posts->f('post_type'))) .
+            self::str(App::blog()->url()) . App::url()->getBase(self::str($posts->f('post_type'))) .
                 '/' . self::str($posts->f('post_url')) . '#c' . self::str($old->f('comment_id')),
         ];
         ActivityReport::instance()->addLog('comment', 'update', $logs);
     }
 
-    public static function trackbackCreate(dcBlog $blog, Cursor $cur): void
+    public static function trackbackCreate(BlogInterace $blog, Cursor $cur): void
     {
         if (!$cur->getField('comment_trackback')) {
             return;
         }
 
-        $posts = dcCore::app()->blog?->getPosts(
+        $posts = App::blog()->getPosts(
             ['post_id' => $cur->getField('post_id'), 'no_content' => true, 'limit' => 1]
         );
         if (!$posts || $posts->isEmpty()) {
@@ -391,7 +388,7 @@ class ActivityBehaviors
             self::str($cur->getField('comment_author')),
             self::str($cur->getField('comment_site')),
             self::str($posts->f('post_title')),
-            self::str(dcCore::app()->blog?->url) . dcCore::app()->url->getBase(self::str($posts->f('post_type'))) .
+            self::str(App::blog()->url()) . App::url()->getBase(self::str($posts->f('post_type'))) .
                 '/' . self::str($posts->f('post_url')),
         ];
         ActivityReport::instance()->addLog('comment', 'trackback', $logs);
@@ -401,8 +398,8 @@ class ActivityBehaviors
     {
         $logs = [
             self::str($cur->getField('cat_title')),
-            self::str(dcCore::app()->auth->getInfo('user_cn')),
-            self::str(dcCore::app()->blog?->url) . dcCore::app()->url->getBase('category') . '/' . self::str($cur->getField('cat_url')),
+            self::str(App::auth()->getInfo('user_cn')),
+            self::str(App::blog()->url()) . App::url()->getBase('category') . '/' . self::str($cur->getField('cat_url')),
         ];
         ActivityReport::instance()->addLog('category', 'create', $logs);
     }
@@ -411,8 +408,8 @@ class ActivityBehaviors
     {
         $logs = [
             self::str($cur->getField('cat_title')),
-            self::str(dcCore::app()->auth->getInfo('user_cn')),
-            self::str(dcCore::app()->blog?->url) . dcCore::app()->url->getBase('category') . '/' . self::str($cur->getField('cat_url')),
+            self::str(App::auth()->getInfo('user_cn')),
+            self::str(App::blog()->url()) . App::url()->getBase('category') . '/' . self::str($cur->getField('cat_url')),
         ];
         ActivityReport::instance()->addLog('category', 'update', $logs);
     }
@@ -427,7 +424,7 @@ class ActivityBehaviors
         );
         $logs = [
             self::str($user_cn),
-            self::str(dcCore::app()->auth->getInfo('user_cn')),
+            self::str(App::auth()->getInfo('user_cn')),
         ];
         ActivityReport::instance()->addLog('user', 'create', $logs);
     }
@@ -442,7 +439,7 @@ class ActivityBehaviors
         );
         $logs = [
             self::str($user_cn),
-            self::str(dcCore::app()->auth->getInfo('user_cn')),
+            self::str(App::auth()->getInfo('user_cn')),
         ];
         ActivityReport::instance()->addLog('user', 'update', $logs);
     }
@@ -454,11 +451,11 @@ class ActivityBehaviors
 
     public static function userOption(string $user_id): void
     {
-        $user = dcCore::app()->getUser($user_id);
+        $user = App::users()->getUser($user_id);
         if ($user->isEmpty()) {
             return;
         }
-        $user_cn = dcUtils::getUserCN(
+        $user_cn = App::users()->getUserCN(
             self::str($user->f('user_id')),
             self::str($user->f('user_name')),
             self::str($user->f('user_firstname')),
@@ -472,8 +469,8 @@ class ActivityBehaviors
 
     public static function userDelete(string $user_id): void
     {
-        $users   = dcCore::app()->getUser($user_id);
-        $user_cn = dcUtils::getUserCN(
+        $users   = App::users()->getUser($user_id);
+        $user_cn = App::users()->getUserCN(
             self::str($users->f('user_id')),
             self::str($users->f('user_name')),
             self::str($users->f('user_firstname')),
@@ -481,7 +478,7 @@ class ActivityBehaviors
         );
         $logs = [
             self::str($user_cn),
-            self::str(dcCore::app()->auth->getInfo('user_cn')),
+            self::str(App::auth()->getInfo('user_cn')),
         ];
         ActivityReport::instance()->addLog('user', 'delete', $logs);
     }

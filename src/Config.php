@@ -79,7 +79,7 @@ class Config extends Process
                 );
             }
 
-            App::bakend()->url()->redirect('admin.plugins', [
+            App::backend()->url()->redirect('admin.plugins', [
                 'module' => My::id(),
                 'conf'   => 1,
             ]);

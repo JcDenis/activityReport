@@ -27,13 +27,16 @@ class Frontend extends Process
             return false;
         }
 
+        // be sure to init report
+        ActivityReport::init();
+
         App::frontend()->template()->setPath(App::frontend()->template()->getPath(), implode(DIRECTORY_SEPARATOR, [My::path(), 'default-templates', 'tpl']));
 
         App::frontend()->template()->addBlock('activityReports', Template::activityReports(...));
         App::frontend()->template()->addValue('activityReportFeedID', Template::activityReportFeedID(...));
         App::frontend()->template()->addValue('activityReportTitle', Template::activityReportTitle(...));
         App::frontend()->template()->addValue('activityReportDate', Template::activityReportDate(...));
-        App::frontend()->template()l->addValue('activityReportContent', Template::activityReportContent(...));
+        App::frontend()->template()->addValue('activityReportContent', Template::activityReportContent(...));
 
         return true;
     }

@@ -37,6 +37,9 @@ class Backend extends Process
             return false;
         }
 
+        // be sure to init report
+        ActivityReport::init();
+
         My::addBackendMenuItem();
 
         App::behavior()->addBehaviors([

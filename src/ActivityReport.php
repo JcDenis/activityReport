@@ -6,6 +6,7 @@ namespace Dotclear\Plugin\activityReport;
 
 use ArrayObject;
 use Dotclear\App;
+use Dotclear\Core\Process;
 use Dotclear\Database\MetaRecord;
 use Dotclear\Database\Statement\{
     DeleteStatement,
@@ -22,6 +23,7 @@ use Dotclear\Helper\File\{
 use Dotclear\Helper\Network\Mail\Mail;
 use Dotclear\Helper\Text;
 use Exception;
+use Throwable;
 
 /**
  * @brief       activityReport main class.
@@ -32,6 +34,13 @@ use Exception;
  */
 class ActivityReport
 {
+    /**
+     * Third party plugins ActivityReport class name.
+     *
+     * @var     string  ACTIVITYREPORT_CLASS_NAME
+     */
+    public const ACTIVITYREPORT_CLASS_NAME = 'ActivityReportAction';
+
     /** @var    int     activity marked as pending mail report */
     public const STATUS_PENDING = 0;
 
@@ -70,6 +79,23 @@ class ActivityReport
 
         # Check if some logs are too olds
         $this->obsoleteLogs();
+    }
+
+    public static function init(): void
+    {
+        foreach (App::plugins()->getDefines() as $module) {
+            $class = $module->get('namespace') . '\\' . self::ACTIVITYREPORT_CLASS_NAME;
+
+            try {
+                if (is_a($class, Process::class, true)) {
+                    // check class prerequiretics
+                    if ($class::init()) {
+                        $class::process();
+                    }
+                }
+            } catch (Throwable $e) {
+            }
+        }
     }
 
     /**
@@ -193,8 +219,8 @@ class ActivityReport
         if (!empty($params['requests'])) {
             $or = [];
             foreach ($this->settings->requests as $group => $actions) {
-                foreach ($actions as $action) {
-                    $or[] = $sql->andGroup(['activity_group = ' . $sql->quote($group), 'activity_action = ' . $sql->quote($action)]);
+                foreach (array_keys($actions) as $action) {
+                    $or[] = $sql->andGroup(['activity_group = ' . $sql->quote((string) $group), 'activity_action = ' . $sql->quote((string) $action)]);
                 }
             }
             if (!empty($or)) {

@@ -6,15 +6,14 @@ namespace Dotclear\Plugin\activityReport;
 
 use ArrayObject;
 use Dotclear\App;
-use Dotclear\Interface\Core\BlogInterace;
+use Dotclear\Core\Process;
+use Dotclear\Interface\Core\BlogInterface;
 use Dotclear\Database\{
     Cursor,
     MetaRecord
 };
 use Dotclear\Helper\Network\Http;
 
-/**
- */
 /**
  * @brief       activityReport register class.
  * @ingroup     activityReport
@@ -24,10 +23,19 @@ use Dotclear\Helper\Network\Http;
  * @author      Jean-Christian Denis (author)
  * @copyright   GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
  */
-class ActivityBehaviors
+class ActivityReportAction extends Process
 {
-    public static function register(): void
+    public static function init(): bool
     {
+        return self::status(true);
+    }
+
+    public static function process(): bool
+    {
+        if (!self::status()) {
+            return false;
+        }
+
         $my       = new Group(My::id(), __('ActivityReport messages'));
         $blog     = new Group('blog', __('Actions on blog'));
         $post     = new Group('post', __('Actions on posts'));
@@ -261,6 +269,8 @@ class ActivityBehaviors
                     '<div class="foot"><p>Powered by <a href="https://github.com/JcDenis/activityReport">activityReport</a></p></div>' .
                     '</body></html>',
             ]));
+
+        return true;
     }
 
     public static function messageActivityReport(string $message): void
@@ -310,7 +320,7 @@ class ActivityBehaviors
     public static function postDelete(int $post_id): void
     {
         $posts = App::blog()->getPosts(['post_id' => $post_id, 'limit' => 1]);
-        if (!$posts || $posts->isEmpty()) {
+        if ($posts->isEmpty()) {
             return;
         }
         $logs = [
@@ -332,7 +342,7 @@ class ActivityBehaviors
         ActivityReport::instance()->addLog('post', 'protection', $logs);
     }
 
-    public static function commentCreate(BlogInterace $blog, Cursor $cur): void
+    public static function commentCreate(BlogInterface $blog, Cursor $cur): void
     {
         if ($cur->getField('comment_trackback')) {
             return;
@@ -340,7 +350,7 @@ class ActivityBehaviors
         $posts = App::blog()->getPosts(
             ['post_id' => $cur->getField('post_id'), 'limit' => 1, 'post_type' => '']
         );
-        if (!$posts || $posts->isEmpty()) {
+        if ($posts->isEmpty()) {
             return;
         }
 
@@ -353,12 +363,12 @@ class ActivityBehaviors
         ActivityReport::instance()->addLog('comment', 'create', $logs);
     }
 
-    public static function commentUpdate(BlogInterace $blog, Cursor $cur, MetaRecord $old): void
+    public static function commentUpdate(BlogInterface $blog, Cursor $cur, MetaRecord $old): void
     {
         $posts = App::blog()->getPosts(
             ['post_id' => $old->f('post_id'), 'limit' => 1]
         );
-        if (!$posts || $posts->isEmpty()) {
+        if ($posts->isEmpty()) {
             return;
         }
 
@@ -371,7 +381,7 @@ class ActivityBehaviors
         ActivityReport::instance()->addLog('comment', 'update', $logs);
     }
 
-    public static function trackbackCreate(BlogInterace $blog, Cursor $cur): void
+    public static function trackbackCreate(BlogInterface $blog, Cursor $cur): void
     {
         if (!$cur->getField('comment_trackback')) {
             return;
@@ -380,7 +390,7 @@ class ActivityBehaviors
         $posts = App::blog()->getPosts(
             ['post_id' => $cur->getField('post_id'), 'no_content' => true, 'limit' => 1]
         );
-        if (!$posts || $posts->isEmpty()) {
+        if ($posts->isEmpty()) {
             return;
         }
 
@@ -416,7 +426,7 @@ class ActivityBehaviors
 
     public static function userCreate(Cursor $cur, string $user_id): void
     {
-        $user_cn = dcUtils::getUserCN(
+        $user_cn = App::users()->getUserCN(
             self::str($cur->getField('user_id')),
             self::str($cur->getField('user_name')),
             self::str($cur->getField('user_firstname')),
@@ -431,7 +441,7 @@ class ActivityBehaviors
 
     public static function userUpdate(Cursor $cur, string $user_id): void
     {
-        $user_cn = dcUtils::getUserCN(
+        $user_cn = App::users()->getUserCN(
             self::str($cur->getField('user_id')),
             self::str($cur->getField('user_name')),
             self::str($cur->getField('user_firstname')),

@@ -25,7 +25,6 @@ class UrlHandler extends Url
     {
         // no context or wrong URL args or module no loaded or report unactive
         if (!preg_match('/^(atom|rss2)\/(.+)$/', (string) $args, $m)
-            || !defined('ACTIVITY_REPORT')
             || !ActivityReport::instance()->settings->feed_active
         ) {
             self::p404();

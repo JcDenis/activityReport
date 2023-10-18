@@ -24,7 +24,7 @@ class ManageList extends Listing
 {
     public function logsDisplay(Filters $filter, string $enclose_block = ''): void
     {
-        if (!$this->rs || $this->rs->isEmpty()) {
+        if ($this->rs->isEmpty()) {
             if ($filter->show()) {
                 echo '<p><strong>' . __('No log matches the filter') . '</strong></p>';
             } else {

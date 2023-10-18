@@ -18,10 +18,10 @@ class Action
     /**
      * Constructor sets action description.
      *
-     * @param   string  $id     The action ID
-     * @param   string  $title  The action title
-     * @param   string  $message    The action message
-     * @param   string  $behavior   The behavior name
+     * @param   string          $id     The action ID
+     * @param   string          $title  The action title
+     * @param   string          $message    The action message
+     * @param   string          $behavior   The behavior name
      * @param   null|callable   $function   The callback function
      */
     public function __construct(

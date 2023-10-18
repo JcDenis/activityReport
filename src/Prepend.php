@@ -6,7 +6,6 @@ namespace Dotclear\Plugin\activityReport;
 
 use Dotclear\App;
 use Dotclear\Core\Process;
-use Exception;
 
 /**
  * @brief       activityReport prepend class.
@@ -28,29 +27,13 @@ class Prepend extends Process
             return false;
         }
 
-        if (defined('ACTIVITY_REPORT')) {
-            return true;
-        }
-
-        try {
-            // launch once activity report stuff
-            ActivityReport::instance();
-
-            // regirster activity feed URL
-            App::url()->register(
-                My::id(),
-                'reports',
-                '^reports/((atom|rss2)/(.+))$',
-                UrlHandler::feed(...)
-            );
-
-            // declare report open
-            define('ACTIVITY_REPORT', My::COMPATIBILITY_VERSION);
-
-            // register predefined activities scan
-            ActivityBehaviors::register();
-        } catch (Exception $e) {
-        }
+        // regirster activity feed URL
+        App::url()->register(
+            My::id(),
+            'reports',
+            '^reports/((atom|rss2)/(.+))$',
+            UrlHandler::feed(...)
+        );
 
         return true;
     }

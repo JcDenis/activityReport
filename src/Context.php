@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Dotclear\Plugin\activityReport;
 
-use dcCore;
+use Dotclear\App;
 use Dotclear\Database\MetaRecord;
 
 /**
@@ -23,15 +23,14 @@ class Context
      */
     public static function parseTitle(): string
     {
-        if (!dcCore::app()->ctx
-            || !dcCore::app()->ctx->exists('activityreports')
-            || !(dcCore::app()->ctx->__get('activityreports') instanceof MetaRecord)
+        if (!App::frontend()->context()->exists('activityreports')
+            || !(App::frontend()->context()->__get('activityreports') instanceof MetaRecord)
         ) {
             return '';
         }
 
-        $group  = dcCore::app()->ctx->__get('activityreports')->f('activity_group');
-        $action = dcCore::app()->ctx->__get('activityreports')->f('activity_action');
+        $group  = App::frontend()->context()->__get('activityreports')->f('activity_group');
+        $action = App::frontend()->context()->__get('activityreports')->f('activity_action');
 
         if (!is_string($group)
             || !is_string($action)
@@ -50,16 +49,15 @@ class Context
      */
     public static function parseContent(): string
     {
-        if (!dcCore::app()->ctx
-            || !dcCore::app()->ctx->exists('activityreports')
-            || !(dcCore::app()->ctx->__get('activityreports') instanceof MetaRecord)
+        if (!App::frontend()->context()->exists('activityreports')
+            || !(App::frontend()->context()->__get('activityreports') instanceof MetaRecord)
         ) {
             return '';
         }
 
-        $group  = dcCore::app()->ctx->__get('activityreports')->f('activity_group');
-        $action = dcCore::app()->ctx->__get('activityreports')->f('activity_action');
-        $logs   = dcCore::app()->ctx->__get('activityreports')->f('activity_logs');
+        $group  = App::frontend()->context()->__get('activityreports')->f('activity_group');
+        $action = App::frontend()->context()->__get('activityreports')->f('activity_action');
+        $logs   = App::frontend()->context()->__get('activityreports')->f('activity_logs');
         $logs   = json_decode(is_string($logs) ? $logs : '', true);
 
         if (!is_string($group)
@@ -70,9 +68,9 @@ class Context
             return '';
         }
 
-        dcCore::app()->initWikiComment();
+        App::filter()->initWikiComment();
 
-        return dcCore::app()->wikiTransform(vsprintf(
+        return App::filter()->wikiTransform(vsprintf(
             __(ActivityReport::instance()->groups->get($group)->get($action)->message),
             $logs
         ));

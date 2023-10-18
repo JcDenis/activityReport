@@ -13,7 +13,11 @@ namespace Dotclear\Plugin\activityReport;
  */
 class Groups
 {
-    /** @var    array<string, Group>    $stack  The actions groups stack */
+    /**
+     * The actions groups stack.
+     *
+     * @var     array<string, Group>    $stack
+     */
     private array $stack = [];
 
     /**
@@ -30,6 +34,8 @@ class Groups
 
     /**
      * Add a group.
+     *
+     * Existing group will be overwritten.
      *
      * @param   Group  $group   The group object
      *

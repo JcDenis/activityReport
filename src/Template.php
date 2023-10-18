@@ -57,7 +57,7 @@ class Template
         'App::frontend()->context()->activityreport_params = $params; ' . "\n" .
         'App::frontend()->context()->activityreports = ' . ActivityReport::class . '::instance()->getLogs($params); unset($params); ' . "\n" .
         'while (App::frontend()->context()->activityreports->fetch()) : ?>' . $content . '<?php endwhile; ' .
-        'App::frontend()->context()->pop("activityreports"); App::frontend()->context()x->pop("activityreport_params"); ' . "\n" .
+        'App::frontend()->context()->pop("activityreports"); App::frontend()->context()->pop("activityreport_params"); ' . "\n" .
         '?>';
     }
 
@@ -111,7 +111,7 @@ class Template
      */
     public static function activityReportContent(ArrayObject $attr): string
     {
-        $f = App::frontend()->context()->getFilters($attr);
+        $f = App::frontend()->template()->getFilters($attr);
 
         return '<?php echo ' . sprintf($f, Context::class . '::parseContent()') . '; ?>';
     }

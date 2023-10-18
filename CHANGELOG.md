@@ -1,3 +1,9 @@
+activityReport 3.4 - 2023.10.18
+===========================================================
+* Require Dotclear 2.28
+* Require PHP 8.1
+* Upgrade to Dotclear 2.28
+
 activityReport 3.3 - 2023.08.17
 ===========================================================
 * Require Dotclear 2.27

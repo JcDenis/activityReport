@@ -3,6 +3,7 @@ activityReport 3.4 - 2023.10.18
 * Require Dotclear 2.28
 * Require PHP 8.1
 * Upgrade to Dotclear 2.28
+* Use namespace to load modules activities
 
 activityReport 3.3 - 2023.08.17
 ===========================================================

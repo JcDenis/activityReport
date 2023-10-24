@@ -15,7 +15,7 @@ use Dotclear\Helper\Date;
  * @author      Jean-Christian Denis (author)
  * @copyright   GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
  */
-class Template
+class FrontendTemplate
 {
     /**
      * tpl:activityReports [attributes] : Activity report logs (tpl block)
@@ -25,10 +25,10 @@ class Template
      *      - lastn                 integer     Limit to last n logs
      *      - ingnore_pagination    1|0         Ignore pagination paramaters
      *
-     * @param   ArrayObject     $attr       The attributes
-     * @param   string          $content    The content
+     * @param   ArrayObject<string, mixed>  $attr       The attributes
+     * @param   string                      $content    The content
      *
-     * @return     string   The code
+     * @return  string   The code
      */
     public static function activityReports(ArrayObject $attr, string $content): string
     {
@@ -37,7 +37,7 @@ class Template
             $lastn = abs((int) $attr['lastn']) + 0;
         }
 
-        $p = '$_page_number = App::frontend()->getPageNumber(); if ($_page_number < 1) { $_page_number = 1; }' . "\n\$params = new ArrayObject();\n";
+        $p = '$page_number = App::frontend()->getPageNumber(); if ($page_number < 1) { $page_number = 1; }' . "\n\$params = new ArrayObject();\n";
 
         if ($lastn > 0) {
             $p .= "\$params['limit'] = " . $lastn . ";\n";
@@ -46,7 +46,7 @@ class Template
         }
 
         if (!isset($attr['ignore_pagination']) || $attr['ignore_pagination'] == '0') {
-            $p .= "\$params['limit'] = array(((\$_page_number-1)*\$params['limit']),\$params['limit']);\n";
+            $p .= "\$params['limit'] = array(((\$page_number-1)*\$params['limit']),\$params['limit']);\n";
         } else {
             $p .= "\$params['limit'] = array(0, \$params['limit']);\n";
         }
@@ -68,9 +68,9 @@ class Template
      *
      *      - any filters     See self::getFilters()
      *
-     * @param      ArrayObject    $attr     The attributes
+     * @param   ArrayObject<string, mixed>  $attr       The attributes
      *
-     * @return     string   The code
+     * @return  string   The code
      */
     public static function activityReportFeedID(ArrayObject $attr): string
     {
@@ -87,15 +87,15 @@ class Template
      *
      *      - any filters     See self::getFilters()
      *
-     * @param      ArrayObject    $attr     The attributes
+     * @param   ArrayObject<string, mixed>  $attr       The attributes
      *
-     * @return     string   The code
+     * @return  string   The code
      */
     public static function activityReportTitle(ArrayObject $attr): string
     {
         $f = App::frontend()->template()->getFilters($attr);
 
-        return '<?php echo ' . sprintf($f, Context::class . '::parseTitle()') . '; ?>';
+        return '<?php echo ' . sprintf($f, FrontendContext::class . '::parseTitle()') . '; ?>';
     }
 
     /**
@@ -105,15 +105,15 @@ class Template
      *
      *      - any filters     See self::getFilters()
      *
-     * @param      ArrayObject    $attr     The attributes
+     * @param   ArrayObject<string, mixed>  $attr       The attributes
      *
-     * @return     string   The code
+     * @return  string   The code
      */
     public static function activityReportContent(ArrayObject $attr): string
     {
         $f = App::frontend()->template()->getFilters($attr);
 
-        return '<?php echo ' . sprintf($f, Context::class . '::parseContent()') . '; ?>';
+        return '<?php echo ' . sprintf($f, FrontendContext::class . '::parseContent()') . '; ?>';
     }
 
     /**
@@ -126,9 +126,9 @@ class Template
      *      - rfc822          (1|0)   Use Date::rfc822()
      *      - any filters     See self::getFilters()
      *
-     * @param      ArrayObject    $attr     The attributes
+     * @param   ArrayObject<string, mixed>  $attr       The attributes
      *
-     * @return     string   The code
+     * @return  string   The code
      */
     public static function activityReportDate(ArrayObject $attr): string
     {

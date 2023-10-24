@@ -1,7 +1,7 @@
 # README
 
-[![Release](https://img.shields.io/badge/release-3.4-a2cbe9.svg)](https://git.dotclear.watch/JcDenis/activityReport/releases)
-![Date](https://img.shields.io/badge/date-2023.10.18-c44d58.svg)
+[![Release](https://img.shields.io/badge/release-3.4.1-a2cbe9.svg)](https://git.dotclear.watch/JcDenis/activityReport/releases)
+![Date](https://img.shields.io/badge/date-2023.10.24-c44d58.svg)
 [![Dotclear](https://img.shields.io/badge/dotclear-v2.28-137bbb.svg)](https://fr.dotclear.org/download)
 [![Dotaddict](https://img.shields.io/badge/dotaddict-official-9ac123.svg)](https://plugins.dotaddict.org/dc2/details/activityReport)
 [![License](https://img.shields.io/badge/license-GPL--2.0-ececec.svg)](https://git.dotclear.watch/JcDenis/activityReport/src/branch/master/LICENSE)
@@ -17,7 +17,7 @@ _activityReport_ is a plugin for the open-source web publishing software called 
 * Dotclear 2.28
 * PHP 8.1+
 * System permissions to add table on database
-* System permissions to send email
+* System permissions to send email (optionnal)
 * Dotclear admin permissions
 
 ## USAGE
@@ -37,6 +37,7 @@ Once it's done you can manage your reports from menu
 * [Packages & details](https://git.dotclear.watch/JcDenis/activityReport/releases) (or on [Dotaddict](https://plugins.dotaddict.org/dc2/details/activityReport))
 * [Sources & contributions](https://git.dotclear.watch/JcDenis/activityReport) (or on [GitHub](https://github.com/JcDenis/activityReport))
 * [Issues & security](https://git.dotclear.watch/JcDenis/activityReport/issues) (or on [GitHub](https://github.com/JcDenis/activityReport/issues))
+* [Discuss & help](https://forum.dotclear.org/viewtopic.php?id=40504)
 
 ## CONTRIBUTORS
 

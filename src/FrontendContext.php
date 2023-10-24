@@ -14,7 +14,7 @@ use Dotclear\Database\MetaRecord;
  * @author      Jean-Christian Denis (author)
  * @copyright   GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
  */
-class Context
+class FrontendContext
 {
     /**
      * Parse title.

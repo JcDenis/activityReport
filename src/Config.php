@@ -131,13 +131,13 @@ class Config extends Process
                 ]),
                 (new Para())->items([
                     (new Label(__('Recipients:'), Label::OUTSIDE_LABEL_BEFORE))->for('mailinglist'),
-                    (new Input('mailinglist'))->size(60)->maxlenght(255)->value(implode(';', $s->mailinglist)),
+                    (new Input('mailinglist'))->size(60)->maxlength(255)->value(implode(';', $s->mailinglist)),
                 ]),
                 (new Note())->class('form-note')->text(__('Separate multiple email addresses with a semicolon ";"')),
                 (new Note())->class('form-note')->text(__('Leave it empty to disable mail report.')),
                 (new Para())->items([
                     (new Label(__('Date format:'), Label::OUTSIDE_LABEL_BEFORE))->for('dateformat'),
-                    (new Input('dateformat'))->size(60)->maxlenght(255)->value($s->dateformat),
+                    (new Input('dateformat'))->size(60)->maxlength(255)->value($s->dateformat),
                 ]),
                 (new Note())->class('form-note')->text(__('Use Dotclear date formaters. ex: %B %d at %H:%M')),
                 (new Para())->items([

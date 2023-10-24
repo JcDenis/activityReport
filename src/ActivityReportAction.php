@@ -330,6 +330,9 @@ class ActivityReportAction extends Process
         ActivityReport::instance()->addLog('post', 'delete', $logs);
     }
 
+    /**
+     * @param   ArrayObject<string, mixed>  $result
+     */
     public static function postPasswordAttempt(ArrayObject $result): void
     {
         if ($result['tpl'] != 'password-form.html' || empty($_POST['password'])) {

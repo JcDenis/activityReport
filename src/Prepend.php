@@ -32,7 +32,7 @@ class Prepend extends Process
             My::id(),
             'reports',
             '^reports/((atom|rss2)/(.+))$',
-            UrlHandler::feed(...)
+            FrontendUrl::feed(...)
         );
 
         return true;

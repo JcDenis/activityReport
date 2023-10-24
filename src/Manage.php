@@ -6,7 +6,10 @@ namespace Dotclear\Plugin\activityReport;
 
 use ArrayObject;
 use Dotclear\App;
-use Dotclear\Core\Backend\Filter\Filters;
+use Dotclear\Core\Backend\Filter\{
+    Filters,
+    FiltersLibrary
+};
 use Dotclear\Core\Backend\{
     Notices,
     Page
@@ -62,14 +65,13 @@ class Manage extends Process
 
         $logs   = $counter = $list = null;
         $filter = new Filters(My::id());
+        $filter->add(FiltersLibrary::getPageFilter());
         $params = new ArrayObject($filter->params());
 
         try {
             $logs    = ActivityReport::instance()->getLogs($params);
             $counter = ActivityReport::instance()->getLogs($params, true);
-            if (!is_null($logs) && !is_null($counter)) {
-                $list = new ManageList($logs, $counter->f(0));
-            }
+            $list    = new ManageList($logs, $counter->f(0));
         } catch (Exception $e) {
             App::error()->add($e->getMessage());
         }

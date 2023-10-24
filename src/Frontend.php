@@ -23,21 +23,19 @@ class Frontend extends Process
 
     public static function process(): bool
     {
-        if (!self::status()) {
-            return false;
+        if (self::status()) {
+            // be sure to init report
+            ActivityReport::init();
+
+            $tpl = App::frontend()->template();
+            $tpl->setPath($tpl->getPath(), implode(DIRECTORY_SEPARATOR, [My::path(), 'default-templates', 'tpl']));
+            $tpl->addBlock('activityReports', FrontendTemplate::activityReports(...));
+            $tpl->addValue('activityReportFeedID', FrontendTemplate::activityReportFeedID(...));
+            $tpl->addValue('activityReportTitle', FrontendTemplate::activityReportTitle(...));
+            $tpl->addValue('activityReportDate', FrontendTemplate::activityReportDate(...));
+            $tpl->addValue('activityReportContent', FrontendTemplate::activityReportContent(...));
         }
 
-        // be sure to init report
-        ActivityReport::init();
-
-        App::frontend()->template()->setPath(App::frontend()->template()->getPath(), implode(DIRECTORY_SEPARATOR, [My::path(), 'default-templates', 'tpl']));
-
-        App::frontend()->template()->addBlock('activityReports', Template::activityReports(...));
-        App::frontend()->template()->addValue('activityReportFeedID', Template::activityReportFeedID(...));
-        App::frontend()->template()->addValue('activityReportTitle', Template::activityReportTitle(...));
-        App::frontend()->template()->addValue('activityReportDate', Template::activityReportDate(...));
-        App::frontend()->template()->addValue('activityReportContent', Template::activityReportContent(...));
-
-        return true;
+        return self::status();
     }
 }

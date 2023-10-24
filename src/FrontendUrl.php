@@ -14,7 +14,7 @@ use Dotclear\Core\Frontend\Url;
  * @author      Jean-Christian Denis (author)
  * @copyright   GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
  */
-class UrlHandler extends Url
+class FrontendUrl extends Url
 {
     /**
      * Get activity logs feed.

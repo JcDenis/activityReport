@@ -41,28 +41,60 @@ class ActivityReport
      */
     public const ACTIVITYREPORT_CLASS_NAME = 'ActivityReportAction';
 
-    /** @var    int     activity marked as pending mail report */
+    /**
+     * Activity marked as pending mail report.
+     *
+     * @var     int     STATUS_PENDING
+     */
     public const STATUS_PENDING = 0;
 
-    /** @var    int     activity marked as reported by mail */
+    /**
+     * Activity marked as reported by mail.
+     *
+     * @var     int     STATUS_REPORTED
+     */
     public const STATUS_REPORTED = 1;
 
-    /** @var    string  $type   Activity report type (by default activityReport) */
+    /**
+     * Activity report type (by default activityReport).
+     *
+     * @var     string  $type
+     */
     public readonly string $type;
 
-    /** @var    Settings    $settings   Activity report settings for current blog */
+    /**
+     * Activity report settings for current blog.
+     *
+     * @var     Settings    $settings
+     */
     public readonly Settings $settings;
 
-    /** @var    Groups  $groups     Groups of actions */
+    /**
+     * Groups of actions.
+     *
+     * @var     Groups  $groups
+     */
     public readonly Groups $groups;
 
-    /** @var    Formats  $formats   Export available formats */
+    /**
+     * Export available formats.
+     *
+     * @var     Formats     $formats
+     */
     public readonly Formats $formats;
 
-    /** @var    ActivityReport  $instance   ActivityReport instance */
+    /**
+     * ActivityReport instance.
+     *
+     * @var     ActivityReport  $instance
+     */
     private static $instance;
 
-    /** @var null|string  $lock   File lock for update */
+    /**
+     * File lock for update.
+     *
+     * @var     null|string     $lock
+     */
     private static $lock = null;
 
     /**
@@ -115,13 +147,13 @@ class ActivityReport
     /**
      * Get logs record.
      *
-     * @param   null|ArrayObject        $params         The query params
-     * @param   bool                    $count_only     Count only
-     * @param   null|SelectStatement    $ext_sql        The sql select statement
+     * @param   null|ArrayObject<string, mixed>     $params         The query params
+     * @param   bool                                $count_only     Count only
+     * @param   null|SelectStatement                $ext_sql        The sql select statement
      *
-     * @return null|MetaRecord    The logs record
+     * @return  MetaRecord  The logs record
      */
-    public function getLogs(ArrayObject $params = null, bool $count_only = false, ?SelectStatement $ext_sql = null): ?MetaRecord
+    public function getLogs(ArrayObject $params = null, bool $count_only = false, ?SelectStatement $ext_sql = null): MetaRecord
     {
         if (is_null($params)) {
             $params = new ArrayObject();
@@ -179,7 +211,7 @@ class ActivityReport
             $sql->where('E.activity_type = ' . $sql->quote($this->type));
         }
 
-        if (isset($params['blog_id']) && is_null($params['blog_id'])) {
+        if (isset($params['blog_id']) && $params['blog_id'] != '') {
             $sql->and('E.blog_id IS NOT NULL');
         } elseif (!empty($params['blog_id'])) {
             if (!is_array($params['blog_id'])) {
@@ -243,9 +275,10 @@ class ActivityReport
         if (!$count_only && !empty($params['limit'])) {
             $sql->limit($params['limit']);
         }
+
         $rs = $sql->select();
 
-        return $sql->select();
+        return is_null($rs) ? MetaRecord::newFromArray([]) : $rs;
     }
 
     /**
@@ -253,7 +286,7 @@ class ActivityReport
      *
      * @param   string              $group      The group
      * @param   string              $action     The action
-     * @param   array<int,string>   $logs       The logs values
+     * @param   array<int, string>  $logs       The logs values
      */
     public function addLog(string $group, string $action, array $logs): void
     {
@@ -616,7 +649,7 @@ class ActivityReport
                 ]);
 
                 $logs = $this->getLogs($params);
-                if (!is_null($logs) && !$logs->isEmpty()) {
+                if (!$logs->isEmpty()) {
                     // Datas to readable text
                     $content = $this->parseLogs($logs);
                     if (!empty($content)) {

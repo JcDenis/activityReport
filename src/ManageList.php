@@ -12,6 +12,18 @@ use Dotclear\Core\Backend\Listing\{
     Pager
 };
 use Dotclear\Helper\Date;
+use Dotclear\Helper\Html\Form\{
+    Caption,
+    Div,
+    Note,
+    Table,
+    Tbody,
+    Td,
+    Text,
+    Th,
+    Tr
+};
+use Dotclear\Helper\Html\Html;
 
 /**
  * @brief       activityReport manage logs list class.
@@ -25,50 +37,71 @@ class ManageList extends Listing
     public function logsDisplay(Filters $filter, string $enclose_block = ''): void
     {
         if ($this->rs->isEmpty()) {
-            if ($filter->show()) {
-                echo '<p><strong>' . __('No log matches the filter') . '</strong></p>';
-            } else {
-                echo '<p><strong>' . __('No log') . '</strong></p>';
-            }
-        } else {
-            $page            = $filter->value('page');
-            $nbpp            = $filter->value('nb');
-            $pager           = new Pager(is_numeric($page) ? (int) $page : 1, (int) $this->rs_count, is_numeric($nbpp) ? (int) $nbpp : 20, 10);
-            $pager->var_page = 'page';
+            echo (new Note())
+                ->text($filter->show() ? __('No log matches the filter') : __('No log'))
+                ->class('info')
+                ->render();
 
-            $html_block = '<div class="table-outer"><table><caption>' . (
-                $filter->show() ?
-                sprintf(__('List of %s logs matching the filter.'), $this->rs_count) :
-                sprintf(__('List of %s logs.'), $this->rs_count)
-            ) . '</caption>';
-
-            $cols = new ArrayObject([
-                'activity_group'  => '<th scope="col" class="nowrap">' . __('Group') . '</th>',
-                'activity_action' => '<th scope="col" class="nowrap">' . __('Action') . '</th>',
-                'activity_logs'   => '<th scope="col" class="nowrap">' . __('Message') . '</th>',
-                'activity_date'   => '<th scope="col" class="nowrap">' . __('Date') . '</th>',
-                'activity_status' => '<th scope="col" class="nowrap">' . __('Status') . '</th>',
-            ]);
-
-            $this->userColumns(My::id(), $cols);
-
-            $html_block .= '<tr>' . implode(iterator_to_array($cols)) . '</tr>%s</table>%s</div>';
-            if ($enclose_block) {
-                $html_block = sprintf($enclose_block, $html_block);
-            }
-            $blocks = explode('%s', $html_block);
-
-            echo $pager->getLinks() . $blocks[0];
-
-            while ($this->rs->fetch()) {
-                echo $this->logsLine();
-            }
-
-            echo $blocks[1] . $blocks[2] . $pager->getLinks();
+            return;
         }
+
+        $page            = is_numeric($filter->value('page')) ? (int) $filter->value('page') : 1;
+        $nbpp            = is_numeric($filter->value('nb')) ? (int) $filter->value('nb') : 20;
+        $count           = (int) $this->rs_count;
+        $pager           = new Pager($page, $count, $nbpp, 10);
+        $pager->var_page = 'page';
+
+        $cols = new ArrayObject([
+            'activity_group' => (new Th())
+                ->text(__('Group'))
+                ->scope('col'),
+            'activity_action' => (new Th())
+                ->text(__('Action'))
+                ->scope('col'),
+            'activity_logs' => (new Th())
+                ->text(__('Message'))
+                ->scope('col'),
+            'activity_date' => (new Th())
+                ->text(__('Date'))
+                ->scope('col'),
+            'activity_status' => (new Th())
+                ->text(__('Status'))
+                ->scope('col'),
+        ]);
+
+        $this->userColumns(My::id(), $cols);
+
+        $lines = [];
+        while ($this->rs->fetch()) {
+            $lines[] = $this->line();
+        }
+
+        echo
+        $pager->getLinks() .
+        sprintf(
+            $enclose_block,
+            (new Div())
+                ->class('table-outer')
+                ->items([
+                    (new Table())
+                        ->items([
+                            (new Caption(
+                                $filter->show() ?
+                                sprintf(__('List of %s logs matching the filter.'), $count) :
+                                sprintf(__('List of logs. (%s)'), $count)
+                            )),
+                            (new Tr())
+                                ->items(iterator_to_array($cols)),
+                            (new Tbody())
+                                ->items($lines),
+                        ]),
+                ])
+                ->render()
+        ) .
+        $pager->getLinks();
     }
 
-    private function logsLine(): string
+    private function line(): Tr
     {
         $row = new ActivityRow($this->rs);
 
@@ -84,18 +117,27 @@ class ManageList extends Listing
         $status = $row->status == ActivityReport::STATUS_PENDING ? __('pending') : __('reported');
 
         $cols = new ArrayObject([
-            'activity_group'  => '<td class="nowrap">' . __($group->title) . '</td>',
-            'activity_action' => '<td class="nowrap">' . __($action->title) . '</td>',
-            'activity_logs'   => '<td class="maximal">' . $message . '</td>',
-            'activity_date'   => '<td class="nowrap">' . $date . '</td>',
-            'activity_status' => '<td class="nowrap">' . $status . '</td>',
+            'activity_group' => (new Td())
+                ->text(Html::escapeHTML(__($group->title)))
+                ->class('nowrap'),
+            'activity_action' => (new Td())
+                ->text(Html::escapeHTML(__($action->title)))
+                ->class('nowrap'),
+            'activity_logs' => (new Td())
+                ->text(Html::escapeHTML($message))
+                ->class('maximal'),
+            'activity_date' => (new Td())
+                ->text(Html::escapeHTML($date))
+                ->class('nowrap'),
+            'activity_status' => (new Td())
+                ->text(Html::escapeHTML($status))
+                ->class('nowrap'),
         ]);
 
         $this->userColumns(My::id(), $cols);
 
-        return
-            '<tr class="line ' . $offline . '" id="l' . $row->id . '">' .
-            implode(iterator_to_array($cols)) .
-            '</tr>';
+        return (new Tr('l' . $row->id))
+            ->class('line' . $offline)
+            ->items(iterator_to_array($cols));
     }
 }

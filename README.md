@@ -4,7 +4,7 @@
 ![Date](https://img.shields.io/github/release-date/jcdenis/activityReport?color=red)
 [![Dotclear](https://img.shields.io/badge/dotclear-v2.33-137bbb.svg)](https://fr.dotclear.org/download)
 [![Dotaddict](https://img.shields.io/badge/dotaddict-official-9ac123.svg)](https://plugins.dotaddict.org/dc2/details/activityReport)
-[![License](https://img.shields.io/github/license/jcdenis/activityReport?color=white)](https://github.com/JcDenis/activityReport/src/branch/master/LICENSE)
+[![License](https://img.shields.io/github/license/jcdenis/activityReport?color=white)](https://github.com/JcDenis/activityReport/blob/master/LICENSE)
 
 ## ABOUT
 
@@ -33,7 +33,7 @@ Once it's done you can manage your reports from menu
 
 ## LINKS
 
-* [License](https://github.com/JcDenis/activityReport/src/branch/master/LICENSE)
+* [License](https://github.com/JcDenis/activityReport/blob/master/LICENSE)
 * [Packages & details](https://github.com/JcDenis/activityReport/releases) (or on [Dotaddict](https://plugins.dotaddict.org/dc2/details/activityReport))
 * [Sources & contributions](https://github.com/JcDenis/activityReport))
 * [Issues & security](https://github.com/JcDenis/activityReport/issues))

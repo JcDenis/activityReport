@@ -1,3 +1,9 @@
+activityReport 3.4.2 - 2025.03.02
+===========================================================
+* Require Dotclear 2.28
+* Require PHP 8.1
+* Fix repository URLs
+
 activityReport 3.4.1 - 2023.10.24
 ===========================================================
 * Require Dotclear 2.28

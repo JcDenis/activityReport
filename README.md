@@ -3,7 +3,7 @@
 [![Release](https://img.shields.io/github/v/release/jcdenis/activityReport?color=lightblue)](https://github.com/JcDenis/activityReport/releases)
 ![Date](https://img.shields.io/github/release-date/jcdenis/activityReport?color=red)
 [![Dotclear](https://img.shields.io/badge/dotclear-v2.33-137bbb.svg)](https://fr.dotclear.org/download)
-[![Dotaddict](https://img.shields.io/badge/dotaddict-official-9ac123.svg)](https://plugins.dotaddict.org/dc2/details/activityReport)
+[![Repository](https://img.shields.io/badge/repository-official-9ac123.svg)](https://dotclear.org/plugin/detail/activityReport)
 [![License](https://img.shields.io/github/license/jcdenis/activityReport?color=white)](https://github.com/JcDenis/activityReport/blob/master/LICENSE)
 
 ## ABOUT
@@ -23,7 +23,7 @@ _activityReport_ is a plugin for the open-source web publishing software called 
 ## USAGE
 
 First install _activityReport_, manualy from a zip package or from 
-Dotaddict repository. (See Dotclear's documentation to know how do this)
+Dotclear plugins repository. (See Dotclear's documentation to know how do this)
 
 Go to ''plugins manager'', expand _activityReport_ information then 
 go to ''configure plugin'', fill in form.
@@ -34,7 +34,7 @@ Once it's done you can manage your reports from menu
 ## LINKS
 
 * [License](https://github.com/JcDenis/activityReport/blob/master/LICENSE)
-* [Packages & details](https://github.com/JcDenis/activityReport/releases) (or on [Dotaddict](https://plugins.dotaddict.org/dc2/details/activityReport))
+* [Packages & details](https://github.com/JcDenis/activityReport/releases) (or on [Repository](https://dotclear.org/plugin/detail/activityReport))
 * [Sources & contributions](https://github.com/JcDenis/activityReport))
 * [Issues & security](https://github.com/JcDenis/activityReport/issues))
 * [Discuss & help](https://forum.dotclear.org/viewtopic.php?id=40504)

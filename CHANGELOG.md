@@ -1,3 +1,7 @@
+activityReport 3.5 - xxxx.xx.xx
+===========================================================
+* Bump Dotclear from 2.36 to 2.39 (url type, metarecord methods)
+
 activityReport 3.4.2 - 2025.03.02
 ===========================================================
 * Require Dotclear 2.28

@@ -29,13 +29,10 @@ class FrontendContext
             return '';
         }
 
-        $group  = App::frontend()->context()->__get('activityreports')->f('activity_group');
-        $action = App::frontend()->context()->__get('activityreports')->f('activity_action');
+        $group  = App::frontend()->context()->__get('activityreports')->strField('activity_group');
+        $action = App::frontend()->context()->__get('activityreports')->strField('activity_action');
 
-        if (!is_string($group)
-            || !is_string($action)
-            || !ActivityReport::instance()->groups->get($group)->has($action)
-        ) {
+        if (!ActivityReport::instance()->groups->get($group)->has($action)) {
             return '';
         }
 
@@ -55,10 +52,10 @@ class FrontendContext
             return '';
         }
 
-        $group  = App::frontend()->context()->__get('activityreports')->f('activity_group');
-        $action = App::frontend()->context()->__get('activityreports')->f('activity_action');
-        $logs   = App::frontend()->context()->__get('activityreports')->f('activity_logs');
-        $logs   = json_decode(is_string($logs) ? $logs : '', true);
+        $group  = App::frontend()->context()->__get('activityreports')->strField('activity_group');
+        $action = App::frontend()->context()->__get('activityreports')->strField('activity_action');
+        $logs   = App::frontend()->context()->__get('activityreports')->strField('activity_logs');
+        $logs   = json_decode($logs, true);
 
         if (!is_string($group)
             || !is_string($action)

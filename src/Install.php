@@ -6,11 +6,8 @@ namespace Dotclear\Plugin\activityReport;
 
 use Dotclear\App;
 use Dotclear\Core\Process;
-use Dotclear\Database\Structure;
-use Dotclear\Database\Statement\{
-    DropStatement,
-    TruncateStatement
-};
+use Dotclear\Database\Statement\DropStatement;
+use Dotclear\Database\Statement\TruncateStatement;
 use Exception;
 
 /**
@@ -36,8 +33,8 @@ class Install extends Process
         try {
             self::beforeGrowUp();
 
-            $s = new Structure(App::con(), App::con()->prefix());
-            $s->__get(My::ACTIVITY_TABLE_NAME)
+            $s = App::db()->structure();
+            $s->table(My::ACTIVITY_TABLE_NAME)
                 ->field('activity_id', 'bigint', 0, false)
                 ->field('activity_type', 'varchar', 32, false, "'" . My::id() . "'")
                 ->field('blog_id', 'varchar', 32, true)
@@ -53,7 +50,7 @@ class Install extends Process
                 ->index('idx_activity_action', 'btree', 'activity_group', 'activity_action')
                 ->index('idx_activity_status', 'btree', 'activity_status');
 
-            (new Structure(App::con(), App::con()->prefix()))->synchronize($s);
+            App::db()->structure()->synchronize($s);
 
             return true;
         } catch (Exception $e) {
@@ -72,14 +69,14 @@ class Install extends Process
         if (is_string(App::version()->getVersion('activityReport'))
             && version_compare(App::version()->getVersion('activityReport'), '3.0', '<')
         ) {
-            $struct = new Structure(App::con(), App::con()->prefix());
+            $struct = App::db()->structure();
 
             if ($struct->tableExists('activity')) {
-                (new TruncateStatement())->from(App::con()->prefix() . 'activity')->truncate();
+                (new TruncateStatement())->from(App::db()->con()->prefix() . 'activity')->truncate();
             }
             if ($struct->tableExists('activity_settings')) {
-                (new TruncateStatement())->from(App::con()->prefix() . 'activity_settings')->truncate();
-                (new DropStatement())->from(App::con()->prefix() . 'activity_settings')->drop();
+                (new TruncateStatement())->from(App::db()->con()->prefix() . 'activity_settings')->truncate();
+                (new DropStatement())->from(App::db()->con()->prefix() . 'activity_settings')->drop();
             }
         }
     }

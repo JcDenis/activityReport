@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Dotclear\Plugin\activityReport;
 
 use Dotclear\App;
-use Dotclear\Core\Frontend\Url;
 
 /**
  * @brief       activityReport frontend URL handler class.
@@ -14,7 +13,7 @@ use Dotclear\Core\Frontend\Url;
  * @author      Jean-Christian Denis (author)
  * @copyright   GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
  */
-class FrontendUrl extends Url
+class FrontendUrl
 {
     /**
      * Get activity logs feed.
@@ -27,17 +26,17 @@ class FrontendUrl extends Url
         if (!preg_match('/^(atom|rss2)\/(.+)$/', (string) $args, $m)
             || !ActivityReport::instance()->settings->feed_active
         ) {
-            self::p404();
+            App::url()::p404();
         }
         /*
                 if (!is_array($m) || count($m) < 2 || !is_string($m[1]) || !is_string($m[2])) {
-                    self::p404();
+                    App::url()::p404();
                 }
         */
         // get type of feed
         $mime = $m[1] == 'atom' ? 'application/atom+xml' : 'application/xml';
         if (false === ActivityReport::instance()->checkUserCode($m[2])) {
-            self::p404();
+            App::url()::p404();
         }
 
         // feed limits
@@ -50,6 +49,6 @@ class FrontendUrl extends Url
 
         // serve activity feed template
         header('X-Robots-Tag: ' . App::frontend()->context()::robotsPolicy(is_string($rb) ? $rb : '', ''));
-        self::serveDocument('activityreport-' . $m[1] . '.xml', $mime);
+        App::url()::serveDocument('activityreport-' . $m[1] . '.xml', $mime);
     }
 }

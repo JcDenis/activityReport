@@ -184,11 +184,11 @@ class ActivityReport
             ]);
         }
         $sql
-            ->from($sql->as(App::con()->prefix() . My::ACTIVITY_TABLE_NAME, 'E'), false, true)
+            ->from($sql->as(App::db()->con()->prefix() . My::ACTIVITY_TABLE_NAME, 'E'), false, true)
             ->join(
                 (new JoinStatement())
                     ->left()
-                    ->from($sql->as(App::con()->prefix() . App::blog()::BLOG_TABLE_NAME, 'B'))
+                    ->from($sql->as(App::db()->con()->prefix() . App::blog()::BLOG_TABLE_NAME, 'B'))
                     ->on('E.blog_id = B.blog_id')
                     ->statement()
             );
@@ -291,8 +291,8 @@ class ActivityReport
     public function addLog(string $group, string $action, array $logs): void
     {
         try {
-            $cur = App::con()->openCursor(App::con()->prefix() . My::ACTIVITY_TABLE_NAME);
-            App::con()->writeLock(App::con()->prefix() . My::ACTIVITY_TABLE_NAME);
+            $cur = App::db()->con()->openCursor(App::db()->con()->prefix() . My::ACTIVITY_TABLE_NAME);
+            App::db()->con()->writeLock(App::db()->con()->prefix() . My::ACTIVITY_TABLE_NAME);
 
             $cur->setField('activity_id', $this->getNextId());
             $cur->setField('activity_type', $this->type);
@@ -304,12 +304,12 @@ class ActivityReport
             $cur->setField('activity_status', self::STATUS_PENDING);
 
             $cur->insert();
-            App::con()->unlock();
+            App::db()->con()->unlock();
 
             # --BEHAVIOR-- coreAfterCategoryCreate -- ActivityReport, cursor
             App::behavior()->callBehavior('activityReportAfteAddLog', $this, $cur);
         } catch (Exception $e) {
-            App::con()->unlock();
+            App::db()->con()->unlock();
             App::error()->add($e->getMessage());
         }
 
@@ -445,7 +445,7 @@ class ActivityReport
     {
         // Get blogs and logs count
         $sql = new SelectStatement();
-        $sql->from(App::con()->prefix() . My::ACTIVITY_TABLE_NAME)
+        $sql->from(App::db()->con()->prefix() . My::ACTIVITY_TABLE_NAME)
             ->column('blog_id')
             ->where('activity_type =' . $sql->quote($this->type))
             ->group('blog_id');
@@ -459,22 +459,22 @@ class ActivityReport
         while ($rs->fetch()) {
             $ts  = time();
             $obs = Date::str('%Y-%m-%d %H:%M:%S', $ts - (int) $this->settings->obsolete);
-            if (is_string($rs->f('blog_id'))) {
+            if ($rs->strField('blog_id') !== '') {
                 $sql = new DeleteStatement();
-                $sql->from(App::con()->prefix() . My::ACTIVITY_TABLE_NAME)
+                $sql->from(App::db()->con()->prefix() . My::ACTIVITY_TABLE_NAME)
                     ->where('activity_type =' . $sql->quote($this->type))
                     ->and('activity_dt < TIMESTAMP ' . $sql->quote($obs))
-                    ->and('blog_id = ' . $sql->quote($rs->f('blog_id')))
+                    ->and('blog_id = ' . $sql->quote($rs->strField('blog_id')))
                     ->delete();
 
-                if (App::con()->changes()) {
+                if (App::db()->con()->changes()) {
                     try {
-                        $cur = App::con()->openCursor(App::con()->prefix() . My::ACTIVITY_TABLE_NAME);
-                        App::con()->writeLock(App::con()->prefix() . My::ACTIVITY_TABLE_NAME);
+                        $cur = App::db()->con()->openCursor(App::db()->con()->prefix() . My::ACTIVITY_TABLE_NAME);
+                        App::db()->con()->writeLock(App::db()->con()->prefix() . My::ACTIVITY_TABLE_NAME);
 
                         $cur->setField('activity_id', $this->getNextId());
                         $cur->setField('activity_type', $this->type);
-                        $cur->setField('blog_id', $rs->f('blog_id'));
+                        $cur->setField('blog_id', $rs->strField('blog_id'));
                         $cur->setField('activity_group', My::id());
                         $cur->setField('activity_action', 'message');
                         $cur->setField('activity_logs', json_encode([__('Activity report deletes some old logs.')]));
@@ -482,9 +482,9 @@ class ActivityReport
                         $cur->setField('activity_status', self::STATUS_PENDING);
 
                         $cur->insert();
-                        App::con()->unlock();
+                        App::db()->con()->unlock();
                     } catch (Exception $e) {
-                        App::con()->unlock();
+                        App::db()->con()->unlock();
                         App::error()->add($e->getMessage());
                     }
                 }
@@ -507,7 +507,7 @@ class ActivityReport
             $sql->and('activity_status = ' . self::STATUS_REPORTED);
         }
 
-        return $sql->from(App::con()->prefix() . My::ACTIVITY_TABLE_NAME)
+        return $sql->from(App::db()->con()->prefix() . My::ACTIVITY_TABLE_NAME)
             ->where('activity_type = ' . $sql->quote($this->type))
             ->delete();
     }
@@ -521,7 +521,7 @@ class ActivityReport
     private function updateStatus(int $from_date_ts, int $to_date_ts): void
     {
         $sql = new UpdateStatement();
-        $sql->from(App::con()->prefix() . My::ACTIVITY_TABLE_NAME)
+        $sql->from(App::db()->con()->prefix() . My::ACTIVITY_TABLE_NAME)
             ->column('activity_status')
             ->set((string) self::STATUS_REPORTED)
             ->where('blog_id = ' . $sql->quote(App::blog()->id()))
@@ -539,10 +539,10 @@ class ActivityReport
     public function getNextId(): int
     {
         $sql = new SelectStatement();
-        $sql->from(App::con()->prefix() . My::ACTIVITY_TABLE_NAME)
+        $sql->from(App::db()->con()->prefix() . My::ACTIVITY_TABLE_NAME)
             ->column($sql->max('activity_id'));
 
-        return (int) $sql->select()?->f(0) + 1;
+        return $sql->select()?->intField('0') + 1;
     }
 
     /**
@@ -772,20 +772,20 @@ class ActivityReport
         $pwd = $pwd['hex'];
 
         $sql = new SelectStatement();
-        $sql->from(App::con()->prefix() . App::auth()::USER_TABLE_NAME)
+        $sql->from(App::db()->con()->prefix() . App::auth()::USER_TABLE_NAME)
             ->columns(['user_id', 'user_pwd'])
             ->where('user_id =' . $sql->quote($user_id));
 
         $rs = $sql->select();
 
-        if (!$rs || $rs->isEmpty() || !is_string($rs->f('user_pwd')) || !is_string($rs->f('user_id'))) {
+        if (!$rs || $rs->isEmpty() || $rs->strField('user_pwd') === '' || $rs->strField('user_id') === '') {
             return false;
         }
 
-        if (Crypt::hmac(App::config()->masterKey(), $rs->f('user_pwd')) != $pwd) {
+        if (Crypt::hmac(App::config()->masterKey(), $rs->strField('user_pwd')) != $pwd) {
             return false;
         }
 
-        return $rs->f('user_id');
+        return $rs->strField('user_id');
     }
 }

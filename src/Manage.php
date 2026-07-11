@@ -71,7 +71,7 @@ class Manage extends Process
         try {
             $logs    = ActivityReport::instance()->getLogs($params);
             $counter = ActivityReport::instance()->getLogs($params, true);
-            $list    = new ManageList($logs, $counter->f(0));
+            $list    = new ManageList($logs, $counter->cardinal());
         } catch (Exception $e) {
             App::error()->add($e->getMessage());
         }

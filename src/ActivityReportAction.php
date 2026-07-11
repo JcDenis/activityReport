@@ -324,7 +324,7 @@ class ActivityReportAction extends Process
             return;
         }
         $logs = [
-            self::str($posts->f('post_title')),
+            $posts->strField('post_title'),
             self::str(App::auth()->getInfo('user_cn')),
         ];
         ActivityReport::instance()->addLog('post', 'delete', $logs);
@@ -359,9 +359,9 @@ class ActivityReportAction extends Process
 
         $logs = [
             self::str($cur->getField('comment_author')),
-            self::str($posts->f('post_title')),
-            self::str(App::blog()->url()) . App::url()->getBase(self::str($posts->f('post_type'))) .
-                '/' . self::str($posts->f('post_url')) . '#c' . self::str($cur->getField('comment_id')),
+            $posts->strField('post_title'),
+            self::str(App::blog()->url()) . App::url()->getBase($posts->strField('post_type')) .
+                '/' . $posts->strField('post_url') . '#c' . self::str($cur->getField('comment_id')),
         ];
         ActivityReport::instance()->addLog('comment', 'create', $logs);
     }
@@ -369,7 +369,7 @@ class ActivityReportAction extends Process
     public static function commentUpdate(BlogInterface $blog, Cursor $cur, MetaRecord $old): void
     {
         $posts = App::blog()->getPosts(
-            ['post_id' => $old->f('post_id'), 'limit' => 1]
+            ['post_id' => $old->intField('post_id'), 'limit' => 1]
         );
         if ($posts->isEmpty()) {
             return;
@@ -377,9 +377,9 @@ class ActivityReportAction extends Process
 
         $logs = [
             self::str(App::auth()->getInfo('user_cn')),
-            self::str($posts->f('post_title')),
-            self::str(App::blog()->url()) . App::url()->getBase(self::str($posts->f('post_type'))) .
-                '/' . self::str($posts->f('post_url')) . '#c' . self::str($old->f('comment_id')),
+            $posts->strField('post_title'),
+            self::str(App::blog()->url()) . App::url()->getBase($posts->strField('post_type')) .
+                '/' . $posts->strField('post_url') . '#c' . $old->strField('comment_id'),
         ];
         ActivityReport::instance()->addLog('comment', 'update', $logs);
     }
@@ -400,9 +400,9 @@ class ActivityReportAction extends Process
         $logs = [
             self::str($cur->getField('comment_author')),
             self::str($cur->getField('comment_site')),
-            self::str($posts->f('post_title')),
-            self::str(App::blog()->url()) . App::url()->getBase(self::str($posts->f('post_type'))) .
-                '/' . self::str($posts->f('post_url')),
+            $posts->strField('post_title'),
+            self::str(App::blog()->url()) . App::url()->getBase($posts->strField('post_type')) .
+                '/' . $posts->strField('post_url'),
         ];
         ActivityReport::instance()->addLog('comment', 'trackback', $logs);
     }
@@ -469,10 +469,10 @@ class ActivityReportAction extends Process
             return;
         }
         $user_cn = App::users()->getUserCN(
-            self::str($user->f('user_id')),
-            self::str($user->f('user_name')),
-            self::str($user->f('user_firstname')),
-            self::str($user->f('user_displayname'))
+            $user->strField('user_id'),
+            $user->strField('user_name'),
+            $user->strField('user_firstname'),
+            $user->strField('user_displayname')
         );
         $logs = [
             self::str($user_cn),
@@ -484,10 +484,10 @@ class ActivityReportAction extends Process
     {
         $users   = App::users()->getUser($user_id);
         $user_cn = App::users()->getUserCN(
-            self::str($users->f('user_id')),
-            self::str($users->f('user_name')),
-            self::str($users->f('user_firstname')),
-            self::str($users->f('user_displayname'))
+            $users->strField('user_id'),
+            $users->strField('user_name'),
+            $users->strField('user_firstname'),
+            $users->strField('user_displayname')
         );
         $logs = [
             self::str($user_cn),

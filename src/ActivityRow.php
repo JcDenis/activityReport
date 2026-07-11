@@ -50,16 +50,16 @@ class ActivityRow
     public function __construct(
         public readonly MetaRecord $rs
     ) {
-        $this->id        = is_numeric($this->rs->f('activity_id')) ? (int) $this->rs->f('activity_id') : 0;
-        $this->blog_id   = is_string($this->rs->f('blog_id')) ? $this->rs->f('blog_id') : null;
-        $this->blog_url  = is_string($this->rs->f('blog_url')) ? $this->rs->f('blog_url') : '';
-        $this->blog_name = is_string($this->rs->f('blog_name')) ? $this->rs->f('blog_name') : '';
-        $this->group     = is_string($this->rs->f('activity_group')) ? $this->rs->f('activity_group') : '';
-        $this->action    = is_string($this->rs->f('activity_action')) ? $this->rs->f('activity_action') : '';
-        $this->dt        = is_string($this->rs->f('activity_dt')) ? $this->rs->f('activity_dt') : '';
-        $this->status    = is_numeric($this->rs->f('activity_status')) ? (int) $this->rs->f('activity_status') : 0;
+        $this->id        = $this->rs->intField('activity_id');
+        $this->blog_id   = $this->rs->strField('blog_id');
+        $this->blog_url  = $this->rs->strField('blog_url');
+        $this->blog_name = $this->rs->strField('blog_name');
+        $this->group     = $this->rs->strField('activity_group');
+        $this->action    = $this->rs->strField('activity_action');
+        $this->dt        = $this->rs->strField('activity_dt');
+        $this->status    = $this->rs->intField('activity_status');
 
-        $logs       = json_decode(is_string($this->rs->f('activity_logs')) ? $this->rs->f('activity_logs') : '', true);
+        $logs       = json_decode($this->rs->strField('activity_logs'), true);
         $this->logs = is_array($logs) ? $logs : [];
     }
 }

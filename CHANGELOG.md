@@ -1,4 +1,4 @@
-activityReport 3.5 - xxxx.xx.xx
+activityReport 3.5 - 2026.08.12
 ===========================================================
 * Bump Dotclear from 2.36 to 2.39 (url type, metarecord methods)
 

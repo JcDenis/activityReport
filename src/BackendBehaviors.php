@@ -54,17 +54,21 @@ class BackendBehaviors
             return ;
         }
 
-        $params = new ArrayObject([
+        $rs = ActivityReport::instance()->getLogs([
             'limit'    => $limit,
             'requests' => true,
         ]);
-        $rs = ActivityReport::instance()->getLogs($params);
         if ($rs->isEmpty()) {
             return;
         }
 
         $lines  = [];
         $groups = ActivityReport::instance()->groups;
+        $tz     = App::auth()->getInfo('user_tz');
+        $tz     = is_string($tz) ? $tz : 'UTC';
+        $df     = App::blog()->settings()->get('system')->get('date_format');
+        $tf     = App::blog()->settings()->get('system')->get('time_format');
+        $df     = (is_string($df) ? $df : '%Y-%m-%d') . ', ' . (is_string($tf) ? $tf : '%H:%M');
         while ($rs->fetch()) {
             $row = new ActivityRow($rs);
             if (!$groups->has($row->group)) {
@@ -73,11 +77,7 @@ class BackendBehaviors
             $group   = $groups->get($row->group);
             $lines[] = '<dt title="' . __($group->title) . '">' .
             '<strong>' . __($group->get($row->action)->title) . '</strong>' .
-            '<br />' . Date::str(
-                App::blog()->settings()->get('system')->get('date_format') . ', ' . App::blog()->settings()->get('system')->get('time_format'),
-                (int) strtotime($row->dt),
-                is_string(App::auth()->getInfo('user_tz')) ? App::auth()->getInfo('user_tz') : 'UTC'
-            ) . '<dt>' .
+            '<br />' . Date::str($df, (int) strtotime($row->dt), $tz) . '</dt>' .
             '<dd><p>' .
             '<em>' . ActivityReport::parseMessage(__($group->get($row->action)->message), $row->logs) . '</em></p></dd>';
         }
@@ -113,14 +113,14 @@ class BackendBehaviors
             (new Text('h4', My::name())),
             (new Para())->items([
                 (new Label(__('Number of activities to show on dashboard:'), Label::OUTSIDE_LABEL_BEFORE))->for(My::id() . '_dashboard_item'),
-                (new Select(My::id() . '_dashboard_item'))->default(is_string($db) ? $db : '')->items([
-                    __('Do not show activity report') => 0,
-                    5                                 => 5,
-                    10                                => 10,
-                    15                                => 15,
-                    20                                => 20,
-                    50                                => 50,
-                    100                               => 100,
+                (new Select(My::id() . '_dashboard_item'))->default(is_numeric($db) ? (string) (int) $db : '0')->items([
+                    __('Do not show activity report') => '0',
+                    '5'                               => '5',
+                    '10'                              => '10',
+                    '15'                              => '15',
+                    '20'                              => '20',
+                    '50'                              => '50',
+                    '100'                             => '100',
                 ]),
             ]),
         ])->render();
@@ -134,7 +134,7 @@ class BackendBehaviors
         if (!is_null($user_id)) {
             App::auth()->prefs()->get(My::id())->put(
                 'dashboard_item',
-                (int) $_POST[My::id() . '_dashboard_item'],
+                is_numeric($_POST[My::id() . '_dashboard_item'] ?? '') ? (int) $_POST[My::id() . '_dashboard_item'] : 0,
                 'integer'
             );
         }

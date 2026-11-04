@@ -34,7 +34,7 @@ class Settings
     /** @var    string $date format     The date format */
     public readonly string $dateformat;
 
-    /** @var    array<string,array{string,int}>   $requests   The selected actions list to report */
+    /** @var    array<string,array<string,int>>   $requests   The selected actions list to report */
     public readonly array $requests;
 
     /**
@@ -46,10 +46,10 @@ class Settings
         $this->obsolete    = is_numeric($this->get('obsolete')) ? (int) $this->get('obsolete') : 2419200;
         $this->interval    = is_numeric($this->get('interval')) ? (int) $this->get('interval') : 86400;
         $this->lastreport  = is_numeric($this->get('lastreport')) ? (int) $this->get('lastreport') : 0;
-        $this->mailinglist = is_array($this->get('mailinglist')) ? $this->get('mailinglist') : [];
+        $this->mailinglist = is_array($this->get('mailinglist')) ? array_values(array_filter($this->get('mailinglist'), is_string(...))) : [];
         $this->mailformat  = is_string($this->get('mailformat')) ? $this->get('mailformat') : 'plain';
         $this->dateformat  = is_string($this->get('dateformat')) ? $this->get('dateformat') : '%Y-%m-%d %H:%M:%S';
-        $this->requests    = is_array($this->get('requests')) ? $this->get('requests') : [];
+        $this->requests    = self::requests($this->get('requests'));
     }
 
     /**
@@ -59,7 +59,34 @@ class Settings
      */
     public function dump(): array
     {
-        return get_object_vars($this);
+        $res = [];
+        foreach (get_object_vars($this) as $k => $v) {
+            $res[(string) $k] = $v;
+        }
+
+        return $res;
+    }
+
+    /**
+     * Clean up requests setting.
+     *
+     * @return  array<string, array<string, int>>
+     */
+    public static function requests(mixed $value): array
+    {
+        $res = [];
+        if (is_array($value)) {
+            foreach ($value as $group => $actions) {
+                if (!is_array($actions)) {
+                    continue;
+                }
+                foreach (array_keys($actions) as $action) {
+                    $res[(string) $group][(string) $action] = 1;
+                }
+            }
+        }
+
+        return $res;
     }
 
     /**

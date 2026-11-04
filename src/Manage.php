@@ -14,7 +14,7 @@ use Dotclear\Core\Backend\{
     Notices,
     Page
 };
-use Dotclear\Core\Process;
+use Dotclear\Helper\Process\TraitProcess;
 use Dotclear\Helper\Html\Form\{
     Form,
     Hidden,
@@ -31,8 +31,10 @@ use Exception;
  * @author      Jean-Christian Denis (author)
  * @copyright   GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
  */
-class Manage extends Process
+class Manage
 {
+    use TraitProcess;
+
     public static function init(): bool
     {
         return self::status(My::checkContext(My::MANAGE));
@@ -71,7 +73,7 @@ class Manage extends Process
         try {
             $logs    = ActivityReport::instance()->getLogs($params);
             $counter = ActivityReport::instance()->getLogs($params, true);
-            $list    = new ManageList($logs, $counter->cardinal());
+            $list    = new ManageList($logs, $counter->intField(0));
         } catch (Exception $e) {
             App::error()->add($e->getMessage());
         }

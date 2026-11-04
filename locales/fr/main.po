@@ -117,8 +117,8 @@ msgid "trackback creation"
 msgstr "Création de trackback"
 
 #: src/ActivityBehaviors.php:150
-msgid "A new trackback to \"%\" at \"%s\" was created on post \"%s\" at %s"
-msgstr "Un nouveau rétrolien vers \"%s\" a été créé sur le billet \"%s\" à l'adresse \"%s\""
+msgid "A new trackback from \"%s\" at \"%s\" was created on post \"%s\" at %s"
+msgstr "Un nouveau rétrolien de \"%s\" depuis \"%s\" a été créé sur le billet \"%s\" à l'adresse %s"
 
 #: src/ActivityBehaviors.php:158
 msgid "category creation"
@@ -165,7 +165,7 @@ msgid "user deletion"
 msgstr "Suppression d'utilisateur"
 
 #: src/ActivityBehaviors.php:220
-msgid "User named \"%s\" has been deleted by \"%\""
+msgid "User named \"%s\" has been deleted by \"%s\""
 msgstr "L'utilisateur nommé \"%s\" a été supprimé par \"%s\""
 
 #: src/ActivityBehaviors.php:250

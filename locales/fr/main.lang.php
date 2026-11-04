@@ -36,7 +36,7 @@ L10n::$locales['A new comment was created by "%s" on post "%s" at %s']          
 L10n::$locales['updating comment']                                                             = 'Mise à jour de commentaire';
 L10n::$locales['Comment has been updated by "%s" at %s']                                       = 'Un commentaire a été mise à jour par "%s" à l\'adresse "%s"';
 L10n::$locales['trackback creation']                                                           = 'Création de trackback';
-L10n::$locales['A new trackback to "%" at "%s" was created on post "%s" at %s']                = 'Un nouveau rétrolien vers "%s" a été créé sur le billet "%s" à l\'adresse "%s"';
+L10n::$locales['A new trackback from "%s" at "%s" was created on post "%s" at %s']                = 'Un nouveau rétrolien de "%s" depuis "%s" a été créé sur le billet "%s" à l\'adresse %s';
 L10n::$locales['category creation']                                                            = 'Création de catégorie';
 L10n::$locales['A new category called "%s" was created by "%s" at %s']                         = 'Un nouvelle catégorie nommée "%s" a été créé par "%s" à l\'adresse "%s"';
 L10n::$locales['updating category']                                                            = 'Mise à jour de catégorie';
@@ -48,7 +48,7 @@ L10n::$locales['User named "%s" has been updated by "%s"']                      
 L10n::$locales['updating user preference']                                                     = 'Mise à jour de préférence';
 L10n::$locales['"%s" user preference has been updated']                                        = 'Les préférences utilisateur de "%s" ont été mis à jour';
 L10n::$locales['user deletion']                                                                = 'Suppression d\'utilisateur';
-L10n::$locales['User named "%s" has been deleted by "%"']                                      = 'L\'utilisateur nommé "%s" a été supprimé par "%s"';
+L10n::$locales['User named "%s" has been deleted by "%s"']                                      = 'L\'utilisateur nommé "%s" a été supprimé par "%s"';
 L10n::$locales['Activity report']                                                              = 'Rapport d\'activité';
 L10n::$locales['An error occured when parsing report.']                                        = 'Une erreur est survenue lors de la compilation du rapport.';
 L10n::$locales['You received a message from your blog\'s activity report module.']             = 'Vous recevez un message du module de rapport d\'activité de votre blog.';

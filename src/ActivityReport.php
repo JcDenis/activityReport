@@ -6,7 +6,6 @@ namespace Dotclear\Plugin\activityReport;
 
 use ArrayObject;
 use Dotclear\App;
-use Dotclear\Core\Process;
 use Dotclear\Database\MetaRecord;
 use Dotclear\Database\Statement\{
     DeleteStatement,
@@ -21,6 +20,8 @@ use Dotclear\Helper\File\{
     Path
 };
 use Dotclear\Helper\Network\Mail\Mail;
+use Dotclear\Helper\Process\AbstractProcess;
+use Dotclear\Helper\Process\TraitProcess;
 use Dotclear\Helper\Text;
 use Exception;
 use Throwable;
@@ -85,24 +86,20 @@ class ActivityReport
 
     /**
      * ActivityReport instance.
-     *
-     * @var     ActivityReport  $instance
      */
-    private static $instance;
+    private static ?ActivityReport $instance = null;
 
     /**
      * File lock for update.
-     *
-     * @var     null|string     $lock
      */
-    private static $lock = null;
+    private static ?string $lock = null;
 
     /**
      * Constructor sets activity main type.
      *
      * @param   string  $type   The activity report type
      */
-    public function __construct(string $type = null)
+    public function __construct(?string $type = null)
     {
         $this->type     = $type ?? My::id();
         $this->settings = new Settings();
@@ -116,16 +113,22 @@ class ActivityReport
     public static function init(): void
     {
         foreach (App::plugins()->getDefines() as $module) {
-            $class = $module->get('namespace') . '\\' . self::ACTIVITYREPORT_CLASS_NAME;
+            $namespace = $module->get('namespace');
+            if (!is_string($namespace) || $namespace === '') {
+                continue;
+            }
+            $class = $namespace . '\\' . self::ACTIVITYREPORT_CLASS_NAME;
 
             try {
-                if (is_a($class, Process::class, true)) {
+                if (class_exists($class) && (is_a($class, AbstractProcess::class, true) || in_array(TraitProcess::class, class_uses($class) ?: [], true))) {
                     // check class prerequiretics
-                    if ($class::init()) {
-                        $class::process();
+                    $init    = [$class, 'init'];
+                    $process = [$class, 'process'];
+                    if (is_callable($init) && is_callable($process) && call_user_func($init)) {
+                        call_user_func($process);
                     }
                 }
-            } catch (Throwable $e) {
+            } catch (Throwable) {
             }
         }
     }
@@ -137,7 +140,7 @@ class ActivityReport
      */
     public static function instance(): ActivityReport
     {
-        if (!is_a(self::$instance, ActivityReport::class)) {
+        if (!self::$instance instanceof ActivityReport) {
             self::$instance = new ActivityReport();
         }
 
@@ -147,17 +150,15 @@ class ActivityReport
     /**
      * Get logs record.
      *
-     * @param   null|ArrayObject<string, mixed>     $params         The query params
-     * @param   bool                                $count_only     Count only
-     * @param   null|SelectStatement                $ext_sql        The sql select statement
+     * @param   null|array<string, mixed>|ArrayObject<string, mixed>    $params         The query params
+     * @param   bool                                                    $count_only     Count only
+     * @param   null|SelectStatement                                    $ext_sql        The sql select statement
      *
      * @return  MetaRecord  The logs record
      */
-    public function getLogs(ArrayObject $params = null, bool $count_only = false, ?SelectStatement $ext_sql = null): MetaRecord
+    public function getLogs(null|array|ArrayObject $params = null, bool $count_only = false, ?SelectStatement $ext_sql = null): MetaRecord
     {
-        if (is_null($params)) {
-            $params = new ArrayObject();
-        }
+        $params = $params instanceof ArrayObject ? $params->getArrayCopy() : ($params ?? []);
 
         $sql = $ext_sql ? clone $ext_sql : new SelectStatement();
 
@@ -170,7 +171,7 @@ class ActivityReport
                 ]);
             }
             if (!empty($params['columns']) && is_array($params['columns'])) {
-                $sql->columns($params['columns']);
+                $sql->columns(array_values(array_filter($params['columns'], is_string(...))));
             }
             $sql->columns([
                 'E.activity_id',
@@ -193,16 +194,12 @@ class ActivityReport
                     ->statement()
             );
 
-        if (!empty($params['join'])) {
+        if (!empty($params['join']) && is_string($params['join'])) {
             $sql->join($params['join']);
         }
 
-        if (!empty($params['from'])) {
+        if (!empty($params['from']) && is_string($params['from'])) {
             $sql->from($params['from']);
-        }
-
-        if (!empty($params['where'])) {
-            //nope
         }
 
         if (!empty($params['activity_type']) && is_string($params['activity_type'])) {
@@ -211,13 +208,11 @@ class ActivityReport
             $sql->where('E.activity_type = ' . $sql->quote($this->type));
         }
 
-        if (isset($params['blog_id']) && $params['blog_id'] != '') {
+        if (isset($params['blog_id']) && $params['blog_id'] === '') {
+            // all blogs
             $sql->and('E.blog_id IS NOT NULL');
         } elseif (!empty($params['blog_id'])) {
-            if (!is_array($params['blog_id'])) {
-                $params['blog_id'] = [$params['blog_id']];
-            }
-            $sql->and('E.blog_id' . $sql->in($params['blog_id']));
+            $sql->and('E.blog_id' . $sql->in(self::toList($params['blog_id'])));
         } else {
             $sql->and('E.blog_id = ' . $sql->quote(App::blog()->id()));
         }
@@ -228,24 +223,18 @@ class ActivityReport
         //$sql->and('E.activity_status = ' . self::STATUS_PENDING);
 
         if (isset($params['activity_group'])) {
-            if (!is_array($params['activity_group'])) {
-                $params['activity_group'] = [$params['activity_group']];
-            }
-            $sql->and('E.activity_group' . $sql->in($params['activity_group']));
+            $sql->and('E.activity_group' . $sql->in(self::toList($params['activity_group'])));
         }
 
         if (isset($params['activity_action'])) {
-            if (!is_array($params['activity_action'])) {
-                $params['activity_action'] = [$params['activity_action']];
-            }
-            $sql->and('E.activity_action' . $sql->in($params['activity_action']));
+            $sql->and('E.activity_action' . $sql->in(self::toList($params['activity_action'])));
         }
 
         if (isset($params['from_date_ts']) && is_numeric($params['from_date_ts'])) {
-            $sql->and("E.activity_dt >= TIMESTAMP '" . date('Y-m-d H:i:s', (int) $params['from_date_ts']) . "' ");
+            $sql->and('E.activity_dt >= ' . $sql->quote(date('Y-m-d H:i:s', (int) $params['from_date_ts'])));
         }
         if (isset($params['to_date_ts']) && is_numeric($params['to_date_ts'])) {
-            $sql->and("E.activity_dt < TIMESTAMP '" . date('Y-m-d H:i:s', (int) $params['to_date_ts']) . "' ");
+            $sql->and('E.activity_dt < ' . $sql->quote(date('Y-m-d H:i:s', (int) $params['to_date_ts'])));
         }
 
         if (!empty($params['requests'])) {
@@ -260,7 +249,7 @@ class ActivityReport
             }
         }
 
-        if (!empty($params['sql'])) {
+        if (!empty($params['sql']) && is_string($params['sql'])) {
             $sql->sql($params['sql']);
         }
 
@@ -273,12 +262,28 @@ class ActivityReport
         }
 
         if (!$count_only && !empty($params['limit'])) {
-            $sql->limit($params['limit']);
+            if (is_numeric($params['limit'])) {
+                $sql->limit((int) $params['limit']);
+            } elseif (is_array($params['limit']) && isset($params['limit'][0]) && is_numeric($params['limit'][0])) {
+                $sql->limit([(int) $params['limit'][0], isset($params['limit'][1]) && is_numeric($params['limit'][1]) ? (int) $params['limit'][1] : 0]);
+            }
         }
 
         $rs = $sql->select();
 
         return is_null($rs) ? MetaRecord::newFromArray([]) : $rs;
+    }
+
+    /**
+     * Get a list of SQL values from a param.
+     *
+     * @return  array<int, string>
+     */
+    private static function toList(mixed $value): array
+    {
+        $value = is_array($value) ? $value : [$value];
+
+        return array_values(array_map(fn ($v): string => (string) $v, array_filter($value, fn ($v): bool => is_string($v) || is_int($v))));
     }
 
     /**
@@ -383,7 +388,7 @@ class ActivityReport
 
                 $res .= str_replace(
                     ['%TIME%', '%TEXT%'],
-                    [Date::str($dt, (int) $time, $tz), vsprintf(__($this->groups->get($group)->get($row->action)->message), $row->logs)],
+                    [Date::str($dt, (int) $time, $tz), self::parseMessage(__($this->groups->get($group)->get($row->action)->message), $row->logs)],
                     $format->action
                 );
 
@@ -463,7 +468,7 @@ class ActivityReport
                 $sql = new DeleteStatement();
                 $sql->from(App::db()->con()->prefix() . My::ACTIVITY_TABLE_NAME)
                     ->where('activity_type =' . $sql->quote($this->type))
-                    ->and('activity_dt < TIMESTAMP ' . $sql->quote($obs))
+                    ->and('activity_dt < ' . $sql->quote($obs))
                     ->and('blog_id = ' . $sql->quote($rs->strField('blog_id')))
                     ->delete();
 
@@ -502,14 +507,15 @@ class ActivityReport
     public function deleteLogs(bool $only_reported = false): bool
     {
         $sql = new DeleteStatement();
+        $sql->from(App::db()->con()->prefix() . My::ACTIVITY_TABLE_NAME)
+            ->where('activity_type = ' . $sql->quote($this->type))
+            ->and('blog_id = ' . $sql->quote(App::blog()->id()));
 
         if ($only_reported) {
             $sql->and('activity_status = ' . self::STATUS_REPORTED);
         }
 
-        return $sql->from(App::db()->con()->prefix() . My::ACTIVITY_TABLE_NAME)
-            ->where('activity_type = ' . $sql->quote($this->type))
-            ->delete();
+        return $sql->delete();
     }
 
     /**
@@ -523,11 +529,11 @@ class ActivityReport
         $sql = new UpdateStatement();
         $sql->from(App::db()->con()->prefix() . My::ACTIVITY_TABLE_NAME)
             ->column('activity_status')
-            ->set((string) self::STATUS_REPORTED)
+            ->value(self::STATUS_REPORTED)
             ->where('blog_id = ' . $sql->quote(App::blog()->id()))
             ->and('activity_type =' . $sql->quote($this->type))
-            ->and('activity_dt >= TIMESTAMP ' . $sql->quote(date('Y-m-d H:i:s', $from_date_ts)))
-            ->and('activity_dt < TIMESTAMP ' . $sql->quote(date('Y-m-d H:i:s', $to_date_ts)))
+            ->and('activity_dt >= ' . $sql->quote(date('Y-m-d H:i:s', $from_date_ts)))
+            ->and('activity_dt < ' . $sql->quote(date('Y-m-d H:i:s', $to_date_ts)))
             ->update();
     }
 
@@ -639,14 +645,14 @@ class ActivityReport
                 && ($lastreport + $interval) < $now
             ) {
                 // Get datas
-                $params = new ArrayObject([
+                $params = [
                     'from_date_ts'    => $lastreport,
                     'to_date_ts'      => $now,
                     'blog_id'         => App::blog()->id(),
                     'activity_status' => self::STATUS_PENDING,
                     'requests'        => true,
                     'order'           => 'activity_group ASC, activity_action ASC, activity_dt ASC ',
-                ]);
+                ];
 
                 $logs = $this->getLogs($params);
                 if (!$logs->isEmpty()) {
@@ -686,7 +692,7 @@ class ActivityReport
      */
     private function sendReport(array $recipients, string $message, string $mailformat = 'plain'): bool
     {
-        if (!is_array($recipients) || empty($message)) {
+        if ($recipients === [] || $message === '') {
             return false;
         }
         $mailformat = $mailformat == 'html' ? 'html' : 'plain';
@@ -715,7 +721,7 @@ class ActivityReport
             );
 
             $headers   = [];
-            $headers[] = 'From: ' . (defined('DC_ADMIN_MAILFROM') && str_contains(App::config()->adminMailFrom(), '@') ? App::config()->adminMailFrom() : 'dotclear@local');
+            $headers[] = 'From: ' . (str_contains(App::config()->adminMailfrom(), '@') ? App::config()->adminMailfrom() : 'dotclear@local');
             $headers[] = 'Content-Type: text/' . $mailformat . '; charset=UTF-8;';
             //$headers[] = 'MIME-Version: 1.0';
             //$headers[] = 'X-Originating-IP: ' . mb_encode_mimeheader(Http::realIP(), 'UTF-8', 'B');

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Dotclear\Plugin\activityReport;
 
 use Dotclear\App;
-use Dotclear\Core\Process;
 use Dotclear\Database\Statement\DropStatement;
 use Dotclear\Database\Statement\TruncateStatement;
+use Dotclear\Helper\Process\TraitProcess;
 use Exception;
 
 /**
@@ -17,8 +17,10 @@ use Exception;
  * @author      Jean-Christian Denis (author)
  * @copyright   GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
  */
-class Install extends Process
+class Install
 {
+    use TraitProcess;
+
     public static function init(): bool
     {
         return self::status(My::checkContext(My::INSTALL));
@@ -66,7 +68,7 @@ class Install extends Process
     private static function beforeGrowUp(): void
     {
         // sorry not sorry we restart from scratch
-        if (is_string(App::version()->getVersion('activityReport'))
+        if (App::version()->getVersion('activityReport') !== ''
             && version_compare(App::version()->getVersion('activityReport'), '3.0', '<')
         ) {
             $struct = App::db()->structure();

@@ -60,6 +60,6 @@ class ActivityRow
         $this->status    = $this->rs->intField('activity_status');
 
         $logs       = json_decode($this->rs->strField('activity_logs'), true);
-        $this->logs = is_array($logs) ? $logs : [];
+        $this->logs = is_array($logs) ? array_values(array_map(fn ($v): string => is_scalar($v) ? (string) $v : '', $logs)) : [];
     }
 }

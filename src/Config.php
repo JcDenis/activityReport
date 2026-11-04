@@ -6,8 +6,8 @@ namespace Dotclear\Plugin\activityReport;
 
 use Dotclear\App;
 use Dotclear\Core\Backend\Notices;
-use Dotclear\Core\Process;
 use Dotclear\Helper\Date;
+use Dotclear\Helper\Process\TraitProcess;
 use Dotclear\Helper\Html\Form\{
     Checkbox,
     Div,
@@ -28,8 +28,10 @@ use Exception;
  * @author      Jean-Christian Denis (author)
  * @copyright   GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
  */
-class Config extends Process
+class Config
 {
+    use TraitProcess;
+
     public static function init(): bool
     {
         return self::status(My::checkContext(My::CONFIG));
@@ -49,16 +51,19 @@ class Config extends Process
             $s = ActivityReport::instance()->settings;
 
             $s->set('feed_active', !empty($_POST['feed_active']));
-            if (in_array($_POST['interval'], Combo::interval())) {
-                $s->set('interval', (int) $_POST['interval']);
+            $interval = is_numeric($_POST['interval'] ?? '') ? (int) $_POST['interval'] : 0;
+            if (in_array($interval, Combo::interval(), true)) {
+                $s->set('interval', $interval);
             }
-            if (in_array($_POST['obsolete'], Combo::obsolete())) {
-                $s->set('obsolete', (int) $_POST['obsolete']);
+            $obsolete = is_numeric($_POST['obsolete'] ?? '') ? (int) $_POST['obsolete'] : 0;
+            if (in_array($obsolete, Combo::obsolete(), true)) {
+                $s->set('obsolete', $obsolete);
             }
-            $s->set('mailinglist', explode(';', $_POST['mailinglist']));
-            $s->set('mailformat', isset($_POST['mailformat']) && $_POST['mailformat'] == 'html' ? 'html' : 'plain');
-            $s->set('dateformat', $_POST['dateformat']);
-            $s->set('requests', $_POST['requests'] ?? []);
+            $mailinglist = is_string($_POST['mailinglist'] ?? null) ? $_POST['mailinglist'] : '';
+            $s->set('mailinglist', array_values(array_filter(array_map(trim(...), explode(';', $mailinglist)), fn (string $v): bool => $v !== '')));
+            $s->set('mailformat', isset($_POST['mailformat']) && $_POST['mailformat'] === 'html' ? 'html' : 'plain');
+            $s->set('dateformat', is_string($_POST['dateformat'] ?? null) ? $_POST['dateformat'] : '');
+            $s->set('requests', Settings::requests($_POST['requests'] ?? []));
 
             Notices::addSuccessNotice(
                 __('Configuration successfully updated.')
@@ -98,21 +103,16 @@ class Config extends Process
 
         $s  = ActivityReport::instance()->settings;
         $tz = is_string(App::auth()->getInfo('user_tz')) ? App::auth()->getInfo('user_tz') : 'UTC';
+        $df = App::blog()->settings()->get('system')->get('date_format');
+        $tf = App::blog()->settings()->get('system')->get('time_format');
+        $df = (is_string($df) ? $df : '%Y-%m-%d') . ', ' . (is_string($tf) ? $tf : '%H:%M');
 
         if (!$s->lastreport) {
             $last_report = __('never');
             $next_report = __('on new activity');
         } else {
-            $last_report = Date::str(
-                App::blog()->settings()->get('system')->get('date_format') . ', ' . App::blog()->settings()->get('system')->get('time_format'),
-                $s->lastreport,
-                $tz
-            );
-            $next_report = Date::str(
-                App::blog()->settings()->get('system')->get('date_format') . ', ' . App::blog()->settings()->get('system')->get('time_format'),
-                $s->interval + $s->lastreport,
-                $tz
-            );
+            $last_report = Date::str($df, $s->lastreport, $tz);
+            $next_report = Date::str($df, $s->interval + $s->lastreport, $tz);
         }
 
         if (!ActivityReport::hasMailer()) {
@@ -127,7 +127,7 @@ class Config extends Process
                 (new Text('h4', __('Mail report'))),
                 (new Para())->items([
                     (new Label(__('Send report:'), Label::OUTSIDE_LABEL_BEFORE))->for('interval'),
-                    (new Select('interval'))->default((string) $s->interval)->items(Combo::interval()),
+                    (new Select('interval'))->default((string) $s->interval)->items(array_map(strval(...), Combo::interval())),
                 ]),
                 (new Para())->items([
                     (new Label(__('Recipients:'), Label::OUTSIDE_LABEL_BEFORE))->for('mailinglist'),
@@ -199,7 +199,7 @@ class Config extends Process
             (new Text('h4', __('Maintenance'))),
             (new Para())->items([
                 (new Label(__('Automatic cleaning of old logs:'), Label::OUTSIDE_LABEL_BEFORE))->for('obsolete'),
-                (new Select('obsolete'))->default((string) $s->obsolete)->items(Combo::obsolete()),
+                (new Select('obsolete'))->default((string) $s->obsolete)->items(array_map(strval(...), Combo::obsolete())),
             ]),
             (new Para())->items([
                 (new Checkbox('send_report_now'))->value(1),

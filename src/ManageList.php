@@ -14,6 +14,7 @@ use Dotclear\Core\Backend\Listing\{
 use Dotclear\Helper\Date;
 use Dotclear\Helper\Html\Form\{
     Caption,
+    Component,
     Div,
     Note,
     Table,
@@ -51,6 +52,9 @@ class ManageList extends Listing
         $pager           = new Pager($page, $count, $nbpp, 10);
         $pager->var_page = 'page';
 
+        /**
+         * @var ArrayObject<string, Component>
+         */
         $cols = new ArrayObject([
             'activity_group' => (new Th())
                 ->text(__('Group'))
@@ -109,13 +113,19 @@ class ManageList extends Listing
         $group   = ActivityReport::instance()->groups->get($row->group);
         $action  = $group->get($row->action);
         $message = ActivityReport::parseMessage(__($action->message), $row->logs);
+        $tz      = App::auth()->getInfo('user_tz');
+        $df      = App::blog()->settings()->get('system')->get('date_format');
+        $tf      = App::blog()->settings()->get('system')->get('time_format');
         $date    = Date::str(
-            App::blog()->settings()->get('system')->get('date_format') . ', ' . App::blog()->settings()->get('system')->get('time_format'),
+            (is_string($df) ? $df : '%Y-%m-%d') . ', ' . (is_string($tf) ? $tf : '%H:%M'),
             (int) strtotime($row->dt),
-            is_string(App::auth()->getInfo('user_tz')) ? App::auth()->getInfo('user_tz') : 'UTC'
+            is_string($tz) ? $tz : 'UTC'
         );
         $status = $row->status == ActivityReport::STATUS_PENDING ? __('pending') : __('reported');
 
+        /**
+         * @var ArrayObject<string, Component>
+         */
         $cols = new ArrayObject([
             'activity_group' => (new Td())
                 ->text(Html::escapeHTML(__($group->title)))

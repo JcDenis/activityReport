@@ -6,7 +6,7 @@ namespace Dotclear\Plugin\activityReport;
 
 use ArrayObject;
 use Dotclear\App;
-use Dotclear\Core\Process;
+use Dotclear\Helper\Process\TraitProcess;
 use Dotclear\Interface\Core\BlogInterface;
 use Dotclear\Database\{
     Cursor,
@@ -23,8 +23,10 @@ use Dotclear\Helper\Network\Http;
  * @author      Jean-Christian Denis (author)
  * @copyright   GPL-2.0 https://www.gnu.org/licenses/gpl-2.0.html
  */
-class ActivityReportAction extends Process
+class ActivityReportAction
 {
+    use TraitProcess;
+
     public static function init(): bool
     {
         return self::status(true);
@@ -152,7 +154,7 @@ class ActivityReportAction extends Process
         $comment->add(new Action(
             'trackback',
             __('trackback creation'),
-            __('A new trackback to "%" at "%s" was created on post "%s" at %s'),
+            __('A new trackback from "%s" at "%s" was created on post "%s" at %s'),
             'coreAfterCommentCreate',
             self::trackbackCreate(...)
         ));
@@ -222,7 +224,7 @@ class ActivityReportAction extends Process
         $user->add(new Action(
             'delete',
             __('user deletion'),
-            __('User named "%s" has been deleted by "%"'),
+            __('User named "%s" has been deleted by "%s"'),
             'adminBeforeUserDelete',
             self::userDelete(...)
         ));
@@ -287,10 +289,10 @@ class ActivityReportAction extends Process
 
     public static function blogP404(): void
     {
-        if (App::url()->type != '404') {
+        if (App::url()->getType() !== '404') {
             return;
         }
-        $logs = [self::str(App::blog()->url()) . $_SERVER['QUERY_STRING']];
+        $logs = [self::str(App::blog()->url()) . self::str($_SERVER['QUERY_STRING'] ?? '')];
         ActivityReport::instance()->addLog('blog', 'p404', $logs);
     }
 
@@ -335,11 +337,11 @@ class ActivityReportAction extends Process
      */
     public static function postPasswordAttempt(ArrayObject $result): void
     {
-        if ($result['tpl'] != 'password-form.html' || empty($_POST['password'])) {
+        if ($result['tpl'] !== 'password-form.html' || empty($_POST['password'])) {
             return;
         }
         $logs = [
-            $_POST['password'],
+            self::str($_POST['password']),
             Http::getSelfURI(),
         ];
         ActivityReport::instance()->addLog('post', 'protection', $logs);
@@ -379,7 +381,7 @@ class ActivityReportAction extends Process
             self::str(App::auth()->getInfo('user_cn')),
             $posts->strField('post_title'),
             self::str(App::blog()->url()) . App::url()->getBase($posts->strField('post_type')) .
-                '/' . $posts->strField('post_url') . '#c' . $old->strField('comment_id'),
+                '/' . $posts->strField('post_url') . '#c' . $old->intField('comment_id'),
         ];
         ActivityReport::instance()->addLog('comment', 'update', $logs);
     }

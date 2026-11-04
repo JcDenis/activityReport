@@ -57,9 +57,8 @@ class FrontendContext
         $logs   = App::frontend()->context()->__get('activityreports')->strField('activity_logs');
         $logs   = json_decode($logs, true);
 
-        if (!is_string($group)
-            || !is_string($action)
-            || !is_array($logs)
+        if (!is_array($logs)
+            || !ActivityReport::instance()->groups->has($group)
             || !ActivityReport::instance()->groups->get($group)->has($action)
         ) {
             return '';
@@ -67,9 +66,9 @@ class FrontendContext
 
         App::filter()->initWikiComment();
 
-        return App::filter()->wikiTransform(vsprintf(
+        return App::filter()->wikiTransform(ActivityReport::parseMessage(
             __(ActivityReport::instance()->groups->get($group)->get($action)->message),
-            $logs
+            array_values(array_map(fn ($v): string => is_scalar($v) ? (string) $v : '', $logs))
         ));
     }
 }

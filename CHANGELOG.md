@@ -1,3 +1,7 @@
+activityReport 3.6 - 2026.11.04
+===========================================================
+* Fix Dotclear 2.39 compatibility and code review (phpstan max)
+
 activityReport 3.5 - 2026.08.12
 ===========================================================
 * Bump Dotclear from 2.36 to 2.39 (url type, metarecord methods)

@@ -750,7 +750,7 @@ class ActivityReport
      */
     public function getUserCode(): string
     {
-        $id   = is_string(App::auth()->userID()) ? App::auth()->userID() : '';
+        $id   = (string) App::auth()->userID();
         $pw   = is_string(App::auth()->getInfo('user_pwd')) ? App::auth()->getInfo('user_pwd') : '';
         $code = pack('a32', $id) . pack('H*', Crypt::hmac(App::config()->masterKey(), $pw));
 

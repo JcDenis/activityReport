@@ -1,3 +1,8 @@
+activityReport 3.7 - 2026.11.09
+===========================================================
+* Add Claude to contributors
+* Fix compatibility with Dotclear 2.40
+
 activityReport 3.6 - 2026.11.04
 ===========================================================
 * Fix Dotclear 2.39 compatibility and code review (phpstan max)

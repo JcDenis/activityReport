@@ -70,11 +70,15 @@ class Config
             );
 
             if (!empty($_POST['send_report_now'])) {
-                ActivityReport::instance()->needReport(true);
-
-                Notices::addSuccessNotice(
-                    __('Report successfully sent.')
-                );
+                if (ActivityReport::instance()->needReport(true)) {
+                    Notices::addSuccessNotice(
+                        __('Report successfully sent.')
+                    );
+                } else {
+                    Notices::addWarningNotice(
+                        __('No report sent: no recipient, no new activity to report or mail error.')
+                    );
+                }
             }
             if (!empty($_POST['delete_report_now'])) {
                 ActivityReport::instance()->deleteLogs();
@@ -122,7 +126,7 @@ class Config
         }
 
         echo
-        (new Div())->class('two-boxes')->separator('')->items([
+        (new Div())->class('one-box')->separator('')->items([
             (new Div())->class('fieldset box odd')->items([
                 (new Text('h4', __('Mail report'))),
                 (new Para())->items([
@@ -171,10 +175,7 @@ class Config
         ])->render();
 
         $i = 0;
-        $g = [
-            (new Text('h4', __('Activities'))),
-            (new Text('p', __('Select actions by activity type to add to report'))),
-        ];
+        $g = [];
         foreach (ActivityReport::instance()->groups->dump() as $group_id => $group) {
             $a   = [];
             $a[] = (new Text('h5', __($group->title)));
@@ -192,7 +193,11 @@ class Config
             $g[] = (new Div())->class('fieldset box')->items($a);
         }
         echo
-        (new Div('setting_report'))->class('fieldset one-box')->items($g)->render();
+        (new Div('setting_report'))->class('fieldset')->items([
+            (new Text('h4', __('Activities'))),
+            (new Text('p', __('Select actions by activity type to add to report'))),
+            (new Div())->class('one-box')->items($g),
+        ])->render();
 
         echo
         (new Div('settings'))->class('fieldset')->items([

@@ -77,7 +77,7 @@ class BackendBehaviors
             $group   = $groups->get($row->group);
             $lines[] = '<dt title="' . __($group->title) . '">' .
             '<strong>' . __($group->get($row->action)->title) . '</strong>' .
-            '<br />' . Date::str($df, (int) strtotime($row->dt), $tz) . '</dt>' .
+            '<br />' . Date::str($df, $row->ts, $tz) . '</dt>' .
             '<dd><p>' .
             '<em>' . ActivityReport::parseMessage(__($group->get($row->action)->message), $row->logs) . '</em></p></dd>';
         }
@@ -173,7 +173,8 @@ class BackendBehaviors
             [
                 'activity_group'  => [true, __('Group')],
                 'activity_action' => [true, __('Action')],
-                'activity_dt'     => [true, __('Date')],
+                'activity_logs'   => [true, __('Message')],
+                'activity_date'   => [true, __('Date')],
                 'activity_status' => [false, __('Status')],
             ],
         ];

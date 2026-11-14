@@ -118,7 +118,7 @@ class ManageList extends Listing
         $tf      = App::blog()->settings()->get('system')->get('time_format');
         $date    = Date::str(
             (is_string($df) ? $df : '%Y-%m-%d') . ', ' . (is_string($tf) ? $tf : '%H:%M'),
-            (int) strtotime($row->dt),
+            $row->ts,
             is_string($tz) ? $tz : 'UTC'
         );
         $status = $row->status == ActivityReport::STATUS_PENDING ? __('pending') : __('reported');

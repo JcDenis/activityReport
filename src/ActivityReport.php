@@ -231,10 +231,10 @@ class ActivityReport
         }
 
         if (isset($params['from_date_ts']) && is_numeric($params['from_date_ts'])) {
-            $sql->and('E.activity_dt >= ' . $sql->quote(date('Y-m-d H:i:s', (int) $params['from_date_ts'])));
+            $sql->and('E.activity_dt >= ' . $sql->quote(gmdate('Y-m-d H:i:s', (int) $params['from_date_ts'])));
         }
         if (isset($params['to_date_ts']) && is_numeric($params['to_date_ts'])) {
-            $sql->and('E.activity_dt < ' . $sql->quote(date('Y-m-d H:i:s', (int) $params['to_date_ts'])));
+            $sql->and('E.activity_dt < ' . $sql->quote(gmdate('Y-m-d H:i:s', (int) $params['to_date_ts'])));
         }
 
         if (!empty($params['requests'])) {
@@ -384,7 +384,7 @@ class ActivityReport
                 }
 
                 // Action
-                $time = strtotime($row->dt);
+                $time = $row->ts;
 
                 $res .= str_replace(
                     ['%TIME%', '%TEXT%'],
@@ -463,7 +463,7 @@ class ActivityReport
 
         while ($rs->fetch()) {
             $ts  = time();
-            $obs = Date::str('%Y-%m-%d %H:%M:%S', $ts - (int) $this->settings->obsolete);
+            $obs = Date::str('%Y-%m-%d %H:%M:%S', $ts - (int) $this->settings->obsolete, 'UTC');
             if ($rs->strField('blog_id') !== '') {
                 $sql = new DeleteStatement();
                 $sql->from(App::db()->con()->prefix() . My::ACTIVITY_TABLE_NAME)
@@ -532,8 +532,8 @@ class ActivityReport
             ->value(self::STATUS_REPORTED)
             ->where('blog_id = ' . $sql->quote(App::blog()->id()))
             ->and('activity_type =' . $sql->quote($this->type))
-            ->and('activity_dt >= ' . $sql->quote(date('Y-m-d H:i:s', $from_date_ts)))
-            ->and('activity_dt < ' . $sql->quote(date('Y-m-d H:i:s', $to_date_ts)))
+            ->and('activity_dt >= ' . $sql->quote(gmdate('Y-m-d H:i:s', $from_date_ts)))
+            ->and('activity_dt < ' . $sql->quote(gmdate('Y-m-d H:i:s', $to_date_ts)))
             ->update();
     }
 
@@ -613,7 +613,7 @@ class ActivityReport
      *
      * @param   bool    $force  Force to send report
      *
-     * @return  bool    The success
+     * @return  bool    True if a report was sent
      */
     public function needReport(bool $force = false): bool
     {
@@ -676,9 +676,11 @@ class ActivityReport
             $this->unlockUpdate();
         } catch (Exception $e) {
             $this->unlockUpdate();
+
+            return false;
         }
 
-        return true;
+        return $send;
     }
 
     /**

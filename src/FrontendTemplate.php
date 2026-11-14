@@ -143,13 +143,13 @@ class FrontendTemplate
         $f = App::frontend()->template()->getFilters($attr);
 
         if ($rfc822) {
-            return '<?php echo ' . sprintf($f, Date::class . '::rfc822(strtotime(App::frontend()->context()->activityreports->activity_dt),App::blog()->settings()->system->blog_timezone)') . '; ?>';
+            return '<?php echo ' . sprintf($f, Date::class . '::rfc822(' . Date::class . '::addTimeZone(App::blog()->settings()->system->blog_timezone,(int) strtotime(App::frontend()->context()->activityreports->activity_dt . \' UTC\')),App::blog()->settings()->system->blog_timezone)') . '; ?>';
         } elseif ($iso8601) {
-            return '<?php echo ' . sprintf($f, Date::class . '::iso8601(strtotime(App::frontend()->context()->activityreports->activity_dt),App::blog()->settings()->system->blog_timezone)') . '; ?>';
+            return '<?php echo ' . sprintf($f, Date::class . '::iso8601(' . Date::class . '::addTimeZone(App::blog()->settings()->system->blog_timezone,(int) strtotime(App::frontend()->context()->activityreports->activity_dt . \' UTC\')),App::blog()->settings()->system->blog_timezone)') . '; ?>';
         } elseif (!empty($format)) {
-            return '<?php echo ' . sprintf($f, Date::class . "::dt2str('" . $format . "',App::frontend()->context()->activityreports->activity_dt)") . '; ?>';
+            return '<?php echo ' . sprintf($f, Date::class . "::str('" . $format . "',strtotime(App::frontend()->context()->activityreports->activity_dt . ' UTC'),App::blog()->settings()->system->blog_timezone)") . '; ?>';
         }
 
-        return '<?php echo ' . sprintf($f, Date::class . '::dt2str(App::blog()->settings()->system->date_format,App::frontend()->context()->activityreports->activity_dt)') . '; ?>';
+        return '<?php echo ' . sprintf($f, Date::class . "::str(App::blog()->settings()->system->date_format,strtotime(App::frontend()->context()->activityreports->activity_dt . ' UTC'),App::blog()->settings()->system->blog_timezone)") . '; ?>';
     }
 }

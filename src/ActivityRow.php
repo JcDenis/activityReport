@@ -36,6 +36,9 @@ class ActivityRow
     /** @var    string  $id     The activity date */
     public readonly string $dt;
 
+    /** @var    int     $ts     The activity timestamp (date is stored in UTC) */
+    public readonly int $ts;
+
     /** @var    int     $id     The activity status */
     public readonly int $status;
 
@@ -57,6 +60,7 @@ class ActivityRow
         $this->group     = $this->rs->strField('activity_group');
         $this->action    = $this->rs->strField('activity_action');
         $this->dt        = $this->rs->strField('activity_dt');
+        $this->ts        = (int) strtotime($this->dt . ' UTC');
         $this->status    = $this->rs->intField('activity_status');
 
         $logs       = json_decode($this->rs->strField('activity_logs'), true);

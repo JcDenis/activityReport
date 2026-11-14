@@ -1,3 +1,12 @@
+activityReport 3.8 - 2026.11.14
+===========================================================
+* Fix comment update message, entries and 404 URLs
+* Fix activity dates (stored in UTC) in lists, feeds and reports
+* Fix config page layout and report sending notice
+* Fix columns preferences and translations
+* Add a user guide in French, with screenshots
+* Add admin help in English and French, one block per page
+
 activityReport 3.7 - 2026.11.09
 ===========================================================
 * Add Claude to contributors

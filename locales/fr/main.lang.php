@@ -102,14 +102,17 @@ L10n::$locales['Delete all aticivity logs'] = 'Effacer tous les enregistrements 
 L10n::$locales['Delete all allready reported logs'] = 'Effacer les enregistrements d\'activités déjà envoyé par email';
 L10n::$locales['No log matches the filter'] = 'Aucun enregistrement ne correspond au filtre';
 L10n::$locales['No log'] = 'Pas d\'enregistrement';
-L10n::$locales['List of %s logs matching the filter.'] = 'Liste des %s logs correspondants au filtre.';
+L10n::$locales['List of %s activity matching the filter.'] = [
+	'Liste de l\'activité correspondant au filtre.',
+	'Liste des %s activités correspondant au filtre.',
+];
 L10n::$locales['List of %s logs.'] = 'Listes des %s enregistrements';
 L10n::$locales['Message'] = 'Message';
 L10n::$locales['reported'] = 'envoyé';
 L10n::$locales['undefined'] = 'inconnu';
 L10n::$locales['Activity log'] = 'Journal d\'activité';
 L10n::$locales['Log and receive your blog activity by email, feed, or on dashboard'] = 'Enregistrer et recevoir l\'activité de votre blog par mail, flux ou sur le tableau de bord';
-L10n::$locales['List of logs. (%s)'] = 'Liste des activités (%s)';
+L10n::$locales['List of activities (%s)'] = 'Liste des activités (%s)';
 L10n::$locales['pending'] = 'en attente';
 L10n::$locales['Powered by %s'] = 'Propulsé par %s';
 L10n::$locales['No report sent: no recipient, no new activity to report or mail error.'] = 'Aucun rapport envoyé : pas de destinataire, pas de nouvelle activité à envoyer ou erreur d\'envoi.';

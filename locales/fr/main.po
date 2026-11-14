@@ -375,8 +375,10 @@ msgid "No log"
 msgstr "Pas d'enregistrement"
 
 #: src/ManageList.php:45
-msgid "List of %s logs matching the filter."
-msgstr "Liste des %s logs correspondants au filtre."
+msgid "List of %s activity matching the filter."
+msgid_plural "List of %s activities matching the filter."
+msgstr[0] "Liste de l'activité correspondant au filtre."
+msgstr[1] "Liste des %s activités correspondant au filtre."
 
 #: src/ManageList.php:46
 msgid "List of %s logs."
@@ -399,7 +401,7 @@ msgstr "Journal d'activité"
 msgid "Log and receive your blog activity by email, feed, or on dashboard"
 msgstr "Enregistrer et recevoir l'activité de votre blog par mail, flux ou sur le tableau de bord"
 
-msgid "List of logs. (%s)"
+msgid "List of activities (%s)"
 msgstr "Liste des activités (%s)"
 
 msgid "pending"

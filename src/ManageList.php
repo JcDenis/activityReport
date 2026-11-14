@@ -91,8 +91,8 @@ class ManageList extends Listing
                         ->items([
                             (new Caption(
                                 $filter->show() ?
-                                sprintf(__('List of %s logs matching the filter.'), $count) :
-                                sprintf(__('List of logs. (%s)'), $count)
+                                sprintf(__('List of %s activity matching the filter.', 'List of %s activities matching the filter.', $count), $count) :
+                                sprintf(__('List of activities (%s)'), $count)
                             )),
                             (new Tr())
                                 ->items(iterator_to_array($cols)),

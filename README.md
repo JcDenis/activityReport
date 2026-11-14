@@ -12,6 +12,8 @@ _activityReport_ is a plugin for the open-source web publishing software called 
 
 > Log and receive your blog activity by email, feed, or on dashboard
 
+A user guide with screenshots is available in French: [guide d'utilisation](https://github.com/JcDenis/activityReport/blob/master/docs/fr/utilisation.md).
+
 ## REQUIREMENTS
 
 * Dotclear 2.39
@@ -34,6 +36,7 @@ Once it's done you can manage your reports from menu
 ## LINKS
 
 * [License](https://github.com/JcDenis/activityReport/blob/master/LICENSE)
+* [User guide (in French)](https://github.com/JcDenis/activityReport/blob/master/docs/fr/utilisation.md)
 * [Packages & details](https://github.com/JcDenis/activityReport/releases) (or on [Repository](https://dotclear.org/plugin/detail/activityReport))
 * [Sources & contributions](https://github.com/JcDenis/activityReport))
 * [Issues & security](https://github.com/JcDenis/activityReport/issues))

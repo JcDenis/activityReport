@@ -109,8 +109,8 @@ msgid "updating comment"
 msgstr "Mise à jour de commentaire"
 
 #: src/ActivityBehaviors.php:137
-msgid "Comment has been updated by \"%s\" at %s"
-msgstr "Un commentaire a été mise à jour par \"%s\" à l'adresse \"%s\""
+msgid "Comment has been updated by \"%s\" on post \"%s\" at %s"
+msgstr "Un commentaire a été mis à jour par \"%s\" sur le billet \"%s\" à l'adresse %s"
 
 #: src/ActivityBehaviors.php:149
 msgid "trackback creation"
@@ -399,3 +399,14 @@ msgstr "Journal d'activité"
 msgid "Log and receive your blog activity by email, feed, or on dashboard"
 msgstr "Enregistrer et recevoir l'activité de votre blog par mail, flux ou sur le tableau de bord"
 
+msgid "List of logs. (%s)"
+msgstr "Liste des activités (%s)"
+
+msgid "pending"
+msgstr "en attente"
+
+msgid "Powered by %s"
+msgstr "Propulsé par %s"
+
+msgid "No report sent: no recipient, no new activity to report or mail error."
+msgstr "Aucun rapport envoyé : pas de destinataire, pas de nouvelle activité à envoyer ou erreur d'envoi."

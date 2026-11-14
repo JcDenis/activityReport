@@ -6,6 +6,7 @@ namespace Dotclear\Plugin\activityReport;
 
 use Dotclear\App;
 use Dotclear\Core\Backend\Notices;
+use Dotclear\Core\Backend\Page;
 use Dotclear\Helper\Date;
 use Dotclear\Helper\Process\TraitProcess;
 use Dotclear\Helper\Html\Form\{
@@ -215,5 +216,7 @@ class Config
                 (new Label(__('Delete all logs now'), Label::OUTSIDE_LABEL_AFTER))->for('delete_report_now')->class('classic'),
             ]),
         ])->render();
+
+        Page::helpBlock(My::id() . '-config');
     }
 }

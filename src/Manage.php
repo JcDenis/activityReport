@@ -111,6 +111,8 @@ class Manage
             ])->render();
         }
 
+        Page::helpBlock(My::id() . '-logs');
+
         Page::closeModule();
     }
 }

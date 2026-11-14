@@ -141,7 +141,7 @@ class ActivityReportAction
         $comment->add(new Action(
             'update',
             __('updating comment'),
-            __('Comment has been updated by "%s" at %s'),
+            __('Comment has been updated by "%s" on post "%s" at %s'),
             'coreAfterCommentUpdate',
             self::commentUpdate(...)
         ));
@@ -268,7 +268,7 @@ class ActivityReportAction
                     '</style>' .
                     '</head><body>' .
                     '<div class="info">%PERIOD%</div><div class="content">%TEXT%</div>' .
-                    '<div class="foot"><p>Powered by <a href="https://github.com/JcDenis/activityReport">activityReport</a></p></div>' .
+                    '<div class="foot"><p>' . sprintf(__('Powered by %s'), '<a href="https://github.com/JcDenis/activityReport">activityReport</a>') . '</p></div>' .
                     '</body></html>',
             ]));
 
@@ -292,17 +292,26 @@ class ActivityReportAction
         if (App::url()->getType() !== '404') {
             return;
         }
-        $logs = [self::str(App::blog()->url()) . self::str($_SERVER['QUERY_STRING'] ?? '')];
+        $logs = [Http::getSelfURI()];
         ActivityReport::instance()->addLog('blog', 'p404', $logs);
+    }
+
+    /**
+     * Get public URL of an entry, from database.
+     */
+    private static function postURL(int $post_id): string
+    {
+        $rs = App::blog()->getPosts(['post_id' => $post_id, 'post_type' => '', 'limit' => 1]);
+
+        return $rs->isEmpty() ? '' : $rs->getURL();
     }
 
     public static function postCreate(Cursor $cur, int $post_id): void
     {
-        $post_url = App::blog()->getPostURL('', self::str($cur->getField('post_dt')), self::str($cur->getField('post_title')), $post_id);
-        $logs     = [
+        $logs = [
             self::str($cur->getField('post_title')),
             self::str(App::auth()->getInfo('user_cn')),
-            self::str(App::blog()->url()) . App::url()->getBase(self::str($cur->getField('post_type'))) . '/' . $post_url,
+            self::postURL($post_id),
         ];
         ActivityReport::instance()->addLog('post', 'create', $logs);
     }
@@ -310,11 +319,10 @@ class ActivityReportAction
     public static function postUpdate(Cursor $cur, int|string $post_id): void
     {
         $post_id  = is_numeric($post_id) ? (int) $post_id : 0;
-        $post_url = App::blog()->getPostURL('', self::str($cur->getField('post_dt')), self::str($cur->getField('post_title')), $post_id);
-        $logs     = [
+        $logs    = [
             self::str($cur->getField('post_title')),
             self::str(App::auth()->getInfo('user_cn')),
-            self::str(App::blog()->url()) . App::url()->getBase(self::str($cur->getField('post_type'))) . '/' . $post_url,
+            self::postURL($post_id),
         ];
         ActivityReport::instance()->addLog('post', 'update', $logs);
     }

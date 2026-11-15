@@ -36,7 +36,7 @@ class Backend
                 'adminDashboardContentsV2'         => BackendBehaviors::adminDashboardContentsV2(...),
                 'adminDashboardOptionsFormV2'      => BackendBehaviors::adminDashboardOptionsFormV2(...),
                 'adminAfterDashboardOptionsUpdate' => BackendBehaviors::adminAfterDashboardOptionsUpdate(...),
-                'adminFiltersListsV2'              => BackendBehaviors::adminFiltersListsV2(...),
+                'adminFiltersListsV3'              => BackendBehaviors::adminFiltersListsV3(...),
                 'adminColumnsListsV2'              => BackendBehaviors::adminColumnsListsV2(...),
             ]);
         }

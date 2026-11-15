@@ -7,6 +7,7 @@ namespace Dotclear\Plugin\activityReport;
 use ArrayObject;
 use Dotclear\App;
 use Dotclear\Core\Backend\Favorites;
+use Dotclear\Core\Backend\UserPrefFilter;
 use Dotclear\Helper\Date;
 use Dotclear\Helper\Html\Form\{
     Div,
@@ -143,11 +144,12 @@ class BackendBehaviors
     /**
      * List filters.
      *
-     * @param   ArrayObject<string, mixed>  $sorts
+     * @param   ArrayObject<array-key, UserPrefFilter>  $filters
      */
-    public static function adminFiltersListsV2(ArrayObject $sorts): void
+    public static function adminFiltersListsV3(ArrayObject $filters): void
     {
-        $sorts[My::id()] = [
+        $filters->append(new UserPrefFilter(
+            My::id(),
             My::name(),
             [
                 __('Group')  => 'activity_group',
@@ -157,8 +159,9 @@ class BackendBehaviors
             ],
             'activity_dt',
             'desc',
-            [__('logs per page'), 30],
-        ];
+            __('logs per page'),
+            30
+        ));
     }
 
     /**

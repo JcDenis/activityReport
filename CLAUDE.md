@@ -43,7 +43,7 @@ Required Dotclear and PHP versions: see `_define.php`.
 * `js/`: `backend.js`.
 * `default-templates/`: public templates.
 * Database table `activity`.
-* Behaviors used: `adminDashboardFavoritesV2`, `adminDashboardContentsV2`, `adminDashboardOptionsFormV2`, `adminAfterDashboardOptionsUpdate`, `adminFiltersListsV2`, `adminColumnsListsV2`.
+* Behaviors used: `adminDashboardFavoritesV2`, `adminDashboardContentsV2`, `adminDashboardOptionsFormV2`, `adminAfterDashboardOptionsUpdate`, `adminFiltersListsV3`, `adminColumnsListsV2`.
 
 ## Pitfalls
 

@@ -17,7 +17,7 @@ Required Dotclear and PHP versions: see `_define.php`.
 
 ## Structure
 
-* `src/ClaudetteMcp/ListActivity.php`: tool `list_activity` for the plugin ClaudetteMcp (read only, never required),
+* `src/ClaudetteMcp/ListActivity.php`: tool `list_activity` for the plugin ClaudetteMcp (read only, optional dependency `ClaudetteMcp?` in `requires`),
   registered in `src/Frontend.php` with the behavior `ClaudetteMcpAddTool`. Never send the logs of `post/protection` (tried passwords).
 * `src/Action.php`: action descriptor class.
 * `src/ActivityReport.php`: main class.

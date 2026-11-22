@@ -35,7 +35,7 @@ Once it's done you can manage your reports from menu
 
 With the plugin [ClaudetteMcp](https://github.com/JcDenis/ClaudetteMcp), an AI assistant connected to the blog
 can read the activity log (`list_activity`, read only), with the permissions of a blog administrator.
-Failed attempts on password protected entries are never sent to the assistant. ClaudetteMcp is not required by _activityReport_.
+Failed attempts on password protected entries are never sent to the assistant. ClaudetteMcp is optional for _activityReport_ (version 0.5 or later).
 
 ## LINKS
 

@@ -35,6 +35,14 @@ class ListActivity extends McpTool
         'post' => ['protection'],
     ];
 
+    /**
+     * Family of tools for the keys of ClaudetteMcp (string, not constant: older ClaudetteMcp versions have none).
+     */
+    public function family(): string
+    {
+        return 'stats';
+    }
+
     public function name(): string
     {
         return 'list_activity';

@@ -21,7 +21,7 @@ $this->registerModule(
     'Activity log',
     'Log and receive your blog activity by email, feed, or on dashboard',
     'Jean-Christian Denis and contributors',
-    '3.8',
+    '3.9',
     [
         'requires'    => [['core', '2.40']],
         'permissions' => 'My',
@@ -30,6 +30,6 @@ $this->registerModule(
         'support'     => 'https://github.com/JcDenis/' . $this->id . '/issues',
         'details'     => 'https://github.com/JcDenis/' . $this->id . '/',
         'repository'  => 'https://raw.githubusercontent.com/JcDenis/' . $this->id . '/master/dcstore.xml',
-        'date'        => '2026-11-14T10:33:14+00:00',
+        'date'        => '2026-11-22T14:11:00+00:00',
     ]
 );

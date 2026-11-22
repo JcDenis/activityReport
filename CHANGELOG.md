@@ -1,3 +1,8 @@
+activityReport 3.9 - 2026.11.22
+===========================================================
+* Fix list titles conflicting with other plugins translations
+* [compat] Use adminFiltersListsV3 behavior, require Dotclear 2.40
+
 activityReport 3.8 - 2026.11.14
 ===========================================================
 * Fix comment update message, entries and 404 URLs

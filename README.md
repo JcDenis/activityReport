@@ -33,6 +33,10 @@ go to ''configure plugin'', fill in form.
 Once it's done you can manage your reports from menu 
 ''Activity report'' on sidebar or you can add dashboard icon.
 
+With the plugin [ClaudetteMcp](https://github.com/JcDenis/ClaudetteMcp), an AI assistant connected to the blog
+can read the activity log (`list_activity`, read only), with the permissions of a blog administrator.
+Failed attempts on password protected entries are never sent to the assistant. ClaudetteMcp is not required by _activityReport_.
+
 ## LINKS
 
 * [License](https://github.com/JcDenis/activityReport/blob/master/LICENSE)

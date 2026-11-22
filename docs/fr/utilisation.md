@@ -11,6 +11,7 @@ Ce guide explique comment suivre l'activité de votre blog Dotclear avec l'exten
 5. [Suivre l'activité avec un flux](#suivre-lactivité-avec-un-flux)
 6. [Entretenir le journal](#entretenir-le-journal)
 7. [Préférences](#préférences)
+8. [Avec un assistant IA](#avec-un-assistant-ia)
 
 ## Configurer l'extension
 
@@ -121,3 +122,13 @@ Dans **Préférences › Mes options**, le bloc « Journal d'activité » choisi
 La ligne « Journal d'activité » des options des listes règle le tri et le nombre d'enregistrements par page.
 
 ![Tri et nombre par page](img/preferences-tri.png)
+
+## Avec un assistant IA
+
+Avec le plugin [ClaudetteMcp](https://github.com/JcDenis/ClaudetteMcp), un assistant IA connecté au blog peut lire le journal
+d'activité avec l'outil `list_activity`, si vous êtes administrateur du blog : par exemple pour répondre à
+« qu'est-ce qui s'est passé sur le blog cette semaine ? ». Il filtre par groupe d'activités et par nombre de jours.
+
+L'assistant ne fait que lire : il ne vide pas le journal et n'envoie pas de rapport.
+Les tentatives ratées sur les billets protégés par mot de passe ne lui sont jamais transmises, car elles contiennent le mot de passe essayé.
+_ClaudetteMcp_ n'est pas nécessaire au fonctionnement d'_activityReport_.

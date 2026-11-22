@@ -17,6 +17,8 @@ Required Dotclear and PHP versions: see `_define.php`.
 
 ## Structure
 
+* `src/ClaudetteMcp/ListActivity.php`: tool `list_activity` for the plugin ClaudetteMcp (read only, never required),
+  registered in `src/Frontend.php` with the behavior `ClaudetteMcpAddTool`. Never send the logs of `post/protection` (tried passwords).
 * `src/Action.php`: action descriptor class.
 * `src/ActivityReport.php`: main class.
 * `src/ActivityReportAction.php`: register default activities and export mail formats.
@@ -43,7 +45,7 @@ Required Dotclear and PHP versions: see `_define.php`.
 * `js/`: `backend.js`.
 * `default-templates/`: public templates.
 * Database table `activity`.
-* Behaviors used: `adminDashboardFavoritesV2`, `adminDashboardContentsV2`, `adminDashboardOptionsFormV2`, `adminAfterDashboardOptionsUpdate`, `adminFiltersListsV3`, `adminColumnsListsV2`.
+* Behaviors used: `ClaudetteMcpAddTool`, `adminDashboardFavoritesV2`, `adminDashboardContentsV2`, `adminDashboardOptionsFormV2`, `adminAfterDashboardOptionsUpdate`, `adminFiltersListsV3`, `adminColumnsListsV2`.
 
 ## Pitfalls
 

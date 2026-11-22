@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Dotclear\Plugin\activityReport;
 
+use ArrayObject;
 use Dotclear\App;
 use Dotclear\Helper\Process\TraitProcess;
 
@@ -28,6 +29,11 @@ class Frontend
         if (self::status()) {
             // be sure to init report
             ActivityReport::init();
+
+            // Tool for AI assistants connected to the blog with the plugin ClaudetteMcp (never required)
+            App::behavior()->addBehavior('ClaudetteMcpAddTool', function (ArrayObject $tools): void {
+                $tools->append(new ClaudetteMcp\ListActivity());
+            });
 
             $tpl = App::frontend()->template();
             $tpl->setPath($tpl->getPath(), implode(DIRECTORY_SEPARATOR, [My::path(), 'default-templates', 'tpl']));

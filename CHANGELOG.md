@@ -1,3 +1,8 @@
+activityReport 3.9.1 - 2026.11.23
+===========================================================
+* [new] Activity log for an AI assistant connected with ClaudetteMcp (list_activity)
+* [new] Family of the ClaudetteMcp tools, for the keys limited to some families
+
 activityReport 3.9 - 2026.11.22
 ===========================================================
 * Fix list titles conflicting with other plugins translations

@@ -21,7 +21,7 @@ $this->registerModule(
     'Activity log',
     'Log and receive your blog activity by email, feed, or on dashboard',
     'Jean-Christian Denis and contributors',
-    '3.9',
+    '3.9.1',
     [
         'requires'    => [['core', '2.40']],
         'permissions' => 'My',
